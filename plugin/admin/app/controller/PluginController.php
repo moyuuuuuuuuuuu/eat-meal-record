@@ -406,7 +406,7 @@ class PluginController extends Base
     {
         return $this->json(0, 'ok', $this->getLocalPlugins());
     }
-    
+
 
     /**
      * 获取本地插件版本
@@ -524,14 +524,14 @@ class PluginController extends Base
             }
         } else {
             $dirs = array_merge(
-                explode(PATH_SEPARATOR, getenv('PATH') ?: getenv('Path')),
+                explode(PATH_SEPARATOR, ('PATH') ?: ('Path')),
                 $extraDirs
             );
         }
 
         $suffixes = [''];
         if ('\\' === DIRECTORY_SEPARATOR) {
-            $pathExt = getenv('PATHEXT');
+            $pathExt = ('PATHEXT');
             $suffixes = array_merge($pathExt ? explode(PATH_SEPARATOR, $pathExt) : ['.exe', '.bat', '.cmd', '.com'], $suffixes);
         }
         foreach ($suffixes as $suffix) {

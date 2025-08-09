@@ -21,4 +21,21 @@ namespace support;
 class Request extends \Webman\Http\Request
 {
 
+    public function isJson()
+    {
+        return $this->header('content-type') == 'application/json';
+    }
+
+    public function domain($withPort = false)
+    {
+        $host = $this->host($withPort);
+        //获取http还是https
+        $fullUri = $this->fullUrl();
+
+        $scheme = "http";
+        if (str_contains($fullUri, "https://")) {
+            $scheme = "https";
+        }
+        return $scheme . '://' . $host;
+    }
 }
