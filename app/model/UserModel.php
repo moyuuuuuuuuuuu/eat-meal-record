@@ -48,11 +48,9 @@ class UserModel extends BaseModel
             $data['gender'] = 1;
         }
         $data = array_merge($data, [
-            'weight'                => 65,
-            'tall'                  => 175,
-            'full_attendance_month' => 0,
-            'target'                => 1200,
-            'status'                => 1
+            'is_full' => 0,
+            'target'  => 1200,
+            'status'  => 1
         ]);
         return UserModel::create($data);
     }
@@ -73,6 +71,10 @@ class UserModel extends BaseModel
                 'age'         => $userInfo->age,
                 'gender'      => $userInfo->gender,
                 'tall'        => $userInfo->tall,
+                'bmi'         => $userInfo->bmi,
+                'waist'       => $userInfo->waist,
+                'hip'         => $userInfo->hip,
+                'arm'         => $userInfo->arm,
                 'weight'      => $userInfo->weight,
                 'target'      => $userInfo->target,
                 'isFull'      => (int)$userInfo->is_full,

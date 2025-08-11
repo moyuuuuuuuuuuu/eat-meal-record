@@ -44,16 +44,14 @@ Route::group('/api', function () {
     })->middleware(\app\middleware\VerifyToken::class);
     Route::group('/user', function () {
         Route::get('/meal', ['app\controller\UserController', 'mealRecord']);//查询用户的餐食记录
+        Route::put('/body', ['app\controller\UserController', 'body']);//更新用户的身材信息
     })->middleware(\app\middleware\VerifyToken::class);
     Route::post('/upload', ['app\controller\UploadController', 'upload']);//上传
 });
 
 Route::fallback(function () {
     return response('', 404);
-})->middleware([
-    \app\middleware\Allow::class,
-    \app\middleware\Security::class,
-]);
+});
 
 
 

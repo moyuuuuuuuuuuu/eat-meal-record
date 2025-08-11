@@ -5,7 +5,11 @@ namespace app\controller;
 use app\controller\BaseController;
 use app\model\MealRecordFoodModel;
 use app\model\MealRecordModel;
+use app\model\UserBodyHistoryModel;
+use app\model\UserModel;
 use Illuminate\Database\Query\Builder;
+use support\Db;
+use support\Log;
 use support\Request;
 
 class UserController extends BaseController
@@ -35,5 +39,54 @@ class UserController extends BaseController
             $maxPage = ceil($total / $limit);
         }
         return $this->success('', ['list' => $mealRecordList->toArray(), 'maxPage' => $maxPage, 'currentPage' => $page]);
+    }
+
+    public function body(Request $request)
+    {
+        $userId   = $request->userId;
+        $bodyData = $request->input('body', []);
+        if (!$bodyData) {
+            return $this->error('请填写信息');
+        }
+        $userBodyInfo = UserModel::where('id', $userId)->select(['tall', 'weight', 'bmi', 'bust', 'waist', 'hip'])->first();
+        $historyData  = [];
+        if ($userBodyInfo->tall) {
+            $historyData = [
+                'tall'    => $userBodyInfo->tall,
+                'weight'  => $userBodyInfo->weight,
+                'bmi'     => $userBodyInfo->bmi,
+                'bust'    => $userBodyInfo->bust,
+                'waist'   => $userBodyInfo->waist,
+                'hip'     => $userBodyInfo->hip,
+                'user_id' => $userId
+            ];
+        }
+        Db::beginTransaction();
+        try {
+
+            $res = $userBodyInfo->save([
+                'tall'   => $bodyData['tall'],
+                'weight' => $bodyData['weight'],
+                'bmi'    => $bodyData['bmi'],
+                'bust'   => $bodyData['bust'],
+                'waist'  => $bodyData['waist'],
+                'hip'    => $bodyData['hip'],
+            ]);
+            if (!$res) {
+                throw new \Exception('保存身材信息失败');
+            }
+            if ($historyData) {
+                $historyRes = UserBodyHistoryModel::create($historyData);
+                if (!$historyRes) {
+                    throw new \Exception('保存身材信息失败');
+                }
+            }
+            Db::commit();
+            return $this->success('已保存');
+        } catch (\Exception $e) {
+            Db::rollback();
+            Log::error('用户体信息保存失败', ['userId' => $userId, 'bodyData' => $bodyData, 'error' => $e->getMessage(), 'tarce' => $e->getTrace()]);
+            return $this->error('保存信息失败');
+        }
     }
 }
