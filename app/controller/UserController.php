@@ -29,9 +29,13 @@ class UserController extends BaseController
         }
 
         $mealRecordList->each(function (&$item) {
-            $item->foods->each(function (&$food) {
-                $food->image = MealRecordModel::getImageUrl($food->image);
-            });
+            if (!$item->foods) {
+                $item->foods = collect([]);
+            } else {
+                $item->foods->each(function (&$food) {
+                    $food->image = MealRecordModel::getImageUrl($food->image);
+                });
+            }
         });
         $maxPage = 0;
         if ((int)$page === 1) {

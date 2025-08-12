@@ -36,9 +36,6 @@ class BaseGuzzleHttpClient
         }
         $body = $response->getBody()->getContents();
         $data = json_decode($body, true);
-        if (!$data) {
-            throw new \Exception('第三方返回数据为空');
-        }
         return $data;
     }
 }

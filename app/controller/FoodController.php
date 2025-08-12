@@ -28,7 +28,7 @@ class FoodController extends BaseController
             if (FoodModel::searchRemoteFoodByName($keyword)) {
                 $foodList = $model->with(['nutrition'])->offset(($page - 1) * $limit)->limit($limit)->get();
             } else {
-                return $this->error(1005, '获取食物信息失败');
+                return $this->error(10005, '未查询到相关食物，请与我们联系。');
             }
         }
         $maxPage = 0;
