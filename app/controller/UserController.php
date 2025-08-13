@@ -23,7 +23,7 @@ class UserController extends BaseController
             'foods' => function ($query) {
                 $query->select(['id', 'name', 'address', 'image', 'latitude', 'longitude', 'number', 'meal_id', 'food_id', 'unit_id', 'user_id', 'kal', 'protein', 'fat', 'carbo', 'sugar', 'fiber']);
             }
-        ])->offset(($page - 1) * $limit)->limit($limit)->get();
+        ])->offset(($page - 1) * $limit)->limit($limit)->orderBy('created_at', 'desc')->get();
         if ($mealRecordList->isEmpty()) {
             return $this->success('', ['list' => []]);
         }
