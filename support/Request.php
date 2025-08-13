@@ -20,6 +20,7 @@ namespace support;
  */
 class Request extends \Webman\Http\Request
 {
+    public $userId;
 
     public function isJson()
     {
@@ -37,5 +38,37 @@ class Request extends \Webman\Http\Request
             $scheme = "https";
         }
         return $scheme . '://' . $host;
+    }
+
+    /**
+     * 获取参数
+     * @param string $name 参数名
+     * @param mixed|null $default 默认值
+     * @param string $type 参数类型
+     * @return array|bool|float|int|mixed|object|string|null
+     */
+    public function getParam(string $name, mixed $default = null, string $type = 'string')
+    {
+        $data = $this->all();
+        if (!isset($data[$name])) {
+            return $default ?? null;
+        }
+        return match ($type) {
+                   'string', 's' => (string)$data[$name],
+                   'int', 'i' => (int)$data[$name],
+                   'float', 'f' => (float)$data[$name],
+                   'bool', 'b' => (bool)$data[$name],
+                   'array', 'a' => (array)$data[$name],
+                   'object', 'o' => (object)$data[$name],
+                   'datetime', 'd' => date('Y-m-d H:i:s', (int)$data[$name]),
+                   'timestamp', 't' => (int)$data[$name],
+                   'null', 'n' => null,
+                   default => $default,
+               } ?? $default;
+    }
+
+    public function getPlatform(): string
+    {
+        return $this->header('user-agent') ?? '';
     }
 }

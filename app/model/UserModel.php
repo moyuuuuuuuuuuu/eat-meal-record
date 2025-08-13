@@ -3,6 +3,7 @@
 namespace app\model;
 
 use app\queue\CheckInRecordQueue;
+use app\queue\LoginAfterQueue;
 use app\service\Jwt;
 use support\Db;
 use support\Log;
@@ -55,34 +56,55 @@ class UserModel extends BaseModel
         return UserModel::create($data);
     }
 
+    static function getUserInfo(array $condition = [])
+    {
+        $redisKey = 'user:' . md5(json_encode($condition));
+        if (Redis::exists($redisKey)) {
+            return Redis::hGetAll($redisKey);
+        }
+        $userInfo = self::query()->where($condition)->first();
+        if (!$userInfo) {
+            return null;
+        }
+        $userInfo = [
+            'name'        => $userInfo->name,
+            'avatar'      => self::getAvatarUrl($userInfo->avatar),
+            'age'         => $userInfo->age,
+            'gender'      => $userInfo->gender,
+            'tall'        => $userInfo->tall,
+            'bmi'         => $userInfo->bmi,
+            'waist'       => $userInfo->waist,
+            'hip'         => $userInfo->hip,
+            'arm'         => $userInfo->arm,
+            'weight'      => $userInfo->weight,
+            'target'      => $userInfo->target,
+            'isFull'      => (int)$userInfo->is_full,
+            'checkInDays' => 0,
+            'followers'   => FollowModel::getFollowerCount($userInfo->id),
+            'likes'       => LikeModel::getLikeCount($userInfo->id),
+            'fans'        => FollowModel::getFansCount($userInfo->id),
+            'id'          => $userInfo->id
+        ];
+        Redis::hMSet($redisKey, $userInfo);
+        Redis::expire($redisKey, 86400 + rand(10, 150));
+        return $userInfo;
+    }
+
     static function login(self $userInfo)
     {
-        $userInfo->last_login_time     = date('Y-m-d H:i:s');
-        $userInfo->last_login_ip       = request()->getRemoteIp();
-        $userInfo->last_login_platform = request()->header('user-agent');
-        $userInfo->save();
-        list($token, $refreshToken) = Jwt::encode($userInfo->id);
+        list($token, $refreshToken) = Jwt::encode($userInfo['id']);
+//        TODO: 登录日志
+        Client::send(LoginAfterQueue::QUEUE_NAME, [
+            'userId'          => $userInfo['id'],
+            'currentDateTime' => date('Y-m-d H:i:s'),
+            'ip'              => request()->getRemoteIp(),
+            'platform'        => request()->getPlatform(),
+        ]);
+        $userInfo = UserModel::getUserInfo($userInfo['id']);
         return [
             'token'        => $token,
             'refreshToken' => $refreshToken,
-            'userInfo'     => [
-                'name'        => $userInfo->name,
-                'avatar'      => self::getAvatarUrl($userInfo->avatar),
-                'age'         => $userInfo->age,
-                'gender'      => $userInfo->gender,
-                'tall'        => $userInfo->tall,
-                'bmi'         => $userInfo->bmi,
-                'waist'       => $userInfo->waist,
-                'hip'         => $userInfo->hip,
-                'arm'         => $userInfo->arm,
-                'weight'      => $userInfo->weight,
-                'target'      => $userInfo->target,
-                'isFull'      => (int)$userInfo->is_full,
-                'checkInDays' => 0,//TODO:计算用户连续签到天数
-                'followers'   => Redis::get('user:followers:' . $userInfo->id) ?? 0,
-                'likes'       => Redis::get('user:likes:' . $userInfo->id) ?? 0,
-                'fans'        => Redis::get('user:fans:' . $userInfo->id) ?? 0
-            ]
+            'userInfo'     => $userInfo
         ];
     }
 

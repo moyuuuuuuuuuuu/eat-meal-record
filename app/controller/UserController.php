@@ -3,6 +3,7 @@
 namespace app\controller;
 
 use app\controller\BaseController;
+use app\model\FollowModel;
 use app\model\MealRecordFoodModel;
 use app\model\MealRecordModel;
 use app\model\UserBodyHistoryModel;
@@ -92,5 +93,27 @@ class UserController extends BaseController
             Log::error('用户体信息保存失败', ['userId' => $userId, 'bodyData' => $bodyData, 'error' => $e->getMessage(), 'tarce' => $e->getTrace()]);
             return $this->error('保存信息失败');
         }
+    }
+
+
+    public function fans(Request $request)
+    {
+        $userId   = $request->userId;
+        $fansList = FollowModel::geFansList($userId);
+        return $this->success('', ['list' => $fansList->toArray()]);
+    }
+
+    public function follow(Request $request)
+    {
+        $userId     = $request->userId;
+        $followList = FollowModel::getFollowerList($userId);
+        return $this->success('', ['list' => $followList->toArray()]);
+    }
+
+    public function friend(Request $request)
+    {
+        $userId     = $request->userId;
+        $friendList = FollowModel::geFansList($userId, true);
+        return $this->success('', ['list' => $friendList->toArray()]);
     }
 }

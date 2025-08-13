@@ -15,7 +15,6 @@ class LoginController extends BaseController
     public function sendSms(Request $request)
     {
         try {
-
             $ip = $request->getRemoteIp();
             if (Cache::has("sms_ip_{$ip}")) {
                 return $this->error(1006, '短信发送频率过快');
@@ -94,7 +93,7 @@ class LoginController extends BaseController
             return $this->error(1007, '微信授权登录失败');
         }
 
-        $userInfo = UserModel::where('openid', $openId)->first();
+        $userInfo = UserModel::getUserInfo(['openid' => $openId]);
         if (!$userInfo) {
             //创建用户
             $userInfo = UserModel::createUser([
@@ -106,6 +105,9 @@ class LoginController extends BaseController
         }
         if ($userInfo->status !== UserModel::STATUS_NORMAL) {
             return $this->error(1005, '用户已被禁用');
+        }
+        if ($userInfo instanceof UserModel) {
+            $userInfo = $userInfo->toArray();
         }
         return $this->success('', UserModel::login($userInfo));
     }
