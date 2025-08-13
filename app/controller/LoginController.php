@@ -103,7 +103,7 @@ class LoginController extends BaseController
                 'name'    => $parseUserInfo['nickName'] ?? '',
             ]);
         }
-        if ($userInfo->status !== UserModel::STATUS_NORMAL) {
+        if ($userInfo['status'] !== UserModel::STATUS_NORMAL) {
             return $this->error(1005, '用户已被禁用');
         }
         if ($userInfo instanceof UserModel) {
@@ -145,11 +145,11 @@ class LoginController extends BaseController
         $token     = $request->input('token', '');
         $tokenInfo = Jwt::decode($token);
         $userId    = $tokenInfo->user_id;
-        $userInfo  = UserModel::find($userId);
+        $userInfo  = UserModel::getUserInfo($userId);
         if (!$userInfo) {
             return $this->error(1006, '用户不存在');
         }
-        if ($userInfo->status !== UserModel::STATUS_NORMAL) {
+        if ($userInfo['status'] !== UserModel::STATUS_NORMAL) {
             return $this->error(1005, '用户已被禁用');
         }
         return $this->success('', UserModel::login($userInfo));

@@ -83,14 +83,15 @@ class UserModel extends BaseModel
             'followers'   => FollowModel::getFollowerCount($userInfo->id),
             'likes'       => LikeModel::getLikeCount($userInfo->id),
             'fans'        => FollowModel::getFansCount($userInfo->id),
-            'id'          => $userInfo->id
+            'id'          => $userInfo->id,
+            'status'      => $userInfo->status,
         ];
         Redis::hMSet($redisKey, $userInfo);
         Redis::expire($redisKey, 86400 + rand(10, 150));
         return $userInfo;
     }
 
-    static function login(self $userInfo)
+    static function login($userInfo)
     {
         list($token, $refreshToken) = Jwt::encode($userInfo['id']);
 //        TODO: 登录日志
@@ -100,7 +101,6 @@ class UserModel extends BaseModel
             'ip'              => request()->getRemoteIp(),
             'platform'        => request()->getPlatform(),
         ]);
-        $userInfo = UserModel::getUserInfo($userInfo['id']);
         return [
             'token'        => $token,
             'refreshToken' => $refreshToken,
