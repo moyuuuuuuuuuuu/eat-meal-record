@@ -37,6 +37,12 @@ class TopicController extends BaseController
         return $this->success('', ['list' => $topicList->toArray(), 'maxPage' => $maxPage, 'currentPage' => $page]);
     }
 
+    public function hot(Request $request)
+    {
+        $limit = $request->getParam('limit', 10);
+        return $this->success('', ['list' => TopicModel::getHotTopicList($limit)]);
+    }
+
     public function create(Request $request)
     {
 

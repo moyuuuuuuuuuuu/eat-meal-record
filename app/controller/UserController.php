@@ -2,13 +2,10 @@
 
 namespace app\controller;
 
-use app\controller\BaseController;
 use app\model\FollowModel;
-use app\model\MealRecordFoodModel;
 use app\model\MealRecordModel;
 use app\model\UserBodyHistoryModel;
 use app\model\UserModel;
-use Illuminate\Database\Query\Builder;
 use support\Db;
 use support\Log;
 use support\Request;
@@ -34,7 +31,7 @@ class UserController extends BaseController
                 $item->foods = collect([]);
             } else {
                 $item->foods->each(function (&$food) {
-                    $food->image = MealRecordModel::getImageUrl($food->image);
+                    $food->image = MealRecordModel::getAttacheUrl($food->image);
                 });
             }
         });
@@ -95,7 +92,6 @@ class UserController extends BaseController
         }
     }
 
-
     public function fans(Request $request)
     {
         $userId   = $request->userId;
@@ -115,5 +111,22 @@ class UserController extends BaseController
         $userId     = $request->userId;
         $friendList = FollowModel::geFansList($userId, true);
         return $this->success('', ['list' => $friendList->toArray()]);
+    }
+
+    public function profile(Request $request, int $userId = 0)
+    {
+        $userId = $userId <= 0 ? $request->userId : $userId;
+        try {
+            if ($request->isGet()) {
+                return $this->success('', ['profile' => UserModel::getUserInfo($userId)]);
+            } else {
+                $userInfo = $request->getParam('userInfo', [], 'a');
+                $userInfo = UserModel::updateUserInfo($userId, $userInfo);
+                return $this->success('', ['profile' => $userInfo]);
+            }
+        } catch (\Exception $e) {
+            Log::error('用户信息更新失败', ['userId' => $userId, 'userInfo' => $userInfo, 'error' => $e->getMessage(), 'tarce' => $e->getTrace()]);
+            return $this->error('更新信息失败');
+        }
     }
 }

@@ -30,7 +30,7 @@ class Security implements MiddlewareInterface
                     'message' => 'appid not allowed',
                 ]);
             }
-            return response('<h1>403 forbidden</h1>', 400);
+            return response('<h1>403 forbidden</h1>', 403);
         }
         if (!in_array($request->header('appid'), array_keys(self::APPID_LIST))) {
             if ($request->isJson()) {
@@ -39,7 +39,7 @@ class Security implements MiddlewareInterface
                     'message' => 'appid not match',
                 ]);
             }
-            return response('<h1>403 forbidden</h1>', 401);
+            return response('<h1>403 Invalid Appid</h1>', 403);
         }
         if (!$this->verify($request)) {
             if ($request->isJson()) {
@@ -48,7 +48,7 @@ class Security implements MiddlewareInterface
                     'message' => '签名不匹配',
                 ]);
             }
-            return response('<h1>403 forbidden</h1>', 402);
+            return response('<h1>403 Sign Not Match</h1>', 403);
         }
         return $handler($request);
     }

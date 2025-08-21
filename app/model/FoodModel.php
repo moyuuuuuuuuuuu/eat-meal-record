@@ -36,9 +36,13 @@ class FoodModel extends BaseModel
      */
     static function insertRemoteFood(array $foodList)
     {
+        Log::info('测试', ['foodList' => $foodList]);
         $currentDateTime         = date('Y-m-d H:i:s');
         $foodNutritionInsertList = $categoryList = $foodInsertList = [];
         foreach ($foodList as $item) {
+            if ($item['type'] === '未知结果') {
+                continue;
+            }
             if (!in_array($item['type'], $categoryList)) {
                 $categoryList[] = $item['type'];
             }

@@ -12,9 +12,9 @@ class FoodController extends BaseController
 {
     public function index(Request $request, int $type = 0)
     {
-        $keyword = $request->get('keyword', '');
-        $page    = $request->get('page', 1);
-        $limit   = $request->get('limit', 20);
+        $keyword = $request->getParam('keyword', '');
+        $page    = $request->getParam('page', 1, 'i');
+        $limit   = $request->getParam('limit', 20, 'i');
         $where   = [
             ['status', '=', FoodModel::STATUS_NORMAL]
         ];
@@ -41,9 +41,9 @@ class FoodController extends BaseController
 
     public function history(Request $request)
     {
-        $keyword = $request->get('keyword', '');
-        $page    = $request->get('page', 1);
-        $limit   = $request->get('limit', 20);
+        $keyword = $request->getParam('keyword', '');
+        $page    = $request->getParam('page', 1);
+        $limit   = $request->getParam('limit', 20);
         $where   = [
             ['status', '=', FoodModel::STATUS_NORMAL]
         ];
@@ -72,7 +72,7 @@ class FoodController extends BaseController
 
     public function analysis(Request $request)
     {
-        $filePath = $request->post('path', '');
+        $filePath = $request->getParam('path', '');
         if (str_contains($filePath, 'http://') || str_contains($filePath, 'https://')) {
             $fileContent = file_get_contents($filePath);
             if (!$fileContent) {

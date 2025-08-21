@@ -20,15 +20,54 @@ class UserModel extends BaseModel
     protected $table = 'user';
 
     protected $fillable = [
-        'name', 'phone', 'email', 'openid', 'unionid', 'avatar', 'age', 'gender', 'status', 'tall', 'weight', 'is_full', 'target', 'status', 'created_at', 'updated_at', 'last_login_time', 'last_login_ip', 'last_login_platform'
+        'age', 'avatar', 'background', 'birthday', 'bmi', 'bust', 'check_in_days', 'email', 'fav_count', 'gender', 'hip', 'is_full', 'last_login_ip', 'last_login_platform', 'last_login_time', 'like_count', 'name', 'openid', 'password', 'phone', 'signature', 'status', 'tall', 'target', 'unionid', 'view_count', 'waist', 'weight'
     ];
+
+    public function getAvatarAttribute($value)
+    {
+        return self::getAttacheUrl($value);
+    }
+
+    /**
+     * 更新用户信息
+     * @param int $userId
+     * @param $userInfo
+     * @return mixed
+     * @throws \Exception
+     */
+    static function updateUserInfo(int $userId, $userInfo)
+    {
+
+        self::removeUserCache($userId);
+        $user = self::query()->where(['id' => $userId])->first();
+        if (!$user) {
+            throw new \Exception('用户不存在');
+        }
+        $allowField = [
+            'age', 'avatar', 'background', 'birthday', 'bmi', 'bust', 'check_in_days', 'email', 'fav_count', 'gender', 'hip', 'is_full', 'last_login_ip', 'last_login_platform', 'last_login_time', 'like_count', 'name', 'openid', 'password', 'phone', 'signature', 'status', 'tall', 'target', 'unionid', 'view_count', 'waist', 'weight'
+        ];
+        $update     = array_intersect_key($userInfo, array_flip($allowField));
+
+        if (isset($userInfo['birthday'])) {
+            $update['age'] = date('Y') - date('Y', strtotime($update['birthday']));
+        }
+        if (isset($update['tall']) && isset($update['weight'])) {
+            $update['bmi'] = $update['weight'] / ($update['tall'] / 100) ** 2;
+        }
+        if (isset($userInfo['waist'])) {
+            $update['waist'] = $userInfo['waist'];
+        }
+        $user->update($update);
+        self::removeUserCache($userId);
+        return $user->toArray();
+    }
 
     /**
      * 创建用户
      * @param array $data
-     * @return self
+     * @return array
      */
-    static function createUser(array $data)
+    static function createUser(array $data): array
     {
         if (empty($data)) {
             throw new \Exception('参数错误');
@@ -53,45 +92,99 @@ class UserModel extends BaseModel
             'target'  => 1200,
             'status'  => 1
         ]);
-        return UserModel::create($data);
+        return self::storageUserInfo(self::create($data));
     }
 
-    static function getUserInfo(array $condition = [])
+    static function getUserInfoByOpenId(string $openId)
     {
-        $redisKey = 'user:' . md5(json_encode($condition));
+        $redisKey = 'user:openid:' . md5($openId);
+        if (Redis::exists($redisKey)) {
+            return self::getUserInfo((int)Redis::get($redisKey));
+        }
+        $userId = self::query()->where(['openid' => $openId])->value('id');
+        if (!$userId) {
+            return null;
+        }
+        Redis::set($redisKey, $userId, 86400 * 30 + rand(10, 150));
+        return self::getUserInfo($userId);
+    }
+
+    /**
+     * 获取用户信息
+     * @param int $userId 用户ID
+     * @return array|null
+     * @throws \Exception
+     */
+    static function getUserInfo(int $userId): array|null
+    {
+        $redisKey = 'user:id:' . $userId;
         if (Redis::exists($redisKey)) {
             return Redis::hGetAll($redisKey);
         }
-        $userInfo = self::query()->where($condition)->first();
+        $userInfo = self::query()->where('id', $userId)->first();
         if (!$userInfo) {
             return null;
         }
+        return static::storageUserInfo($userInfo);
+    }
+
+    static function storageUserInfo(self $userInfo): array
+    {
         $userInfo = [
-            'name'        => $userInfo->name,
-            'avatar'      => self::getAvatarUrl($userInfo->avatar),
-            'age'         => $userInfo->age,
-            'gender'      => $userInfo->gender,
-            'tall'        => $userInfo->tall,
-            'bmi'         => $userInfo->bmi,
-            'waist'       => $userInfo->waist,
-            'hip'         => $userInfo->hip,
-            'arm'         => $userInfo->arm,
-            'weight'      => $userInfo->weight,
-            'target'      => $userInfo->target,
-            'isFull'      => (int)$userInfo->is_full,
-            'checkInDays' => 0,
-            'followers'   => FollowModel::getFollowerCount($userInfo->id),
-            'likes'       => LikeModel::getLikeCount($userInfo->id),
-            'fans'        => FollowModel::getFansCount($userInfo->id),
-            'id'          => $userInfo->id,
-            'status'      => $userInfo->status,
+            'name'           => $userInfo->name,
+            'avatar'         => $userInfo->original['avatar'],
+            'showAvatar'     => $userInfo->avatar,
+            'age'            => $userInfo->age,
+            'gender'         => $userInfo->gender,
+            'tall'           => $userInfo->tall,
+            'birthday'       => $userInfo->birthday,
+            'bmi'            => $userInfo->bmi,
+            'waist'          => $userInfo->waist,
+            'hip'            => $userInfo->hip,
+            'arm'            => $userInfo->arm,
+            'weight'         => $userInfo->weight,
+            'target'         => $userInfo->target,
+            'isFull'         => (int)$userInfo->is_full,
+            'checkInDays'    => 0,
+            'followers'      => FollowModel::getFollowerCount($userInfo->id),
+            'likes'          => LikeModel::getCount($userInfo->id, FavoriteModel::TYPE_USER),
+            'fans'           => FollowModel::getFansCount($userInfo->id),
+            'friend'         => FollowModel::getFriendCount($userInfo->id),
+            'id'             => $userInfo->id,
+            'status'         => $userInfo->status,
+            'signature'      => $userInfo->signature,
+            'background'     => $userInfo->background,
+            'showBackground' => self::getAttacheUrl($userInfo->background),
         ];
+
+        $redisKey = 'user:id:' . $userInfo['id'];
         Redis::hMSet($redisKey, $userInfo);
-        Redis::expire($redisKey, 86400 + rand(10, 150));
+        Redis::expire($redisKey, 86400 * 7 + rand(10, 150));
         return $userInfo;
     }
 
-    static function login($userInfo)
+
+    /**
+     * 删除用户缓存
+     * @param int $userId
+     * @param string|null $openid
+     * @return void
+     */
+    protected static function removeUserCache(int $userId, string $openid = null)
+    {
+        $redisKeys = ['user:id:' . $userId,];
+        if ($openid) {
+            $redisKeys[] = 'user:openid:' . md5($openid);
+        }
+        Redis::del(...$redisKeys);
+    }
+
+    /**
+     * 登录
+     * @param $userInfo
+     * @return array
+     */
+    static function login(array $userInfo)
     {
         list($token, $refreshToken) = Jwt::encode($userInfo['id']);
 //        TODO: 登录日志
@@ -106,90 +199,6 @@ class UserModel extends BaseModel
             'refreshToken' => $refreshToken,
             'userInfo'     => $userInfo
         ];
-    }
-
-    static function calcKcalWithStepNumber(self $userInfo, int $stepNumber): string
-    {
-        if ($stepNumber <= 0) {
-            return '0';
-        }
-        $tall   = $userInfo->tall ?? 175;
-        $weight = $userInfo->weight ?? 65;
-
-        $calc1 = bcmul((string)$stepNumber, (string)$tall, 2);
-        $calc2 = bcmul($calc1, (string)$weight, 2);
-        if ($userInfo->gender === self::GENDER_MAN) {
-            // 男性公式：步数 × 身高（cm）× 体重（kg）× 0.000002905
-            return bcmul($calc2, '0.000002905', 2);
-        }
-        // 女性公式：步数 × 身高（cm）× 体重（kg）× 0.000002891
-        return bcmul($calc2, '0.000002891', 2);
-    }
-
-    static function generateAvatar(string $text, $size = 64)
-    {
-        $firstChar = mb_substr($text, 0, 1, 'UTF-8');
-
-        $img = imagecreatetruecolor($size, $size);
-
-        $bgColor = imagecolorallocate($img, 100, 149, 237); // 蓝色
-        imagefill($img, 0, 0, $bgColor);
-
-        $textColor = imagecolorallocate($img, 255, 255, 255);
-
-        $fontSize = $size * 0.5;
-
-        $fontFile = public_path('/fonts/SourceHanSans-VF.ttf.ttc');
-
-        if (!file_exists($fontFile)) {
-            throw new \Exception("字体文件未找到: $fontFile");
-        }
-
-        $bbox = imagettfbbox($fontSize, 0, $fontFile, $firstChar);
-        $x    = ($size - ($bbox[2] - $bbox[0])) / 2;
-        $y    = ($size - ($bbox[7] - $bbox[1])) / 2;
-        $y    -= $bbox[7]; // baseline
-
-        imagettftext($img, $fontSize, 0, $x, $y, $textColor, $fontFile, $firstChar);
-        $fileSavePath = '/uploads/avatar/' . md5($text) . '.png';
-        $savePath     = public_path($fileSavePath);
-        if (!is_dir(dirname($savePath))) {
-            mkdir(dirname($savePath), 0777, true);
-        }
-        imagepng($img, $savePath);
-        imagedestroy($img);
-
-        return $fileSavePath;
-    }
-
-    static function generateUserName()
-    {
-        $prefixes = [
-            '小', '大', '超', '萌', '黑', '白', '红', '蓝', '紫',
-            'Cool', 'Dark', 'Happy', 'Lazy', 'Smart', 'Fast', 'Neo'
-        ];
-
-        $names = [
-            '猫', '狗', '猪', '虎', '狼', '熊', '鱼', '鸟', '龙', '狐狸',
-            'Coder', 'Tiger', 'Panda', 'Ninja', 'Dev', 'Wizard', 'Elf'
-        ];
-
-        $number = rand(100, 9999);
-
-        $nickname = $prefixes[array_rand($prefixes)] .
-                    $names[array_rand($names)] .
-                    $number;
-
-        return $nickname;
-    }
-
-    static function getAvatarUrl(string $avatar)
-    {
-        if (str_contains($avatar, 'http://') || str_contains($avatar, 'https://')) {
-            return $avatar;
-        }
-        $request = request();
-        return $request->domain() . $avatar;
     }
 
     /**
@@ -237,4 +246,94 @@ class UserModel extends BaseModel
             ]);
         }
     }
+
+    /**
+     * 计算卡路里
+     * @param array $userInfo
+     * @param int $stepNumber
+     * @return string
+     */
+    static function calcKcalWithStepNumber(float $tall, float $weight, int $gender, int $stepNumber): string
+    {
+        if (!$tall || !$weight || $stepNumber <= 0) {
+            return '0';
+        }
+
+        $calc1 = bcmul((string)$stepNumber, (string)$tall, 2);
+        $calc2 = bcmul($calc1, (string)$weight, 2);
+        if ($gender === self::GENDER_MAN) {
+            // 男性公式：步数 × 身高（cm）× 体重（kg）× 0.000002905
+            return bcmul($calc2, '0.000002905', 2);
+        }
+        // 女性公式：步数 × 身高（cm）× 体重（kg）× 0.000002891
+        return bcmul($calc2, '0.000002891', 2);
+    }
+
+    /**
+     * 生成头像
+     * @param string $text
+     * @param int $size
+     * @return string
+     */
+    protected static function generateAvatar(string $text, $size = 64)
+    {
+        $firstChar = mb_substr($text, 0, 1, 'UTF-8');
+
+        $img = imagecreatetruecolor($size, $size);
+
+        $bgColor = imagecolorallocate($img, 100, 149, 237); // 蓝色
+        imagefill($img, 0, 0, $bgColor);
+
+        $textColor = imagecolorallocate($img, 255, 255, 255);
+
+        $fontSize = $size * 0.5;
+
+        $fontFile = public_path('/fonts/SourceHanSans-VF.ttf.ttc');
+
+        if (!file_exists($fontFile)) {
+            throw new \Exception("字体文件未找到: $fontFile");
+        }
+
+        $bbox = imagettfbbox($fontSize, 0, $fontFile, $firstChar);
+        $x    = ($size - ($bbox[2] - $bbox[0])) / 2;
+        $y    = ($size - ($bbox[7] - $bbox[1])) / 2;
+        $y    -= $bbox[7]; // baseline
+
+        imagettftext($img, $fontSize, 0, $x, $y, $textColor, $fontFile, $firstChar);
+        $fileSavePath = '/uploads/avatar/' . md5($text) . '.png';
+        $savePath     = public_path($fileSavePath);
+        if (!is_dir(dirname($savePath))) {
+            mkdir(dirname($savePath), 0777, true);
+        }
+        imagepng($img, $savePath);
+        imagedestroy($img);
+
+        return $fileSavePath;
+    }
+
+    /**
+     * 生成用户名
+     * @return string
+     */
+    protected static function generateUserName()
+    {
+        $prefixes = [
+            '小', '大', '超', '萌', '黑', '白', '红', '蓝', '紫',
+            'Cool', 'Dark', 'Happy', 'Lazy', 'Smart', 'Fast', 'Neo'
+        ];
+
+        $names = [
+            '猫', '狗', '猪', '虎', '狼', '熊', '鱼', '鸟', '龙', '狐狸',
+            'Coder', 'Tiger', 'Panda', 'Ninja', 'Dev', 'Wizard', 'Elf'
+        ];
+
+        $number = rand(100, 9999);
+
+        $nickname = $prefixes[array_rand($prefixes)] .
+                    $names[array_rand($names)] .
+                    $number;
+
+        return $nickname;
+    }
+
 }

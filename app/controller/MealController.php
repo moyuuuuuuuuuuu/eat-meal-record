@@ -22,14 +22,49 @@ class MealController extends BaseController
      */
     public function currentStatistics(Request $request)
     {
+
+        $userId = $request->userId;
+        $target = 1500;
+        $data   = [
+            'target'     => [
+                'kal'     => $target,
+                'protein' => ceil($target * 0.15 / 4),
+                'fat'     => ceil($target * 0.25 / 9),
+                'carbo'   => ceil($target * 0.6 / 4),
+            ],
+            'reduceKcal' => $target,
+            'inKcal'     => 0,
+            'outKcal'    => 0,
+            'current'    => [
+                'kal'     => 0,
+                'protein' => 0,
+                'fat'     => 0,
+                'carbo'   => 0,
+            ],
+        ];
+
+        if (!$userId) {
+            return $this->success('', $data);
+        }
         $code          = $request->post('code', '');
         $encryptedData = $request->post('encryptedData', '');
         $iv            = $request->post('iv', '');
-        if (!$code) {
-            return $this->error(1001, '缺少参数');
+
+        try {
+            $userInfo = UserModel::getUserInfo($userId);
+            if ($encryptedData && $iv && $code && $userInfo) {
+                $jscode2Session = WxMini::getInstance()->jsCode2Session($code);
+                $sessionKey     = $jscode2Session['sessionKey'];
+                $stepInfoList   = WxMini::getInstance()->parseEncryptData($encryptedData, $sessionKey, $iv);
+                if ($stepInfoList) {
+                    $stepInfo        = $stepInfoList['stepInfoList'];
+                    $stepInfo        = end($stepInfo);
+                    $data['outKcal'] = ceil(UserModel::calcKcalWithStepNumber($userInfo['tall'], $userInfo['weight'], $userInfo['gender'], $stepInfo['step']));
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error($e->getMessage(), $e->getTrace());
         }
-        $userId      = $request->userId;
-        $userInfo    = UserModel::select(['gender', 'target', 'tall', 'weight'])->where('id', $userId)->first();
         $currentList = MealRecordFoodModel::selectRaw('sum(kal) as kal,sum(fat) as fat,sum(protein) as protein,sum(carbo) as carbo')
             ->where('user_id', $userId)
             ->whereDate('created_at', date('Y-m-d'))
@@ -43,9 +78,9 @@ class MealController extends BaseController
             ];
         } else {
             $currentList = $currentList->toArray();
-
         }
-        foreach ($currentList as $k => &$v) {
+
+        foreach ($currentList as &$v) {
             $v = $v ?? 0;
         }
 
@@ -59,25 +94,8 @@ class MealController extends BaseController
             ],
             'reduceKcal' => $target - $currentList['kal'],
             'inKcal'     => $currentList['kal'] ?? 0,
-            'outKcal'    => 0,
             'current'    => $currentList,
         ];
-        try {
-            $jscode2Session = WxMini::getInstance()->jsCode2Session($code);
-            $sessionKey     = $jscode2Session['sessionKey'];
-        } catch (\Exception $e) {
-            return $this->error($e->getCode(), $e->getMessage(), $e->getTrace());
-        }
-        try {
-            $stepInfoList = WxMini::getInstance()->parseEncryptData($encryptedData, $sessionKey, $iv);
-            if ($stepInfoList) {
-                $stepInfo        = $stepInfoList['stepInfoList'];
-                $stepInfo        = end($stepInfo);
-                $data['outKcal'] = ceil(UserModel::calcKcalWithStepNumber($userInfo, $stepInfo['step']));
-            }
-        } catch (\Exception $e) {
-            Log::error($e->getMessage(), $e->getTrace());
-        }
         return $this->success('', $data);
     }
 
@@ -88,9 +106,13 @@ class MealController extends BaseController
      */
     public function today(Request $request)
     {
+        $userId = $request->userId;
+        if (!$userId) {
+            return $this->success('用户信息不存在', []);
+        }
         $today          = date("Y-m-d");
         $mealRecordList = MealRecordModel::with('foods')
-            ->where('user_id', $request->userId)
+            ->where('user_id', $userId)
             ->whereDate('created_at', $today)
             ->get();
         $recordList     = [];

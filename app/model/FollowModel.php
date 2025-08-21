@@ -6,7 +6,13 @@ use app\model\BaseModel;
 
 class FollowModel extends BaseModel
 {
+    const IS_ATTENTION = 1;
     protected $table = 'follow';
+
+    static function getFriendsUserId(int $userId): array
+    {
+        return self::query()->where('user_id', $userId)->where('is_attention', self::IS_ATTENTION)->pluck('follow_id')->toArray();
+    }
 
     /**
      * 获取指定用户的关注数量
@@ -26,6 +32,29 @@ class FollowModel extends BaseModel
     static function getFansCount(int $userId): int
     {
         return self::query()->where('follow_id', $userId)->count();
+    }
+
+    /**
+     * 获取指定用户互关数量
+     * @param int $userId
+     * @return int
+     */
+    static function getFriendCount(int $userId): int
+    {
+        return self::query()->where('user_id', $userId)->where('is_attention', self::IS_ATTENTION)->count();
+    }
+
+    /**
+     * 获取指定用户互关列表
+     * @param int $userId
+     * @return \Illuminate\Support\Collection
+     */
+    static function getFriendList(int $userId)
+    {
+        return UserModel::select(['id', 'name', 'avatar'])->whereIn('id', function ($query) use ($userId) {
+            $query = $query->select('user_id')->from('follow')->where('follow_id', $userId);
+            $query->where('is_attention', self::IS_ATTENTION);
+        })->get();
     }
 
     /**

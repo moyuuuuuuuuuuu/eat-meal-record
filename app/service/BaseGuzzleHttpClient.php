@@ -2,16 +2,13 @@
 
 namespace app\service;
 
-class BaseGuzzleHttpClient
+abstract class BaseGuzzleHttpClient
 {
 
     protected        $client;
     protected static $instance;
 
-    protected function __construct()
-    {
-
-    }
+    abstract protected function __construct();
 
     /**
      * @return static

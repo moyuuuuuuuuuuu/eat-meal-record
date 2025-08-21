@@ -2,7 +2,6 @@
 
 namespace app\controller;
 
-use app\controller\BaseController;
 use app\model\UserModel;
 use app\service\Jwt;
 use app\service\sms\Sms;
@@ -39,6 +38,7 @@ class LoginController extends BaseController
 
     public function sms(Request $request)
     {
+        return $this->error(403, '短信登录已关闭', [], 404);
         $phone = $request->post('phone');
         $code  = $request->post('code');
         if (!$phone) {
@@ -93,7 +93,7 @@ class LoginController extends BaseController
             return $this->error(1007, '微信授权登录失败');
         }
 
-        $userInfo = UserModel::getUserInfo(['openid' => $openId]);
+        $userInfo = UserModel::getUserInfoByOpenId($openId);
         if (!$userInfo) {
             //创建用户
             $userInfo = UserModel::createUser([
@@ -103,17 +103,19 @@ class LoginController extends BaseController
                 'name'    => $parseUserInfo['nickName'] ?? '',
             ]);
         }
-        if ($userInfo['status'] !== UserModel::STATUS_NORMAL) {
-            return $this->error(1005, '用户已被禁用');
+        if (!$userInfo) {
+            return $this->error(1006, '用户不存在');
         }
-        if ($userInfo instanceof UserModel) {
-            $userInfo = $userInfo->toArray();
+        if (intval($userInfo['status']) !== UserModel::STATUS_NORMAL) {
+            return $this->error(1005, '用户已被禁用');
         }
         return $this->success('', UserModel::login($userInfo));
     }
 
     public function account(Request $request)
     {
+
+        return $this->error(403, '已关闭', [], 404);
         $username = $request->post('username');
         $password = $request->post('password');
         if (!$username) {
@@ -137,7 +139,7 @@ class LoginController extends BaseController
 
     public function mp()
     {
-
+        return $this->error(403, '接口已关闭', [], 404);
     }
 
     public function refresh(Request $request)
@@ -149,7 +151,7 @@ class LoginController extends BaseController
         if (!$userInfo) {
             return $this->error(1006, '用户不存在');
         }
-        if ($userInfo['status'] !== UserModel::STATUS_NORMAL) {
+        if (intval($userInfo['status']) !== UserModel::STATUS_NORMAL) {
             return $this->error(1005, '用户已被禁用');
         }
         return $this->success('', UserModel::login($userInfo));
