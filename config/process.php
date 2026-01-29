@@ -21,7 +21,7 @@ global $argv;
 return [
     'webman' => [
         'handler' => Http::class,
-        'listen' => 'http://0.0.0.0:8788',
+        'listen' => 'http://0.0.0.0:8787',
         'count' => cpu_count() * 4,
         'user' => '',
         'group' => '',
@@ -58,8 +58,5 @@ return [
                 'enable_memory_monitor' => DIRECTORY_SEPARATOR === '/',
             ]
         ]
-    ],
-    'task'=>[
-        'handler'=>app\process\Task::class,
     ]
 ];

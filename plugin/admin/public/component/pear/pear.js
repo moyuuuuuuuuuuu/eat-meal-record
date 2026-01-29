@@ -4,6 +4,7 @@ window.rootPath = (function (src) {
 		: document.scripts[document.scripts.length - 1].src;
 	return src.substring(0, src.lastIndexOf("/") + 1);
 })();
+
 layui.config({
 	base: rootPath + "module/",
 	version: "3.10.0"
@@ -25,7 +26,7 @@ layui.config({
 	treetable:"treetable",   // 树状表格
 	dtree:"dtree",			// 树结构
 	tinymce:"tinymce/tinymce", // 编辑器
-	area:"area",			// 省市级联
+	area:"area",			// 省市级联  
 	count:"count",			// 数字滚动
 	topBar: "topBar",		// 置顶组件
 	button: "button",		// 加载按钮

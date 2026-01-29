@@ -27,25 +27,7 @@
     "php": ">=8.1",
     "workerman/webman-framework": "^2.1",
     "monolog/monolog": "^2.0",
-    "webman/redis": "^2.1",
-    "illuminate/events": "^12.21",
-    "webman/database": "^2.1",
-    "illuminate/pagination": "^12.21",
-    "symfony/var-dumper": "^7.3",
-    "webman/event": "^1.0",
-    "psr/container": "1.1.1",
-    "php-di/php-di": "6.3",
-    "doctrine/annotations": "1.14",
-    "webman/admin": "^2.1",
-    "webman/cache": "^2.1",
-    "elasticsearch/elasticsearch": "^9.0",
-    "webman/redis-queue": "^2.1",
-    "vlucas/phpdotenv": "^5.6",
-    "firebase/php-jwt": "^6.11",
-    "illuminate/database": "^12.21",
-    "illuminate/container": "^12.21",
-    "illuminate/support": "^12.21",
-    "workerman/crontab": "^1.0"
+    "webman/admin": "^2.1"
   },
   "suggest": {
     "ext-event": "For better performance. "
@@ -70,10 +52,5 @@
     ]
   },
   "minimum-stability": "dev",
-  "prefer-stable": true,
-  "config": {
-    "allow-plugins": {
-      "php-http/discovery": true
-    }
-  }
+  "prefer-stable": true
 }

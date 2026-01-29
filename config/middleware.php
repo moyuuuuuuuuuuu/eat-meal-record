@@ -12,9 +12,4 @@
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-return [
-    '' => [
-        \app\middleware\Allow::class,
-        \app\middleware\Security::class,
-    ]
-];
+return [];
