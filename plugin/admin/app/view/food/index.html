@@ -324,8 +324,8 @@
 
         // 获取表格中下拉或树形组件数据
         let apis = [];
-        apis.push(["cat_id", "/app/admin/cat/select?format=select"]);
-        apis.push(["user_id", "/app/admin/user/select?format=select"]);
+        apis.push(["cat_id", "/app/admin/cat/select?format=select&limit=500"]);
+        apis.push(["user_id", "/app/admin/user/select?format=select&limit=10000"]);
         let apiResults = {};
         apiResults["cat_id"] = [];
         apiResults["user_id"] = [];

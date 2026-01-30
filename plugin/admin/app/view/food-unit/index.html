@@ -8,47 +8,47 @@
         <link rel="stylesheet" href="/app/admin/admin/css/reset.css" />
     </head>
     <body class="pear-container">
-    
+
         <!-- 顶部查询表单 -->
         <div class="layui-card">
             <div class="layui-card-body">
                 <form class="layui-form top-search-from">
-                    
+
                     <div class="layui-form-item">
                         <label class="layui-form-label">ID</label>
                         <div class="layui-input-block">
                             <input type="number" name="id" value="" class="layui-input">
                         </div>
                     </div>
-                    
+
                     <div class="layui-form-item">
                         <label class="layui-form-label">食物</label>
                         <div class="layui-input-block">
                             <div name="food_id" id="food_id" value="" ></div>
                         </div>
                     </div>
-                    
+
                     <div class="layui-form-item">
                         <label class="layui-form-label">所属单位</label>
                         <div class="layui-input-block">
                             <div name="unit_id" id="unit_id" value="" ></div>
                         </div>
                     </div>
-                    
+
                     <div class="layui-form-item">
                         <label class="layui-form-label">换算重量 (1单位 ≈ ? g)</label>
                         <div class="layui-input-block">
                             <input type="number" name="weight" value="" class="layui-input">
                         </div>
                     </div>
-                    
+
                     <div class="layui-form-item">
                         <label class="layui-form-label">是否为默认</label>
                         <div class="layui-input-block">
                             <div name="is_default" id="is_default" value="" ></div>
                         </div>
                     </div>
-                    
+
                     <div class="layui-form-item layui-inline">
                         <label class="layui-form-label"></label>
                         <button class="pear-btn pear-btn-md pear-btn-primary" lay-submit lay-filter="table-query">
@@ -65,7 +65,7 @@
                 </form>
             </div>
         </div>
-        
+
         <!-- 数据表格 -->
         <div class="layui-card">
             <div class="layui-card-body">
@@ -93,7 +93,7 @@
         <script src="/app/admin/component/pear/pear.js"></script>
         <script src="/app/admin/admin/js/permission.js"></script>
         <script src="/app/admin/admin/js/common.js"></script>
-        
+
         <script>
 
             // 相关常量
@@ -103,7 +103,7 @@
             const DELETE_API = "/app/admin/food-unit/delete";
             const INSERT_URL = "/app/admin/food-unit/insert";
             const UPDATE_URL = "/app/admin/food-unit/update";
-            
+
             // 字段 食物 food_id
             layui.use(["jquery", "xmSelect", "popup"], function() {
                 layui.$.ajax({
@@ -117,7 +117,7 @@
                             name: "food_id",
                             initValue: initValue,
                             filterable: true,
-                            data: res.data, 
+                            data: res.data,
                             model: {"icon":"hidden","label":{"type":"text"}},
                             clickClose: true,
                             radio: true,
@@ -128,21 +128,21 @@
                     }
                 });
             });
-            
+
             // 字段 所属单位 unit_id
             layui.use(["jquery", "xmSelect", "popup"], function() {
                 layui.$.ajax({
                     url: "/app/admin/unit/select?format=select",
                     dataType: "json",
                     success: function (res) {
-                        let value = layui.$("#unit_id").attr("value");
+                        let value = layui.$("#unit_id").attr("data-content");
                         let initValue = value ? value.split(",") : [];
                         layui.xmSelect.render({
                             el: "#unit_id",
                             name: "unit_id",
                             initValue: initValue,
                             filterable: true,
-                            data: res.data, 
+                            data: res.data,
                             model: {"icon":"hidden","label":{"type":"text"}},
                             clickClose: true,
                             radio: true,
@@ -153,7 +153,7 @@
                     }
                 });
             });
-            
+
             // 字段 是否为默认 is_default
             layui.use(["jquery", "xmSelect"], function() {
                 let value = layui.$("#is_default").attr("value");
@@ -169,7 +169,7 @@
                     radio: true,
                 })
             });
-            
+
             // 表格渲染
             layui.use(["table", "form", "common", "popup", "util"], function() {
                 let table = layui.table;
@@ -177,7 +177,7 @@
                 let $ = layui.$;
                 let common = layui.common;
                 let util = layui.util;
-                
+
 				// 表头参数
 				let cols = [
 					{
@@ -251,7 +251,7 @@
 						width: 120,
 					}
 				];
-				
+
 				// 渲染表格
 				function render()
 				{
@@ -274,14 +274,15 @@
 				        }
 				    });
 				}
-				
+
 				// 获取表格中下拉或树形组件数据
 				let apis = [];
-				apis.push(["food_id", "/app/admin/food/select?format=select"]);
-				apis.push(["unit_id", "/app/admin/unit/select?format=select"]);
+				apis.push(["food_id", "/app/admin/food/select?format=select&limit=5000"]);
+				apis.push(["unit_id", "/app/admin/unit/select?format=select&limit=5000"]);
 				let apiResults = {};
 				apiResults["food_id"] = [];
 				apiResults["unit_id"] = [];
+                console.log(layui.$('[data-field="food_id"]').attr('data-content'))
 				let count = apis.length;
 				layui.each(apis, function (k, item) {
 				    let [field, url] = item;
@@ -313,7 +314,7 @@
 				if (!count) {
 				    render();
 				}
-				
+
                 // 编辑或删除行事件
                 table.on("tool(data-table)", function(obj) {
                     if (obj.event === "remove") {
@@ -344,14 +345,14 @@
                     })
                     return false;
                 });
-                
+
                 // 表格顶部搜索重置事件
                 form.on("submit(table-reset)", function(data) {
                     table.reload("data-table", {
                         where: []
                     })
                 });
-                
+
                 // 字段允许为空
                 form.verify({
                     phone: [/(^$)|^1\d{10}$/, "请输入正确的手机号"],

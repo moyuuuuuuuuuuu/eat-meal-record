@@ -16,8 +16,12 @@ layui.$(function () {
                 isSuperAdmin = true;
             }
             if (self !== top) {
+                top.Admin = top.Admin || {};
+                top.Admin.Account = top.Admin.Account || {};
                 top.Admin.Account.isSuperAdmin = isSuperAdmin;
             } else {
+                window.Admin = window.Admin || {};
+                window.Admin.Account = window.Admin.Account || {};
                 window.Admin.Account.isSuperAdmin = isSuperAdmin;
             }
             if (isSuperAdmin) return;
