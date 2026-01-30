@@ -42,7 +42,7 @@ CREATE TABLE `food_units`
     `id`         INT UNSIGNED   NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `food_id`    INT UNSIGNED   NOT NULL COMMENT '食物ID',
     `unit_id`    INT UNSIGNED   NOT NULL COMMENT '单位ID',
-    `weight_g`   DECIMAL(10, 2) NOT NULL COMMENT '换算重量 (1单位 ≈ ? g)',
+    `weight`   DECIMAL(10, 2) NOT NULL COMMENT '换算重量 (1单位 ≈ ? g)',
     `is_default` BOOLEAN        NOT NULL DEFAULT FALSE COMMENT '是否为默认单位',
     `remark`     VARCHAR(255)   NULL COMMENT '备注 (如: 杯(约250ml))',
     PRIMARY KEY (`id`),
@@ -50,7 +50,9 @@ CREATE TABLE `food_units`
     CONSTRAINT `fk_foodunit_food` FOREIGN KEY (`food_id`) REFERENCES `foods` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_foodunit_unit` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) COMMENT ='食物单位换算关系表';
-
+-- ----------------------------
+-- 4. 食物分类表
+-- ----------------------------
 CREATE TABLE `cats`
 (
     `id`         bigint                                                        NOT NULL AUTO_INCREMENT,

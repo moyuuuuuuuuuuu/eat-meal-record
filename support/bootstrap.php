@@ -48,6 +48,25 @@ if (class_exists('Dotenv\Dotenv') && file_exists(base_path(false) . '/.env')) {
     } else {
         Dotenv::createMutable(base_path(false))->load();
     }
+} elseif (file_exists($env_file = base_path(false) . '/.env')) {
+    $content = file_get_contents($env_file);
+    $lines = explode("\n", $content);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || strpos($line, '#') === 0) {
+            continue;
+        }
+        $parts = explode('=', $line, 2);
+        if (count($parts) === 2) {
+            $key = trim($parts[0]);
+            $value = trim($parts[1]);
+            if (!empty($key)) {
+                putenv("$key=$value");
+                $_ENV[$key] = $value;
+                $_SERVER[$key] = $value;
+            }
+        }
+    }
 }
 
 Config::clear();

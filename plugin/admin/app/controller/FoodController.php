@@ -67,7 +67,16 @@ class FoodController extends Crud
     public function update(Request $request): Response
     {
         if ($request->method() === 'POST') {
-            return parent::update($request);
+            [$id, $data] = $this->updateInput($request);
+            $nutritionDict   = Dict::get('nutrition');
+            $submitNutrition = json_decode($data['nutrition'], true);
+            $nutrition       = [];
+            foreach ($nutritionDict as $item) {
+                $nutrition[$item['value']] = $submitNutrition[$item['name']];
+            }
+            $data['nutrition'] = json_encode($nutrition);
+            $this->doUpdate($id, $data);
+            return $this->json(0);
         }
 
         $nutritionDict = Dict::get('nutrition');

@@ -2,18 +2,38 @@
 
 namespace plugin\admin\app\model;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
+use plugin\admin\app\model\Base;
 
+/**
+ * @property integer $id ID(主键)
+ * @property integer $food_id 食物
+ * @property integer $unit_id 所属单位
+ * @property string $weight 换算重量 (1单位 ≈ ? g)
+ * @property integer $is_default 是否为默认
+ * @property string $remark 备注
+ */
 class FoodUnit extends Base
 {
-    use SoftDeletes;
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'food_units';
 
-    protected $table    = 'food_units';
-    protected $fillable = [
-        'name',
-        'cat_id',
-        'user_id',
-        'status',
-        'nutrition',
-    ];
+    /**
+     * The primary key associated with the table.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'id';
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
+    
+    
 }

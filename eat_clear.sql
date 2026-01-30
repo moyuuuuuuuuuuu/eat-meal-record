@@ -18,7 +18,7 @@ PRIMARY KEY (`id`)) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_un
 CREATE TABLE `eat_clear`.`food_units` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT Comment "主键ID",
 `food_id` INT UNSIGNED NOT NULL Comment "食物ID",
 `unit_id` INT UNSIGNED NOT NULL Comment "单位ID",
-`weight_g` DECIMAL(10,2) NOT NULL Comment "换算重量 (1单位 ≈ ? g)",
+`weight` DECIMAL(10,2) NOT NULL Comment "换算重量 (1单位 ≈ ? g)",
 `is_default` TINYINT(1) NOT NULL DEFAULT 0 Comment "是否为默认单位",
 `remark` VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL Comment "备注 (如: 杯(约250ml))",
 INDEX `fk_foodunit_unit`(`unit_id` ASC) USING BTREE,
@@ -143,7 +143,7 @@ INDEX `mobile`(`mobile` ASC) USING BTREE,
 UNIQUE INDEX `username`(`username` ASC) USING BTREE,
 PRIMARY KEY (`id`)) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci AUTO_INCREMENT = 1 ROW_FORMAT = Dynamic COMMENT = "用户表";
 -- eat_clear.food_units Constraints
-ALTER TABLE `eat_clear`.`food_units` 
+ALTER TABLE `eat_clear`.`food_units`
  ADD CONSTRAINT `fk_foodunit_food` FOREIGN KEY (`food_id`) REFERENCES `foods` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 ADD CONSTRAINT `fk_foodunit_unit` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 -- eat_clear.cats DML
