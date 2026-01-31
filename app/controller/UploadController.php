@@ -2,7 +2,7 @@
 
 namespace app\controller;
 
-use Illuminate\Http\Request;
+use support\Request;
 
 class UploadController extends BaseController
 {
@@ -17,20 +17,23 @@ class UploadController extends BaseController
         }
 
         // 获取文件名和扩展名
-        $filename = $file->getOriginalName();
-        $fileExt  = $file->getExtension();
-
+        $filename = $file->getUploadName();
+        $fileExt  = $file->getUploadExtension();
+        $fileSize = $file->getSize();
+        $filename = md5($filename) . '.' . $fileExt;
         // 指定文件保存路径
-        $uploadDir = public_path() . '/upload/';
-        $filepath  = $uploadDir . $filename;
+        $baseDir   = public_path();
+        $uploadDir = 'upload/' . date('Ymd');
+        $filepath  = $baseDir . '/' . $uploadDir . $filename;
 
         // 移动文件到指定目录
-        if (!$file->move($uploadDir, $filename)) {
-            return $this->fail($file->getError());
+        if (!$file->move($filepath)) {
+            return $this->fail('文件上传失败');
         }
+        $visitPath = $uploadDir . $filename;
         return $this->success('', [
-            'path'     => $filepath,
-            'fullpath' => $request->host() . $filepath,
+            'path'     => $visitPath,
+            'fullpath' => $request->host() . $visitPath,
         ]);
     }
 }
