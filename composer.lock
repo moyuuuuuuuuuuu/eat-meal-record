@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "df2b9c5466cd61ac1267e66fe1df1a18",
+    "content-hash": "d538f93bb992aeba49aaabf7ad6e63a4",
     "packages": [
         {
             "name": "brick/math",
@@ -1876,6 +1876,47 @@
                 }
             ],
             "time": "2026-01-01T13:05:00+00:00"
+        },
+        {
+            "name": "moyuuuuuuuu/qianfan",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/moyuuuuuuuuuuu/qianfan.git",
+                "reference": "2ffde0bc887deed9f584a527503dc4ff09cc28b1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/moyuuuuuuuuuuu/qianfan/zipball/2ffde0bc887deed9f584a527503dc4ff09cc28b1",
+                "reference": "2ffde0bc887deed9f584a527503dc4ff09cc28b1",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^7.10",
+                "php": ">=7.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Moyuuuuuuuu\\QianFan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "moyuu",
+                    "email": "moyuuuuuuuu@outlook.com"
+                }
+            ],
+            "description": "千帆api客户端",
+            "support": {
+                "issues": "https://github.com/moyuuuuuuuuuuu/qianfan/issues",
+                "source": "https://github.com/moyuuuuuuuuuuu/qianfan/tree/1.0.0"
+            },
+            "time": "2026-01-16T13:25:50+00:00"
         },
         {
             "name": "nesbot/carbon",
