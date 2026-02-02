@@ -6,6 +6,8 @@ use plugin\admin\app\model\Base;
 
 /**
  * @property integer $id 主键(主键)
+ * @property string $openid 微信小程序openid
+ * @property string $unionid 微信unionid
  * @property string $username 用户名
  * @property string $nickname 昵称
  * @property string $password 密码

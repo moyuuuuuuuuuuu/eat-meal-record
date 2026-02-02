@@ -13,6 +13,21 @@
  */
 
 use Webman\Route;
+use app\controller\FoodController;
+use app\controller\CategoryController;
+use app\controller\AuthController;
+use app\controller\RecommendationController;
+
+Route::post('/auth/login', [AuthController::class, 'login']);
+
+Route::group('/food', function () {
+    Route::get('/search', [FoodController::class, 'search']);
+    Route::get('/detail', [FoodController::class, 'detail']);
+});
+
+Route::get('/recommendation/today', [RecommendationController::class, 'today']);
+
+Route::get('/categories', [CategoryController::class, 'index']);
 
 
 

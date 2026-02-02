@@ -69,3 +69,19 @@ CREATE TABLE `cats`
   COLLATE = utf8mb4_unicode_ci COMMENT = '食品分类'
   ROW_FORMAT = Dynamic;
 
+-- 标签表
+CREATE TABLE `tags` (
+                        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                        `name` VARCHAR(50) NOT NULL COMMENT '标签名称',
+                        `type` TINYINT NOT NULL DEFAULT 1 COMMENT '类型: 1-餐次(早餐/午餐等), 2-口味, 3-营养特点(低糖/少油)',
+                        `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE INDEX `uk_name` (`name`)
+) COMMENT='标签表';
+
+-- 食物标签关联表
+CREATE TABLE `food_tags` (
+                             `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                             `food_id` INT UNSIGNED NOT NULL COMMENT '食物ID',
+                             `tag_id` INT UNSIGNED NOT NULL COMMENT '标签ID',
+                             UNIQUE INDEX `uk_food_tag` (`food_id`, `tag_id`)
+) COMMENT='食物标签关联表';

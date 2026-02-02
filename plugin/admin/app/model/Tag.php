@@ -4,20 +4,18 @@ namespace plugin\admin\app\model;
 
 /**
  * @property integer $id ID(主键)
- * @property integer $food_id 食物
- * @property integer $unit_id 所属单位
- * @property string $weight 换算重量 (1单位 ≈ ? g)
- * @property integer $is_default 是否为默认
- * @property string $remark 备注
+ * @property string $name 标签名称
+ * @property integer $type 类型: 1-餐次, 2-口味, 3-营养特点
+ * @property mixed $created_at 创建时间
  */
-class FoodUnit extends Base
+class Tag extends Base
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'food_units';
+    protected $table = 'tags';
 
     /**
      * The primary key associated with the table.
@@ -25,13 +23,11 @@ class FoodUnit extends Base
      * @var string
      */
     protected $primaryKey = 'id';
+
     /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
-
-
-
 }
