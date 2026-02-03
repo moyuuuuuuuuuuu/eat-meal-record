@@ -1,6 +1,6 @@
 <?php
 
-namespace app\model;
+namespace app\common\base;
 
 use support\Model;
 use DateTimeInterface;

@@ -2,24 +2,20 @@
 
 namespace app\controller;
 
-use plugin\admin\app\model\Cat;
+use app\business\CatBusiness;
+use app\common\base\BaseController;
 use support\Request;
 
 class CategoryController extends BaseController
 {
     /**
      * 获取食物分类列表
-     * 
+     *
      * @param Request $request
      * @return \support\Response
      */
     public function index(Request $request)
     {
-        $list = Cat::query()
-            ->orderBy('sort', 'desc')
-            ->orderBy('id', 'asc')
-            ->get(['id', 'name', 'pid', 'sort']);
-            
-        return $this->success('ok', $list->toArray());
+        return $this->success('ok', CatBusiness::instance()->list($request));
     }
 }

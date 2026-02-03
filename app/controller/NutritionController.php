@@ -2,17 +2,26 @@
 
 namespace app\controller;
 
-use app\enum\NutritionInputType;
+use app\common\base\BaseController;
+use app\common\enum\NutritionInputType;
+use app\queue\contant\QueueEventName;
 use app\service\Nutrition;
 use app\util\Helper;
 use support\Request;
+use Webman\RedisQueue\Client;
 
 class NutritionController extends BaseController
 {
+    /**
+     * AI识别餐食营养信息
+     * @param Request $request
+     * @return \support\Response
+     */
     public function analysis(Request $request)
     {
         $content = $request->post('content', null);
         $type    = $request->post('type', null);
+        $options = $request->post('options',[]);
         if (!$type || !$content) {
             return $this->fail('请选择要识别的餐品');
         }
@@ -20,13 +29,10 @@ class NutritionController extends BaseController
         if (!in_array($type, Helper::cases(NutritionInputType::class))) {
             return $this->fail('不支持的识别方式');
         }
-        $template = base_path() . '/template/' . $type;
-        if (!file_exists($template)) {
-            return $this->fail('服务异常，请稍后再试');
-        }
         try {
             $nutritionService = new Nutrition();
-            $result           = $nutritionService->request($type, $content);
+            $result           = $nutritionService->request($type, $content, $options);
+            Client::send(QueueEventName::REMOTE_FOOD_SYNC,$result);
             return $this->success('', $result);
         } catch (\Exception $exception) {
             return $this->fail($exception->getMessage());

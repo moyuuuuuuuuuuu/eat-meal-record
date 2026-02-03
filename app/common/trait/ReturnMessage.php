@@ -1,10 +1,10 @@
 <?php
 
-namespace app\controller;
+namespace app\common\trait;
 
 use support\Response;
 
-class BaseController
+trait ReturnMessage
 {
     /**
      * 返回格式化json数据

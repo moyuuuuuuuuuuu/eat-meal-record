@@ -2,6 +2,7 @@
 
 namespace app\controller;
 
+use app\common\base\BaseController;
 use plugin\admin\app\model\User;
 use support\Request;
 use support\Response;

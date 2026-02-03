@@ -4,18 +4,18 @@ return  [
     'connections' => [
         'mysql' => [
             'driver'      => 'mysql',
-            'host'        => '127.0.0.1',
-            'port'        => '3306',
-            'database'    => 'your_database',
-            'username'    => 'your_username',
-            'password'    => 'your_password',
-            'charset'     => 'utf8mb4',
-            'collation'   => 'utf8mb4_general_ci',
-            'prefix'      => '',
+            'host'        => getenv('MYSQL_HOST'),
+            'port'        => getenv('MYSQL_PORT'),
+            'database'    => getenv('MYSQL_DATABASE'),
+            'username'    => getenv('MYSQL_USER'),
+            'password'    => getenv('MYSQL_PASSWORD'),
+            'charset'     => getenv('MYSQL_CHARSET'),
+            'collation'   => getenv('MYSQL_COLLATION'),
+            'prefix'      => getenv('MYSQL_PREFIX'),
             'strict'      => true,
             'engine'      => null,
             'options'   => [
-                PDO::ATTR_EMULATE_PREPARES => false, // Must be false for Swoole and Swow drivers.
+                \PDO::ATTR_EMULATE_PREPARES => false, // Must be false for Swoole and Swow drivers.
             ],
             'pool' => [
                 'max_connections' => 5,

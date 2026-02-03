@@ -2,14 +2,17 @@
 
 namespace app\controller;
 
-use plugin\admin\app\model\Food;
+use app\common\base\BaseController;
+use app\model\FoodModel;
+use app\model\FoodModel as Food;
 use support\Request;
 
 class FoodController extends BaseController
 {
+    protected $noNeedLogin = ['*'];
     /**
      * 搜索食物列表
-     * 
+     *
      * @param Request $request
      * @return \support\Response
      */
@@ -35,6 +38,9 @@ class FoodController extends BaseController
         }, 'tags'])->paginate($pageSize, ['*'], 'page', $page);
 
         $items = $paginate->items();
+        /**
+         * @var $item FoodModel
+         */
         foreach ($items as $item) {
             // 为列表提供简化的单位信息（第一个单位或默认单位，或者干脆只给基础营养）
             // UI 稿中搜索结果通常显示每100g的热量，点击进入详情才选单位
@@ -49,7 +55,7 @@ class FoodController extends BaseController
 
     /**
      * 食物详情
-     * 
+     *
      * @param Request $request
      * @return \support\Response
      */

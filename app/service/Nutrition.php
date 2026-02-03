@@ -2,7 +2,7 @@
 
 namespace app\service;
 
-use app\enum\NutritionInputType;
+use app\common\enum\NutritionInputType;
 use Moyuuuuuuuu\QianFan\{Contants\RequestMethod, Contants\Role, Payload\Universal, Request};
 
 class Nutrition
@@ -23,37 +23,44 @@ class Nutrition
         return self::$instance;
     }
 
-    public function request(string $type, mixed $content): array
+    public function request(string $type, mixed $content, ?array $options = []): array
     {
-        if ($type == NutritionInputType::AUDIO->value) {
+        $originalType = $type;
+        $templateType = ($type == NutritionInputType::AUDIO->value) ? NutritionInputType::TEXT->value : $type;
+        $template     = base_path() . '/template/' . $templateType;
+        if (!file_exists($template)) {
+            throw new \RuntimeException('服务器错误，未找到对应的食品参考模版');
+        }
+
+        if ($originalType == NutritionInputType::AUDIO->value) {
+            $type    = NutritionInputType::TEXT->value;
             $payload = (new Universal())
                 ->setDomain('http://vop.baidu.com')
                 ->setUri('/server_api')
                 ->setMethod(RequestMethod::POST)
                 ->setHeader('Content-Type', 'application/json')
                 ->add('speech', $content)
-                ->add('format', 'm4a')
-                ->add('channel', 1)
-                ->add('cuid', 'default_user')
-                ->add('dev_pid', 1537)
+                ->add('format', $options['format'] ?? 'm4a')
+                ->add('channel', $options['channel'] ?? 1)
+                ->add('cuid', $options['cuid'] ?? uniqid())
+                ->add('dev_pid', $options['dev_pid'] ?? 1537)
                 ->add('len', strlen($content))
-                ->add('rate', 16000);
-            $request = new \Moyuuuuuuuu\QianFan\Request(getenv('API_KEY'));
+                ->add('rate', $options['rate'] ?? 16000);
+            $request = new Request(getenv('API_KEY'));
             $result  = $request->send($payload);
             if (!$result || (isset($result['err_no']) && $result['err_no'] != 0)) {
                 throw new \RuntimeException('语音识别失败');
             }
             $content = $result['result'] ?? '';
-            $type    = NutritionInputType::TEXT->value;
             if (empty($content)) {
-                throw new \RuntimeException('');
+                throw new \RuntimeException('未识别到有效文字');
             }
         }
 
-        $payload  = (new Universal())->setMethod(RequestMethod::POST)
+        $payload = (new Universal())->setMethod(RequestMethod::POST)
             ->setDomain('https://qianfan.baidubce.com')
             ->setUri('v2/chat/completions');
-        $template = base_path() . '/template/' . $type;
+
         if ($type == NutritionInputType::TEXT->value) {
             $message = [
                 [
@@ -65,7 +72,7 @@ class Nutrition
                     'content' => $content
                 ]
             ];
-            $payload->add('model', 'ernie-5.0-thinking-preview');
+            $payload->add('model', $options['mode'] ?? 'ernie-5.0-thinking-preview');
         } else if (NutritionInputType::IMAGE->value) {
             $message = [
                 [
@@ -84,7 +91,7 @@ class Nutrition
                     ]
                 ]
             ];
-            $payload->add('model', 'ernie-4.5-turbo-vl-latest');
+            $payload->add('model', $options['mode'] ?? 'ernie-4.5-turbo-vl-latest');
         } else {
             throw new \RuntimeException('不支持的识别方式');
         }

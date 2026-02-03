@@ -19,18 +19,18 @@ class Jwt
     public static function encode(array $payload, int $exp = null): string
     {
         $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
-        
+
         if ($exp) {
             $payload['exp'] = time() + $exp;
         }
         $payload['iat'] = time();
-        
+
         $base64UrlHeader = static::base64UrlEncode($header);
         $base64UrlPayload = static::base64UrlEncode(json_encode($payload));
-        
+
         $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, static::getKey(), true);
         $base64UrlSignature = static::base64UrlEncode($signature);
-        
+
         return $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
     }
 
@@ -38,7 +38,7 @@ class Jwt
      * 解码 JWT Token
      *
      * @param string $token
-     * @return array|null
+     * @return Object|array|null
      */
     public static function decode(string $token): ?array
     {
@@ -46,22 +46,21 @@ class Jwt
         if (count($parts) !== 3) {
             return null;
         }
-        
+
         list($base64UrlHeader, $base64UrlPayload, $base64UrlSignature) = $parts;
-        
+
         $signature = static::base64UrlDecode($base64UrlSignature);
         $expectedSignature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, static::getKey(), true);
-        
+
         if (!hash_equals($signature, $expectedSignature)) {
             return null;
         }
-        
-        $payload = json_decode(static::base64UrlDecode($base64UrlPayload), true);
-        
-        if (isset($payload['exp']) && $payload['exp'] < time()) {
+
+        $payload = json_decode(static::base64UrlDecode($base64UrlPayload));
+        if(property_exists($payload, 'exp') && $payload->exp < time()) {
             return null;
         }
-        
+
         return $payload;
     }
 

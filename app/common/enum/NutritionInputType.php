@@ -1,6 +1,6 @@
 <?php
 
-namespace app\enum;
+namespace app\common\enum;
 
 enum NutritionInputType: string
 {

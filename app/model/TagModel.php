@@ -2,16 +2,18 @@
 
 namespace app\model;
 
-use support\Model;
 
-class Test extends Model
+use app\common\base\BaseModel;
+
+class TagModel extends BaseModel
 {
+
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'test';
+    protected $table = 'tags';
 
     /**
      * The primary key associated with the table.

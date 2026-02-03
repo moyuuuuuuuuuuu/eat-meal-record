@@ -2,6 +2,7 @@
 
 namespace app\controller;
 
+use app\common\base\BaseController;
 use support\Request;
 
 class UploadController extends BaseController
