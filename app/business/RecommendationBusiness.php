@@ -32,18 +32,20 @@ class RecommendationBusiness extends BaseBusiness
      */
     public function recommendByTime(): array
     {
+        $config = config('recommendation');
         $hour = (int)date('H');
-        $tagName = '加餐';
-        if ($hour >= 5 && $hour < 10) {
-            $tagName = '早餐';
-        } elseif ($hour >= 10 && $hour < 14) {
-            $tagName = '午餐';
-        } elseif ($hour >= 17 && $hour < 21) {
-            $tagName = '晚餐';
+        $tagName = $config['time_tags']['snack'];
+        $ranges = $config['time_ranges'];
+        if ($hour >= $ranges['breakfast'][0] && $hour < $ranges['breakfast'][1]) {
+            $tagName = $config['time_tags']['breakfast'];
+        } elseif ($hour >= $ranges['lunch'][0] && $hour < $ranges['lunch'][1]) {
+            $tagName = $config['time_tags']['lunch'];
+        } elseif ($hour >= $ranges['dinner'][0] && $hour < $ranges['dinner'][1]) {
+            $tagName = $config['time_tags']['dinner'];
         }
 
         // 定义非整餐（单一食材）的分类ID
-        $rawMaterialCatIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 17];
+        $rawMaterialCatIds = $config['raw_material_cat_ids'];
 
         $query = Food::whereHas('tags', function ($query) use ($tagName) {
             $query->where('name', $tagName);
@@ -84,6 +86,7 @@ class RecommendationBusiness extends BaseBusiness
      */
     public function recommendByUserContext(int $userId): array
     {
+        $config = config('recommendation');
         // 获取最近3天的记录
         $recentRecords = MealRecord::where('user_id', $userId)
             ->where('meal_date', '>=', date('Y-m-d', strtotime('-3 days')))
@@ -94,31 +97,31 @@ class RecommendationBusiness extends BaseBusiness
         $count = $recentRecords->count();
 
         $recommendTags = [];
-        $reason = "根据您近期的饮食分析，为您推荐：";
+        $reason = $config['reason_prefix'];
 
         if ($count > 0) {
             $avgCarbs = $totalCarbs / $count;
             $avgFat = $totalFat / $count;
 
             // 简单的逻辑判断：如果平均碳水较高，推荐低糖；如果平均脂肪较高，推荐少油
-            if ($avgCarbs > 50) { // 阈值假设
-                $recommendTags[] = '低糖';
+            if ($avgCarbs > $config['nutrition_thresholds']['carbs']) {
+                $recommendTags[] = $config['nutrition_tags']['carbs'];
             }
-            if ($avgFat > 20) {
-                $recommendTags[] = '少油';
+            if ($avgFat > $config['nutrition_thresholds']['fat']) {
+                $recommendTags[] = $config['nutrition_tags']['fat'];
             }
         }
 
         if (empty($recommendTags)) {
             // 默认推荐健康标签
-            $recommendTags = ['高蛋白', '健康脂肪', '健康'];
-            $reason = "开启健康的一天";
+            $recommendTags = $config['default_recommend_tags'];
+            $reason = $config['default_reason'];
         } else {
-            $reason .= implode('、', $recommendTags) . "餐食";
+            $reason .= implode('、', $recommendTags) . $config['reason_suffix'];
         }
 
         // 定义非整餐（单一食材）的分类ID
-        $rawMaterialCatIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 17];
+        $rawMaterialCatIds = $config['raw_material_cat_ids'];
 
         $query = Food::where('status', 1)
             ->whereNotIn('cat_id', $rawMaterialCatIds);

@@ -22,6 +22,7 @@ class FoodController extends BaseController
         $catId    = $request->get('cat_id');
         $page     = (int)$request->get('page', 1);
         $pageSize = (int)$request->get('pageSize', 10);
+        $pageSize = max(1, min($pageSize, 50));
 
         $query = Food::query()->where('status', 1);
 
