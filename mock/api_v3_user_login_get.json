@@ -1,0 +1,16 @@
+{
+  "code": 200,
+  "message": "logged in user session",
+  "token": "mock_token_1770781272290",
+  "expiresIn": 3600,
+  "user": {
+    "id": 1827,
+    "username": "admin",
+    "firstName": "First_850",
+    "lastName": "Last_696",
+    "email": "admin@example.com",
+    "password": "password123",
+    "phone": "19345835534",
+    "userStatus": 1
+  }
+}

@@ -3,8 +3,44 @@
 namespace app\model;
 
 use app\common\base\BaseModel;
-use app\util\Jwt;
+use app\common\enum\user\{Sex, Status};
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
+/**
+ * @property integer $id 主键
+ * @property string $username 用户名
+ * @property string $nickname 昵称
+ * @property string $password 密码
+ * @property string $sex 性别
+ * @property string $avatar 头像
+ * @property string $email 邮箱
+ * @property string $mobile 手机
+ * @property string $openid 微信小程序openid
+ * @property string $unionid 微信unionid
+ * @property string $signature 个性签名
+ * @property string $background 背景图
+ * @property integer $age 年龄
+ * @property integer $tall 身高 cm
+ * @property float $weight 体重 kg
+ * @property float $bmi bmi
+ * @property float $bust 胸围 cm
+ * @property float $waist 腰围 cm
+ * @property float $hip 臀围 cm
+ * @property integer $target 卡路里目标
+ * @property integer $level 等级
+ * @property string $birthday 生日
+ * @property float $money 余额
+ * @property integer $score 积分
+ * @property string $last_time 登录时间
+ * @property string $last_ip 登录ip
+ * @property string $join_time 注册时间
+ * @property string $join_ip 注册ip
+ * @property string $token token
+ * @property string $created_at 创建时间
+ * @property string $updated_at 更新时间
+ * @property integer $role 角色
+ * @property integer $status 禁用
+ */
 class UserModel extends BaseModel
 {
 
@@ -22,25 +58,40 @@ class UserModel extends BaseModel
      */
     protected $primaryKey = 'id';
 
-    static function getUserInfo(){
-        // 优先从 request 对象获取中间件已解析好的数据
-        if ($request = request()) {
-            if (isset($request->userInfo)) {
-                return $request->userInfo;
+    protected function sexText(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value, $attributes) {
+                return match ($attributes['sex'] ?? null) {
+                    Sex::MAN->value => '男',
+                    Sex::WOMEN->value => '女',
+                    default => '未知',
+                };
             }
-        }
+        );
+    }
 
-        $token = request()->header('Authorization');
-        if (!$token) {
-            return null;
-        }
+    protected function statusText(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value, $attributes) {
+                return match ($attributes['status'] ?? null) {
+                    Status::NORMAL->value => '正常',
+                    Status::FORBID->value => '禁用',
+                    Status::OFF->value => '临时封禁',
+                    default => '未知',
+                };
+            }
+        );
+    }
 
-        // 兼容 "Bearer " 前缀
-        if (strpos($token, 'Bearer ') === 0) {
-            $token = substr($token, 7);
-        }
-
-        return Jwt::decode($token);
+    protected function avatarText(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value, $attributes) {
+                return source($attributes['avatar'] ?? '');
+            }
+        );
     }
 
 }

@@ -19,4 +19,18 @@ class BaseModel extends Model
         return $date->format('Y-m-d H:i:s');
     }
 
+    static function printSql($query){
+        if (!config('app.debug')) {
+            return '';
+        }
+        $sql      = $query->toSql();
+        $bindings = $query->getBindings();
+
+        $fullSql = vsprintf(
+            str_replace('?', '%s', $sql),
+            collect($bindings)->map(fn($v) => is_numeric($v) ? $v : "'" . $v . "'")->toArray()
+        );
+        return $fullSql;
+    }
+
 }

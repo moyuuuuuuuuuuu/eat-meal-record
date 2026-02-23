@@ -28,4 +28,9 @@ class FoodUnitModel extends BaseModel
      */
     public $timestamps = false;
 
+    public function unit()
+    {
+        return $this->hasOne(UnitModel::class, 'id', 'unit_id');
+    }
+
 }

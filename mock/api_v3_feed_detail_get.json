@@ -1,0 +1,21 @@
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "id": 1,
+    "content": "今天的减脂餐打卡！低碳水高蛋白，吃得饱又不胖 💪",
+    "imageUrl": "https://picsum.photos/300/200?random=515",
+    "createTime": "2026-02-11 11:41:12",
+    "userId": 6761,
+    "userName": "用户_148",
+    "userAvatar": "https://i.pravatar.cc/150?u=94",
+    "likeCount": 74,
+    "commentCount": 1,
+    "mealReference": {
+      "mealType": "午餐",
+      "foods": "牛肉面",
+      "totalCalories": 749
+    },
+    "location": null
+  }
+}

@@ -1,0 +1,190 @@
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": 1,
+        "content": "今天的减脂餐打卡！低碳水高蛋白，吃得饱又不胖 💪",
+        "imageUrl": "https://picsum.photos/300/200?random=515",
+        "createTime": "2026-02-11 11:41:12",
+        "userId": 6761,
+        "userName": "用户_148",
+        "userAvatar": "https://i.pravatar.cc/150?u=94",
+        "likeCount": 74,
+        "commentCount": 1,
+        "mealReference": {
+          "mealType": "午餐",
+          "foods": "牛肉面",
+          "totalCalories": 749
+        },
+        "location": null
+      },
+      {
+        "id": 2,
+        "content": "坚持健康饮食第30天，体重终于突破瓶颈期了！",
+        "imageUrl": "https://picsum.photos/300/200?random=340",
+        "createTime": "2026-02-11 11:41:12",
+        "userId": 6814,
+        "userName": "用户_613",
+        "userAvatar": "https://i.pravatar.cc/150?u=661",
+        "likeCount": 91,
+        "commentCount": 17,
+        "mealReference": {
+          "mealType": "晚餐",
+          "foods": "鸡胸肉配藜麦",
+          "totalCalories": 638
+        },
+        "location": {
+          "name": "广州·天河区",
+          "latitude": 23.121447274030086,
+          "longitude": 113.35170825513576
+        }
+      },
+      {
+        "id": 3,
+        "content": "分享一下我的备餐心得，周末花2小时准备一周的便当 🍱",
+        "imageUrl": "https://picsum.photos/300/200?random=605",
+        "createTime": "2026-02-11 11:41:12",
+        "userId": 5934,
+        "userName": "用户_724",
+        "userAvatar": "https://i.pravatar.cc/150?u=287",
+        "likeCount": 54,
+        "commentCount": 2,
+        "mealReference": null,
+        "location": null
+      },
+      {
+        "id": 4,
+        "content": "这家新开的轻食店太赞了，推荐给大家！📍",
+        "imageUrl": "https://picsum.photos/300/200?random=470",
+        "createTime": "2026-02-11 11:41:12",
+        "userId": 184,
+        "userName": "用户_912",
+        "userAvatar": "https://i.pravatar.cc/150?u=503",
+        "likeCount": 21,
+        "commentCount": 8,
+        "mealReference": {
+          "mealType": "早餐",
+          "foods": "全麦面包+牛奶",
+          "totalCalories": 262
+        },
+        "location": {
+          "name": "杭州·西湖区",
+          "latitude": 30.267041912953605,
+          "longitude": 120.12730704732427
+        }
+      },
+      {
+        "id": 5,
+        "content": "今日热量摄入完美控制在目标范围内，开心～ ✨",
+        "imageUrl": "https://picsum.photos/300/200?random=686",
+        "createTime": "2026-02-11 11:41:12",
+        "userId": 6851,
+        "userName": "用户_338",
+        "userAvatar": "https://i.pravatar.cc/150?u=720",
+        "likeCount": 86,
+        "commentCount": 23,
+        "mealReference": {
+          "mealType": "午餐",
+          "foods": "牛肉面",
+          "totalCalories": 647
+        },
+        "location": null
+      },
+      {
+        "id": 6,
+        "content": "自制蛋白质奶昔，口感比外面卖的还好喝！配方分享 🥤",
+        "imageUrl": "https://picsum.photos/300/200?random=522",
+        "createTime": "2026-02-11 11:41:12",
+        "userId": 797,
+        "userName": "用户_120",
+        "userAvatar": "https://i.pravatar.cc/150?u=46",
+        "likeCount": 79,
+        "commentCount": 40,
+        "mealReference": null,
+        "location": {
+          "name": "武汉·武昌区",
+          "latitude": 30.555988641694086,
+          "longitude": 114.33736191207639
+        }
+      },
+      {
+        "id": 7,
+        "content": "早起做了一顿丰盛的早餐，元气满满的一天开始了 ☀️",
+        "imageUrl": "https://picsum.photos/300/200?random=467",
+        "createTime": "2026-02-11 11:41:12",
+        "userId": 1378,
+        "userName": "用户_914",
+        "userAvatar": "https://i.pravatar.cc/150?u=835",
+        "likeCount": 98,
+        "commentCount": 31,
+        "mealReference": {
+          "mealType": "加餐",
+          "foods": "水果沙拉",
+          "totalCalories": 142
+        },
+        "location": null
+      },
+      {
+        "id": 8,
+        "content": "晚餐吃了清蒸鲈鱼配时蔬，低脂又美味！",
+        "imageUrl": "https://picsum.photos/300/200?random=590",
+        "createTime": "2026-02-11 11:41:12",
+        "userId": 8488,
+        "userName": "用户_862",
+        "userAvatar": "https://i.pravatar.cc/150?u=518",
+        "likeCount": 49,
+        "commentCount": 12,
+        "mealReference": {
+          "mealType": "早餐",
+          "foods": "全麦面包+牛奶",
+          "totalCalories": 361
+        },
+        "location": {
+          "name": "西安·雁塔区",
+          "latitude": 34.229693794530974,
+          "longitude": 108.97018139007005
+        }
+      },
+      {
+        "id": 9,
+        "content": "第一次尝试生酮饮食，感觉还不错，分享一下今天的食谱",
+        "imageUrl": "https://picsum.photos/300/200?random=689",
+        "createTime": "2026-02-11 11:41:12",
+        "userId": 3475,
+        "userName": "用户_476",
+        "userAvatar": "https://i.pravatar.cc/150?u=360",
+        "likeCount": 80,
+        "commentCount": 31,
+        "mealReference": null,
+        "location": null
+      },
+      {
+        "id": 10,
+        "content": "运动完来一份高蛋白餐补充能量，增肌减脂两不误 🏋️",
+        "imageUrl": "https://picsum.photos/300/200?random=157",
+        "createTime": "2026-02-11 11:41:12",
+        "userId": 8224,
+        "userName": "用户_209",
+        "userAvatar": "https://i.pravatar.cc/150?u=520",
+        "likeCount": 19,
+        "commentCount": 21,
+        "mealReference": {
+          "mealType": "晚餐",
+          "foods": "鸡胸肉配藜麦",
+          "totalCalories": 443
+        },
+        "location": {
+          "name": "北京·朝阳区",
+          "latitude": 39.92447701853108,
+          "longitude": 116.44844559819694
+        }
+      }
+    ],
+    "total": 20,
+    "page": 1,
+    "pageSize": 10,
+    "hasMore": true
+  }
+}

@@ -14,11 +14,16 @@
 
 namespace support;
 
+use app\common\context\UserInfoData;
+
 /**
  * Class Request
  * @package support
  */
 class Request extends \Webman\Http\Request
 {
-
+    /**
+     * @var UserInfoData|null
+     */
+    protected UserInfoData|null $userInfo;
 }

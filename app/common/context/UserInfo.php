@@ -5,26 +5,51 @@ namespace app\common\context;
 use app\model\UserModel;
 use app\util\Jwt;
 
-class UserInfo
+final class UserInfo
 {
 
     static function setUserInfo(UserModel $userInfo)
     {
-        // 生成 JWT Token
-        return Jwt::encode([
-            'id'     => $userInfo->id,
-            'openid' => $userInfo->openid,
-        ], 86400 * 7); // 7天有效期
+        $userInfo->setAppends(['sex_text', 'avatar_text', 'status_text']);
+        $userInfo = $userInfo->only([
+            'id',
+            'username',
+            'nickname',
+            'sex',
+            'avatar',
+            'email',
+            'mobile',
+            'openid',
+            'unionid',
+            'signature',
+            'background',
+            'age',
+            'tall',
+            'weight',
+            'bmi',
+            'bust',
+            'waist',
+            'hip',
+            'target',
+            'level',
+            'birthday',
+            'status',
+            'sex_text',
+            'avatar_text',
+            'status_text'
+        ]);
+        $token    = Jwt::encode($userInfo, 86400 * 7); // 7天有效期
+        return [
+            'token'    => $token,
+            'userInfo' => $userInfo
+        ];
     }
 
     /**
-     * @param string $token
-     * @return object{
-     *     id:int,
-     *     openid:string
-     * }|null
+     * @param \support\Request|null $request
+     * @return UserInfoData|null
      */
-    static function getUserInfo()
+    static function getUserInfo(): ?UserInfoData
     {
         // 优先从 request 对象获取中间件已解析好的数据
         if ($request = request()) {
@@ -33,7 +58,7 @@ class UserInfo
             }
         }
 
-        $token = request()->header('Authorization');
+        $token = $request ? $request->header('Authorization') : null;
         if (!$token) {
             return null;
         }

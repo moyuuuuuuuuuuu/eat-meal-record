@@ -1,0 +1,19 @@
+{
+  "id": 1,
+  "category": {
+    "id": 2,
+    "name": "Cats"
+  },
+  "name": "Pet_19",
+  "photoUrls": [
+    "https://example.com/pet/1/photo1.jpg"
+  ],
+  "tags": [
+    {
+      "id": 2,
+      "name": "playful"
+    }
+  ],
+  "status": "pending",
+  "updatedAt": "2026-02-11 11:41:12"
+}

@@ -1,0 +1,8 @@
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "isLiked": true,
+    "likes": 1
+  }
+}

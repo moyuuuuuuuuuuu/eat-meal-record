@@ -2,14 +2,24 @@
 
 namespace app\controller;
 
+use app\business\FoodBusiness;
 use app\common\base\BaseController;
+use app\common\enum\BusinessCode;
+use app\common\enum\NutritionInputType;
+use app\common\exception\ParamException;
 use app\model\FoodModel;
 use app\model\FoodModel as Food;
+use app\queue\contant\QueueEventName;
+use app\service\Nutrition;
+use app\util\Helper;
+use support\Log;
 use support\Request;
+use Webman\RedisQueue\Client;
 
 class FoodController extends BaseController
 {
     protected $noNeedLogin = ['*'];
+
     /**
      * 搜索食物列表
      *
@@ -18,40 +28,7 @@ class FoodController extends BaseController
      */
     public function search(Request $request)
     {
-        $name     = $request->get('name');
-        $catId    = $request->get('cat_id');
-        $page     = (int)$request->get('page', 1);
-        $pageSize = (int)$request->get('pageSize', 10);
-        $pageSize = max(1, min($pageSize, 50));
-
-        $query = Food::query()->where('status', 1);
-
-        if ($name) {
-            $query->where('name', 'like', "%$name%");
-        }
-
-        if ($catId) {
-            $query->where('cat_id', $catId);
-        }
-
-        $paginate = $query->with(['cat' => function($q) {
-            $q->select('id', 'name');
-        }, 'tags'])->paginate($pageSize, ['*'], 'page', $page);
-
-        $items = $paginate->items();
-        /**
-         * @var $item FoodModel
-         */
-        foreach ($items as $item) {
-            // 为列表提供简化的单位信息（第一个单位或默认单位，或者干脆只给基础营养）
-            // UI 稿中搜索结果通常显示每100g的热量，点击进入详情才选单位
-            $item->unit_list = $item->getUnits();
-        }
-
-        return $this->success('ok', [
-            'items' => $items,
-            'total' => $paginate->total(),
-        ]);
+        return $this->success('ok', FoodBusiness::instance()->search($request));
     }
 
     /**
@@ -62,22 +39,34 @@ class FoodController extends BaseController
      */
     public function detail(Request $request)
     {
-        $id = $request->get('id');
-        if (!$id) {
-            return $this->fail('参数错误');
+        return $this->success('ok', FoodBusiness::instance()->detail($request));
+    }
+    /**
+     * AI识别餐食营养信息
+     * @param Request $request
+     * @return \support\Response
+     */
+    public function recognize(Request $request)
+    {
+
+        $content = $request->post('content', null);
+        $type    = $request->post('type', null);
+        $options = $request->post('options', []);
+        if (!$type || !$content) {
+            throw new ParamException('类型', '内容');
         }
 
-        $food = Food::query()->with(['cat' => function($q) {
-            $q->select('id', 'name');
-        }, 'tags'])->find($id);
-
-        if (!$food) {
-            return $this->fail('食物不存在');
+        if (!in_array($type, Helper::cases(NutritionInputType::class))) {
+            return $this->fail('不支持的识别方式');
         }
-
-        $data = $food->toArray();
-        $data['unit_list'] = $food->getUnits();
-
-        return $this->success('ok', $data);
+        try {
+            $nutritionService = new Nutrition();
+            $result           = $nutritionService->request($type, $content, $options);
+            Log::info($type . '的请求结果', $result);
+            Client::send(QueueEventName::REMOTE_FOOD_SYNC->value, $result);
+            return $this->success('', $result);
+        } catch (\Exception $exception) {
+            return $this->fail($exception->getMessage());
+        }
     }
 }

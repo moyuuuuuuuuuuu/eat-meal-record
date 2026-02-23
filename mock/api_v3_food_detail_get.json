@@ -1,0 +1,15 @@
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "id": "f001",
+    "name": "燕麦粥",
+    "category": "主食",
+    "unit": "100g",
+    "calories": 68,
+    "protein": 2.4,
+    "fat": 1.4,
+    "carbs": 12,
+    "fiber": 1.7
+  }
+}

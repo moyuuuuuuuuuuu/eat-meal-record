@@ -1,0 +1,82 @@
+<?php
+
+namespace app\common\context;
+
+/**
+ * @property  int $id;
+ * @property string $username;
+ * @property string $nickname;
+ * @property int $sex;
+ * @property string $avatar;
+ * @property string $email;
+ * @property string $mobile;
+ * @property string $openid;
+ * @property string $unionid;
+ * @property string $signature;
+ * @property string $background;
+ * @property string $age;
+ * @property string $tall;
+ * @property string $weight;
+ * @property string $bmi;
+ * @property string $bust;
+ * @property string $waist;
+ * @property string $hip;
+ * @property string $target;
+ * @property string $level;
+ * @property string $birthday;
+ * @property string $status;
+ */
+final class UserInfoData
+{
+    /**
+     * @var int
+     */
+    protected int $id;
+    /**
+     * @deprecated
+     * @var string
+     */
+    protected ?string $username;
+    /**
+     * @var string
+     */
+    protected string $nickname;
+    /**
+     * @var int
+     */
+    protected int     $sex;
+    protected ?string $avatar;
+    protected ?string $email;
+    protected ?string $mobile;
+    protected string  $openid;
+    protected ?string $unionid;
+    protected ?string $signature;
+    protected ?string $background;
+    protected ?int    $age;
+    protected ?int    $tall;
+    protected ?float  $weight;
+    protected ?float  $bmi;
+    protected ?float  $bust;
+    protected ?float  $waist;
+    protected ?float  $hip;
+    protected ?int    $target;
+    protected ?int    $level;
+    protected ?string $birthday;
+    protected ?int    $status;
+    protected ?string $sex_text;
+    protected ?string $status_text;
+
+    public function __construct(array $userInfo)
+    {
+        foreach ($userInfo as $k => $v) {
+            if (property_exists($this, $k)) {
+                $this->{$k} = $v;
+            }
+        }
+    }
+
+    public function __get(string $name)
+    {
+        return $this->{$name};
+    }
+}

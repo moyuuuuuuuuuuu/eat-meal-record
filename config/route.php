@@ -13,21 +13,59 @@
  */
 
 use Webman\Route;
-use app\controller\FoodController;
-use app\controller\CategoryController;
-use app\controller\AuthController;
-use app\controller\RecommendationController;
+use app\controller\{
+    UserController,
+    RecommendationController,
+    AuthController,
+    CategoryController,
+    FoodController,
+    DiaryController,
+    PetController,
+    FeedController
+};
 
 Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/login/mock', [AuthController::class, 'mock']);
 
 Route::group('/food', function () {
     Route::get('/search', [FoodController::class, 'search']);
     Route::get('/detail', [FoodController::class, 'detail']);
+    Route::post('/recognize', [FoodController::class, 'recognize']);
 });
 
 Route::get('/recommendation/today', [RecommendationController::class, 'today']);
 
 Route::get('/categories', [CategoryController::class, 'index']);
+
+// 饮食记录 (Diary)
+Route::group('/diary', function () {
+    Route::get('/meals', [DiaryController::class, 'meals']);
+    Route::post('/meal/add', [DiaryController::class, 'add']);
+    Route::post('/meal/food/delete', [DiaryController::class, 'delete']);
+    Route::get('/summary', [DiaryController::class, 'summary']);
+});
+// 用户统计与资料
+Route::get('/user/stats', [UserController::class, 'stats']);
+
+// 宠物相关 (Pet)
+Route::group('/pet', function () {
+    Route::get('/findByStatus', [PetController::class, 'findByStatus']);
+    Route::post('', [PetController::class, 'add']);
+    Route::put('', [PetController::class, 'update']);
+    Route::get('/{petId:\d+}', [PetController::class, 'detail']);
+    Route::post('/{petId:\d+}', [PetController::class, 'updateWithForm']);
+    Route::delete('/{petId:\d+}', [PetController::class, 'delete']);
+    Route::post('/{petId:\d+}/uploadImage', [PetController::class, 'uploadImage']);
+});
+
+// 动态社交 (Feed)
+Route::group('/feed', function () {
+    Route::get('/list', [FeedController::class, 'list']);
+    Route::get('/detail', [FeedController::class, 'detail']);
+    Route::get('/posts', [FeedController::class, 'posts']);
+    Route::post('/post/like', [FeedController::class, 'like']);
+});
+
 
 
 

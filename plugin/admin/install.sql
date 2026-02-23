@@ -131,6 +131,18 @@ CREATE TABLE IF NOT EXISTS `wa_users` (
   `avatar` varchar(255) DEFAULT NULL COMMENT '头像',
   `email` varchar(128) DEFAULT NULL COMMENT '邮箱',
   `mobile` varchar(16) DEFAULT NULL COMMENT '手机',
+  `openid` varchar(255) DEFAULT NULL COMMENT '微信小程序openid',
+  `unionid` varchar(255) DEFAULT NULL COMMENT '微信unionid',
+  `signature` varchar(255) DEFAULT NULL COMMENT '个性签名',
+  `background` varchar(255) DEFAULT NULL COMMENT '背景图',
+  `age` int(11) DEFAULT '0' COMMENT '年龄',
+  `tall` int(11) DEFAULT NULL COMMENT '身高 cm',
+  `weight` decimal(10,2) DEFAULT NULL COMMENT '体重 kg',
+  `bmi` decimal(10,2) DEFAULT NULL COMMENT 'bmi',
+  `bust` decimal(10,2) DEFAULT NULL COMMENT '胸围 cm',
+  `waist` decimal(10,2) DEFAULT NULL COMMENT '腰围 cm',
+  `hip` decimal(10,2) DEFAULT NULL COMMENT '臀围 cm',
+  `target` int(11) DEFAULT NULL COMMENT '卡路里目标',
   `level` tinyint(4) NOT NULL DEFAULT '0' COMMENT '等级',
   `birthday` date DEFAULT NULL COMMENT '生日',
   `money` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '余额(元)',
@@ -150,3 +162,197 @@ CREATE TABLE IF NOT EXISTS `wa_users` (
   KEY `mobile` (`mobile`),
   KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户表';
+
+CREATE TABLE IF NOT EXISTS `blog` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) DEFAULT '0' COMMENT '用户id',
+  `title` varchar(255) DEFAULT '' COMMENT '标题',
+  `like_count` int(10) unsigned DEFAULT '0' COMMENT '点赞数量',
+  `view_count` int(10) unsigned DEFAULT '0' COMMENT '查看数量',
+  `comment_count` int(10) unsigned DEFAULT '0' COMMENT '评论数量',
+  `fav_count` int(10) unsigned DEFAULT '0' COMMENT '收藏数量',
+  `content` text,
+  `status` tinyint(1) DEFAULT NULL COMMENT '状态 0隐藏 1所有人可见 2仅自己可见 3仅好友可见',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='博客';
+
+CREATE TABLE IF NOT EXISTS `blog_attach` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `blog_id` bigint(20) DEFAULT '0' COMMENT '博客id',
+  `attach` varchar(255) DEFAULT NULL,
+  `poster` varchar(255) DEFAULT NULL COMMENT '视频封面',
+  `sort` int(11) DEFAULT '0' COMMENT '排序',
+  `type` tinyint(4) DEFAULT '0' COMMENT '类型 0 图片 1 视频 3食物 4食谱 5就餐记录',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_blog_id` (`blog_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='博客附件';
+
+CREATE TABLE IF NOT EXISTS `blog_comment` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `blog_id` bigint(20) DEFAULT '0' COMMENT '博客id',
+  `user_id` bigint(20) DEFAULT '0' COMMENT '用户id',
+  `content` text,
+  `parent_id` bigint(20) DEFAULT '0' COMMENT '父评论id',
+  `like_count` int(11) DEFAULT '0' COMMENT '点赞数量',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_blog_id` (`blog_id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_parent_id` (`parent_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='博客评论';
+
+CREATE TABLE IF NOT EXISTS `blog_location` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `blog_id` bigint(20) NOT NULL,
+  `latitude` decimal(10,6) NOT NULL,
+  `longitude` decimal(10,6) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `address` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='博客位置表';
+
+CREATE TABLE IF NOT EXISTS `blog_topic` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `blog_id` bigint(20) NOT NULL,
+  `topic_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_blog_topic` (`blog_id`,`topic_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='博客话题表';
+
+CREATE TABLE IF NOT EXISTS `checkin_record` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) NOT NULL,
+  `target_calorie` int(11) NOT NULL COMMENT '当日目标卡路里',
+  `total_calorie` int(11) NOT NULL COMMENT '当日摄入总卡路里',
+  `result` enum('success','fail_over','fail_under') NOT NULL COMMENT '打卡结果',
+  `date` date NOT NULL COMMENT '打卡日期，一个用户一天一条记录',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_user_id_date` (`user_id`,`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='打卡记录';
+
+CREATE TABLE IF NOT EXISTS `favorite` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) DEFAULT '0' COMMENT '用户id',
+  `target` bigint(20) DEFAULT '0' COMMENT '食物id',
+  `type` tinyint(4) DEFAULT '0' COMMENT '类型 1 帖子 2 食物 3食谱',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_user_id_type_target` (`user_id`,`type`,`target`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `follow` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) DEFAULT '0' COMMENT '用户id',
+  `follow_id` bigint(20) DEFAULT '0' COMMENT '关注id',
+  `is_attention` tinyint(1) DEFAULT '0' COMMENT '是否互相关注 0否 1是',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_user_follow_id` (`user_id`,`follow_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `meal_record` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) DEFAULT '0' COMMENT '所属用户',
+  `type` tinyint(4) DEFAULT '0' COMMENT '类型 0 早餐 1 午餐 2 晚餐 3加餐',
+  `nutrition` json DEFAULT NULL COMMENT '营养信息',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `meal_date` date NOT NULL DEFAULT (curdate()),
+  `latitude` decimal(10,6) DEFAULT NULL COMMENT '纬度',
+  `longitude` decimal(10,6) DEFAULT NULL COMMENT '经度',
+  `address` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_type_date` (`user_id`,`type`,`meal_date`),
+  KEY `idx_user_id_type` (`user_id`,`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='就餐记录';
+
+CREATE TABLE IF NOT EXISTS `meal_record_food` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `meal_id` bigint(20) DEFAULT '0' COMMENT '就餐记录id',
+  `user_id` bigint(20) DEFAULT NULL,
+  `food_id` bigint(20) DEFAULT '0' COMMENT '食物id',
+  `unit_id` bigint(20) DEFAULT '0' COMMENT '单位',
+  `nutrition` json DEFAULT NULL COMMENT '营养成分',
+  `number` decimal(10,2) DEFAULT '1.00' COMMENT '分量',
+  `image` varchar(255) DEFAULT NULL COMMENT '图片',
+  `name` varchar(255) DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_meal_id` (`meal_id`),
+  KEY `idx_food_id` (`food_id`),
+  KEY `idx_unit_id` (`unit_id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_crated_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='就餐记录食物';
+
+CREATE TABLE IF NOT EXISTS `recipe` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) DEFAULT '0' COMMENT '用户id',
+  `name` varchar(255) DEFAULT NULL,
+  `summary` text,
+  `content` text,
+  `like_count` int(11) DEFAULT '0' COMMENT '点赞数量',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='食谱';
+
+CREATE TABLE IF NOT EXISTS `recipe_attach` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `recipe_id` bigint(20) DEFAULT '0' COMMENT '食谱id',
+  `attach` varchar(255) DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_recipe_id` (`recipe_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='食谱附件';
+
+CREATE TABLE IF NOT EXISTS `recipe_food` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `recipe_id` bigint(20) DEFAULT '0' COMMENT '食谱id',
+  `food_id` bigint(20) DEFAULT '0' COMMENT '食物id',
+  `number` decimal(10,2) DEFAULT '0.00' COMMENT '分量',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_recipe_id` (`recipe_id`),
+  KEY `idx_food_id` (`food_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `topic` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '话题ID',
+  `title` varchar(100) NOT NULL COMMENT '话题标题',
+  `cover_image` varchar(255) DEFAULT NULL COMMENT '话题封面图片',
+  `description` varchar(500) DEFAULT NULL COMMENT '话题描述',
+  `creator_id` bigint(20) NOT NULL COMMENT '创建者用户ID',
+  `status` tinyint(4) DEFAULT '1' COMMENT '状态 1正常 0禁用',
+  `join_count` int(11) DEFAULT '0' COMMENT '参与人数',
+  `post_count` int(11) DEFAULT '0' COMMENT '关联文章/餐食记录数',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_creator_id` (`creator_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='话题表';
+
+CREATE TABLE IF NOT EXISTS `topic_relation` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `topic_id` bigint(20) NOT NULL COMMENT '话题ID',
+  `target_id` bigint(20) NOT NULL COMMENT '关联对象ID（博客ID、餐食记录ID等）',
+  `target_type` tinyint(4) NOT NULL COMMENT '关联类型 1博客 2餐食记录 3其他',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_topic_target` (`topic_id`,`target_type`,`target_id`),
+  KEY `idx_target` (`target_id`,`target_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='话题关联表';

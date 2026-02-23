@@ -6,8 +6,6 @@ use plugin\admin\app\model\Base;
 
 /**
  * @property integer $id 主键(主键)
- * @property string $openid 微信小程序openid
- * @property string $unionid 微信unionid
  * @property string $username 用户名
  * @property string $nickname 昵称
  * @property string $password 密码
@@ -15,9 +13,21 @@ use plugin\admin\app\model\Base;
  * @property string $avatar 头像
  * @property string $email 邮箱
  * @property string $mobile 手机
+ * @property string $openid 微信openid
+ * @property string $unionid 微信unionid
+ * @property string $signature 个性签名
+ * @property string $background 背景图
+ * @property integer $age 年龄
+ * @property integer $tall 身高 cm
+ * @property string $weight 体重 kg
+ * @property string $bmi bmi
+ * @property string $bust 胸围 cm
+ * @property string $waist 腰围 cm
+ * @property string $hip 臀围 cm
+ * @property integer $target 卡路里目标
  * @property integer $level 等级
  * @property string $birthday 生日
- * @property integer $money 余额
+ * @property string $money 余额(元)
  * @property integer $score 积分
  * @property string $last_time 登录时间
  * @property string $last_ip 登录ip
@@ -44,7 +54,6 @@ class User extends Base
      * @var string
      */
     protected $primaryKey = 'id';
-    
     
     
     

@@ -1,0 +1,15 @@
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "name": "健康达人",
+    "joinDays": 139,
+    "totalRecords": 168,
+    "avgCalories": 2003,
+    "currentWeight": 87,
+    "targetWeight": 50,
+    "height": 151,
+    "age": 38,
+    "gender": "女"
+  }
+}

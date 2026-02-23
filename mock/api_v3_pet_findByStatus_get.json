@@ -1,0 +1,202 @@
+[
+  {
+    "id": 3831,
+    "category": {
+      "id": 2,
+      "name": "Cats"
+    },
+    "name": "Pet_848",
+    "photoUrls": [
+      "https://example.com/pet/3831/photo1.jpg"
+    ],
+    "tags": [
+      {
+        "id": 1,
+        "name": "friendly"
+      },
+      {
+        "id": 4,
+        "name": "energetic"
+      }
+    ],
+    "status": "available"
+  },
+  {
+    "id": 7,
+    "category": {
+      "id": 1,
+      "name": "Dogs"
+    },
+    "name": "Pet_318",
+    "photoUrls": [
+      "https://example.com/pet/7/photo1.jpg"
+    ],
+    "tags": [
+      {
+        "id": 5,
+        "name": "trained"
+      },
+      {
+        "id": 4,
+        "name": "energetic"
+      }
+    ],
+    "status": "pending"
+  },
+  {
+    "id": 7139,
+    "category": {
+      "id": 3,
+      "name": "Birds"
+    },
+    "name": "Pet_893",
+    "photoUrls": [
+      "https://example.com/pet/7139/photo1.jpg",
+      "https://example.com/pet/7139/photo2.jpg"
+    ],
+    "tags": [
+      {
+        "id": 4,
+        "name": "energetic"
+      }
+    ],
+    "status": "sold"
+  },
+  {
+    "id": 3623,
+    "category": {
+      "id": 3,
+      "name": "Birds"
+    },
+    "name": "Pet_263",
+    "photoUrls": [
+      "https://example.com/pet/3623/photo1.jpg",
+      "https://example.com/pet/3623/photo2.jpg"
+    ],
+    "tags": [
+      {
+        "id": 5,
+        "name": "trained"
+      },
+      {
+        "id": 1,
+        "name": "friendly"
+      }
+    ],
+    "status": "available"
+  },
+  {
+    "id": 8780,
+    "category": {
+      "id": 4,
+      "name": "Fish"
+    },
+    "name": "Pet_314",
+    "photoUrls": [
+      "https://example.com/pet/8780/photo1.jpg"
+    ],
+    "tags": [
+      {
+        "id": 1,
+        "name": "friendly"
+      }
+    ],
+    "status": "pending"
+  },
+  {
+    "id": 4580,
+    "category": {
+      "id": 2,
+      "name": "Cats"
+    },
+    "name": "Pet_718",
+    "photoUrls": [
+      "https://example.com/pet/4580/photo1.jpg",
+      "https://example.com/pet/4580/photo2.jpg"
+    ],
+    "tags": [
+      {
+        "id": 5,
+        "name": "trained"
+      }
+    ],
+    "status": "sold"
+  },
+  {
+    "id": 2053,
+    "category": {
+      "id": 4,
+      "name": "Fish"
+    },
+    "name": "Pet_741",
+    "photoUrls": [
+      "https://example.com/pet/2053/photo1.jpg"
+    ],
+    "tags": [
+      {
+        "id": 3,
+        "name": "calm"
+      },
+      {
+        "id": 2,
+        "name": "playful"
+      }
+    ],
+    "status": "available"
+  },
+  {
+    "id": 175,
+    "category": {
+      "id": 2,
+      "name": "Cats"
+    },
+    "name": "Pet_185",
+    "photoUrls": [
+      "https://example.com/pet/175/photo1.jpg"
+    ],
+    "tags": [
+      {
+        "id": 2,
+        "name": "playful"
+      }
+    ],
+    "status": "pending"
+  },
+  {
+    "id": 1600,
+    "category": {
+      "id": 4,
+      "name": "Fish"
+    },
+    "name": "Pet_825",
+    "photoUrls": [
+      "https://example.com/pet/1600/photo1.jpg"
+    ],
+    "tags": [
+      {
+        "id": 2,
+        "name": "playful"
+      }
+    ],
+    "status": "sold"
+  },
+  {
+    "id": 8982,
+    "category": {
+      "id": 1,
+      "name": "Dogs"
+    },
+    "name": "Pet_47",
+    "photoUrls": [
+      "https://example.com/pet/8982/photo1.jpg",
+      "https://example.com/pet/8982/photo2.jpg"
+    ],
+    "tags": [
+      {
+        "id": 3,
+        "name": "calm"
+      }
+    ],
+    "status": "available"
+  }
+]

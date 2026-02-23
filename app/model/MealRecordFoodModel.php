@@ -3,6 +3,7 @@
 namespace app\model;
 
 
+use app\business\FoodBusiness;
 use app\common\base\BaseModel;
 
 class MealRecordFoodModel extends BaseModel
@@ -20,7 +21,17 @@ class MealRecordFoodModel extends BaseModel
         'image',
         'name',
     ];
-    protected $casts = [
+    protected $casts    = [
         'nutrition' => 'json',
     ];
+
+    public function food()
+    {
+        return $this->hasOne(FoodModel::class, 'id', 'food_id')->select('id', 'name');
+    }
+
+    public function unit()
+    {
+        return $this->hasOne(UnitModel::class, 'id', 'unit_id')->select('id','name');
+    }
 }

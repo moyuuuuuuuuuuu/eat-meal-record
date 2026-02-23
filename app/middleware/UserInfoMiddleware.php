@@ -2,9 +2,8 @@
 
 namespace app\middleware;
 
+use Webman\Http\{Response, Request};
 use app\common\context\UserInfo;
-use Webman\Http\Request;
-use Webman\Http\Response;
 use Webman\MiddlewareInterface;
 
 class UserInfoMiddleware implements MiddlewareInterface

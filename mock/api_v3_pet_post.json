@@ -1,0 +1,19 @@
+{
+  "id": 16995,
+  "category": {
+    "id": 4,
+    "name": "Fish"
+  },
+  "name": "Pet_954",
+  "photoUrls": [
+    "https://example.com/pet/17988/photo1.jpg",
+    "https://example.com/pet/17988/photo2.jpg"
+  ],
+  "tags": [
+    {
+      "id": 3,
+      "name": "calm"
+    }
+  ],
+  "status": "pending"
+}

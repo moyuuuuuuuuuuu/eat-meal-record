@@ -2,8 +2,12 @@
 
 namespace app\common\enum;
 
+use app\common\trait\EnumCases;
+
 enum BusinessCode:int
 {
+
+    use EnumCases;
     /**
      * 请求成功
      */

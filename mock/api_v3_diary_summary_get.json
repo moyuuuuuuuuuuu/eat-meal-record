@@ -1,0 +1,19 @@
+{
+  "code": 200,
+  "data": {
+    "dailyGoal": {
+      "calories": 2000,
+      "protein": 150,
+      "fat": 60,
+      "carbs": 250
+    },
+    "totalIntake": {
+      "calories": 961,
+      "protein": 83,
+      "fat": 25,
+      "carbs": 96
+    },
+    "burnedCalories": 350
+  },
+  "message": "ok"
+}

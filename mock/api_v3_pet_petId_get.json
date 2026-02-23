@@ -1,0 +1,22 @@
+{
+  "id": 1,
+  "category": {
+    "id": 3,
+    "name": "Birds"
+  },
+  "name": "Pet_856",
+  "photoUrls": [
+    "https://example.com/pet/1/photo1.jpg"
+  ],
+  "tags": [
+    {
+      "id": 2,
+      "name": "playful"
+    },
+    {
+      "id": 1,
+      "name": "friendly"
+    }
+  ],
+  "status": "pending"
+}

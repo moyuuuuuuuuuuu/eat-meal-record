@@ -1,0 +1,9 @@
+{
+  "code": 200,
+  "type": "success",
+  "message": "Image uploaded successfully for pet 1",
+  "data": {
+    "petId": "1",
+    "imageUrl": "https://example.com/pet/1/uploaded-1770781272280.jpg"
+  }
+}
