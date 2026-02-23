@@ -4,6 +4,7 @@ namespace app\common\context;
 
 use app\model\UserModel;
 use app\util\Jwt;
+use support\Log;
 
 final class UserInfo
 {
@@ -11,7 +12,8 @@ final class UserInfo
     static function setUserInfo(UserModel $userInfo)
     {
         $userInfo->setAppends(['sex_text', 'avatar_text', 'status_text']);
-        $userInfo = $userInfo->only([
+        $userInfo = $userInfo->toArray();
+        $userInfo = array_intersect_key($userInfo, array_flip([
             'id',
             'username',
             'nickname',
@@ -37,7 +39,7 @@ final class UserInfo
             'sex_text',
             'avatar_text',
             'status_text'
-        ]);
+        ]));
         $token    = Jwt::encode($userInfo, 86400 * 7); // 7天有效期
         return [
             'token'    => $token,
@@ -51,11 +53,10 @@ final class UserInfo
      */
     static function getUserInfo(): ?UserInfoData
     {
+        $request = request();
         // 优先从 request 对象获取中间件已解析好的数据
-        if ($request = request()) {
-            if (isset($request->userInfo)) {
-                return $request->userInfo;
-            }
+        if ($request && isset($request->userInfo)) {
+            return $request->userInfo;
         }
 
         $token = $request ? $request->header('Authorization') : null;

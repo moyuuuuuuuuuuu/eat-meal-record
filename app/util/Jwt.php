@@ -3,6 +3,7 @@
 namespace app\util;
 
 use app\common\context\UserInfoData;
+use support\Log;
 
 class Jwt
 {
@@ -77,7 +78,6 @@ class Jwt
 
         $jwtPayloadJson = static::base64UrlDecode($base64UrlPayload);
         $jwtPayload     = json_decode($jwtPayloadJson, true);
-
         if (!$jwtPayload || !isset($jwtPayload['data'])) {
             return null;
         }
@@ -94,7 +94,7 @@ class Jwt
             return null;
         }
 
-        $payload = json_decode($payloadJson,true);
+        $payload = json_decode($payloadJson, true);
         if (!$payload) {
             return null;
         }
@@ -130,7 +130,7 @@ class Jwt
     {
         if (!static::$aesKey) {
             $key            = getenv('JWT_AES_KEY') ?: 'default_aes_key_654321_098765432';
-            static::$aesKey = substr(hash('sha256', $key), 0, 32);
+            static::$aesKey = substr(hash('sha256', $key,true), 0, 32);
         }
         return static::$aesKey;
     }
@@ -144,7 +144,7 @@ class Jwt
     {
         if (!static::$aesIv) {
             $iv            = getenv('JWT_AES_IV') ?: 'default_iv_123456';
-            static::$aesIv = substr(hash('sha256', $iv), 0, 16);
+            static::$aesIv = substr(hash('sha256', $iv,true), 0, 16);
         }
         return static::$aesIv;
     }

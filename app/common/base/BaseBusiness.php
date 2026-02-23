@@ -11,7 +11,6 @@ abstract class BaseBusiness
 
     protected ?BaseModel $model = null;
     protected ?BaseModel $staticModel = null;
-    protected string $error = '';
 
     // 私有化构造函数，强制通过 instance() 访问
     protected function __construct(BaseModel $model = null)
@@ -29,16 +28,7 @@ abstract class BaseBusiness
         }
 
         // 每次返回前重置状态，防止 CLI 环境下的数据污染
-        return static::$instance->reset();
-    }
-
-    /**
-     * 重置状态：清理上一个请求留下的错误信息等
-     */
-    public function reset(): static
-    {
-        $this->error = '';
-        return $this;
+        return static::$instance;
     }
 
     private function __clone() {}

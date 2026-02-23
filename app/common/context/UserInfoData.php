@@ -26,7 +26,7 @@ namespace app\common\context;
  * @property string $birthday;
  * @property string $status;
  */
-final class UserInfoData
+final class UserInfoData implements \JsonSerializable
 {
     /**
      * @var int
@@ -73,6 +73,16 @@ final class UserInfoData
                 $this->{$k} = $v;
             }
         }
+    }
+
+    public function toArray(): array
+    {
+        return get_object_vars($this);
+    }
+
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
     }
 
     public function __get(string $name)

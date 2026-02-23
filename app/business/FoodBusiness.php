@@ -20,7 +20,8 @@ class FoodBusiness extends BaseBusiness
         $page     = (int)$request->get('page', 1);
         $pageSize = (int)$request->get('pageSize', 10);
         $pageSize = max(1, min($pageSize, 50));
-        $query    = FoodModel::query()->where('status', 1);
+        $query    = FoodModel::query()
+            ->where('status', 1);
 
         if ($name) {
             $query->where('name', 'like', "%$name%");
@@ -37,25 +38,27 @@ class FoodBusiness extends BaseBusiness
                 ->whereColumn($subTable . '.food_id', $mainTable . '.id');
         });
         $paginate = $query->with([
-            'cats' => function ($q) {
-                $q->select('id', 'name');
-            }, 'tags'
-        ])->paginate($pageSize, ['*'], 'page', $page);
+            'cat' => function ($q) {
+                $q->select('cats.id', 'cats.name');
+            },
+            'unit'
+        ])
+            ->paginate($pageSize, ['*'], 'page', $page);
 
-        $items = $paginate->items();
-        /**
-         * @var $item FoodModel
-         */
-        foreach ($items as $item) {
-            // 为列表提供简化的单位信息（第一个单位或默认单位，或者干脆只给基础营养）
-            // UI 稿中搜索结果通常显示每100g的热量，点击进入详情才选单位
-            $item->units = $item->getUnits();
-        }
-        return [
-            'data'     => $items,
-            'total'    => $paginate->total(),
-            'paginate' => $paginate,
-        ];
+        $paginate->getCollection()->transform(function ($item) {
+            return [
+                'id'       => $item->id,
+                'name'     => $item->name,
+                'category' => $item->cat->name,
+                'unit'     => $item->unit->name,
+                'calories' => $item->nutrition['kcal'],
+                'protein'  => $item->nutrition['protein'],
+                'carbs'    => $item->nutrition['carbohydrate'],
+                'fibers'   => $item->nutrition['fiber'],
+                'units'    => $item->getUnits()
+            ];
+        });
+        return $paginate->toArray();
     }
 
     public function detail(Request $request)
@@ -66,7 +69,7 @@ class FoodBusiness extends BaseBusiness
         }
 
         $food = Food::query()->with([
-            'cats' => function ($q) {
+            'cat' => function ($q) {
                 $q->select('id', 'name');
             }, 'tags'
         ])->find($id);

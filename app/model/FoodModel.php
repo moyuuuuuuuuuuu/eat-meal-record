@@ -4,6 +4,9 @@ namespace app\model;
 
 
 use app\common\base\BaseModel;
+use app\common\context\NutritionTemplate;
+use app\common\enum\foodUnit\IsDefault;
+use support\Log;
 
 class FoodModel extends BaseModel
 {
@@ -32,19 +35,9 @@ class FoodModel extends BaseModel
      */
     public function getUnits()
     {
-        $foodUnits = $this->foodUnit();
-
+        $foodUnits = FoodUnitModel::query()->where('food_id', $this->id)->get();
         $units     = [];
         $nutrition = $this->nutrition;
-        // 默认包含 100g 这一项，方便前端展示
-        $units[] = [
-            'unit_id'    => 0,
-            'unit_name'  => '克',
-            'weight'     => 100.00,
-            'is_default' => false,
-            'nutrition'  => $nutrition
-        ];
-
         foreach ($foodUnits as $fu) {
             $unit = $fu->unit;
             if (!$unit) continue;
@@ -55,11 +48,11 @@ class FoodModel extends BaseModel
                 'unit_name'  => $unit->name,
                 'weight'     => (float)$fu->weight,
                 'is_default' => (bool)$fu->is_default,
-                'nutrition'  => array_map(function ($value) use ($ratio) {
+                'nutrition'  => NutritionTemplate::instance()->format(array_map(function ($value) use ($ratio) {
                     return is_numeric($value)
                         ? round($value * $ratio, 2)
                         : $value;
-                }, $nutrition)
+                }, $nutrition))
             ];
         }
 
@@ -77,9 +70,24 @@ class FoodModel extends BaseModel
         return $this->hasOne(UserModel::class, 'id', 'user_id');
     }
 
-    public function cats()
+    public function cat()
     {
         return $this->hasOne(CatModel::class, 'id', 'cat_id');
+    }
+
+    public function unit()
+    {
+        $foodUnitTable = (new FoodUnitModel())->getTable();
+        $unitTable     = (new UnitModel())->getTable();
+        return $this->hasOneThrough(
+            UnitModel::class,
+            FoodUnitModel::class,
+            'food_id',
+            'id',
+            'id',
+            'unit_id'
+        )->select([$unitTable . '.id', $unitTable . '.name'])
+            ->where($foodUnitTable . '.is_default', IsDefault::YES->value);
     }
 
     /**
@@ -89,10 +97,5 @@ class FoodModel extends BaseModel
     {
         $tagTable = (new TagModel())->getTable();
         return $this->belongsToMany(TagModel::class, 'food_tags', 'food_id', 'tag_id')->select($tagTable . '.id', $tagTable . '.name', $tagTable . '.type');
-    }
-
-    public function foodUnit()
-    {
-        return $this->hasOne(FoodUnitModel::class, 'food_id', 'id');
     }
 }

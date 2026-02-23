@@ -20,7 +20,7 @@ class FeedController extends BaseController
 
     public function posts(Request $request)
     {
-        return $this->success('ok', FeedBusiness::instance()->list($request));
+        return $this->success('ok', FeedBusiness::instance()->post($request));
     }
 
     public function like(Request $request)

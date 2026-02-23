@@ -31,4 +31,9 @@ class FeedBusiness extends BaseBusiness
     {
         return ['status' => 'success', 'new_likes' => 121];
     }
+
+    public function post(Request $request):array
+    {
+
+    }
 }

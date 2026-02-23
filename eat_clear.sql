@@ -28285,6 +28285,18 @@ CREATE TABLE `blog`
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT = '博客'
   ROW_FORMAT = Dynamic;
+alter table blog
+    change like_count `like` int unsigned default '0' null comment '点赞数量';
+
+alter table blog
+    change view_count view int unsigned default '0' null comment '查看数量';
+
+alter table blog
+    change comment_count comment int unsigned default '0' null comment '评论数量';
+
+alter table blog
+    change fav_count fav int unsigned default '0' null comment '收藏数量';
+
 
 DROP TABLE IF EXISTS `blog_attach`;
 CREATE TABLE `blog_attach`

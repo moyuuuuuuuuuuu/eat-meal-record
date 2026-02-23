@@ -8,15 +8,16 @@ use app\model\FoodUnitModel;
 use plugin\admin\app\model\Dict;
 use plugin\admin\app\model\Food;
 use support\Cache;
+use support\Log;
 
 class NutritionTemplate
 {
     const KEY_NAME = 'nutrition';
     static $instance;
-
+    protected $showKey = [];
     private function __construct()
     {
-
+        $this->showKey = explode(',',getenv('NUTRITION_TEMPLATE_SHOW_KEY'));
     }
 
     static function instance()
@@ -27,22 +28,30 @@ class NutritionTemplate
         return self::$instance;
     }
 
-    public function template(): array
+    /**
+     * @param bool $witChinesehKey 是否携带中文键名
+     *  为true时返回[{name:"碳水"，value:"carbs}]
+     *  false时返回{carbs:0.00}}
+     * @return array
+     */
+    public function template(bool $witChinesehKey = false): array
     {
-        if (!Cache::has(self::KEY_NAME)) {
+        $cacheKey = self::KEY_NAME . (int)$witChinesehKey;
+        if (!$nutritionTemplate = Cache::get($cacheKey)) {
             $nutritionTemplate = Dict::get(self::KEY_NAME);
-            foreach ($nutritionTemplate as $k => $v) {
-                unset($nutritionTemplate[$k]);
-                $nutritionTemplate[$v['value']] = 0.00;
+            if (!$witChinesehKey) {
+                foreach ($nutritionTemplate as $k => $v) {
+                    unset($nutritionTemplate[$k]);
+                    $nutritionTemplate[$v['value']] = 0.00;
+                }
             }
-            Cache::set(self::KEY_NAME, $nutritionTemplate);
-        } else {
-            $nutritionTemplate = Cache::get(self::KEY_NAME);
+            Cache::set($cacheKey, $nutritionTemplate);
         }
         return $nutritionTemplate;
     }
 
-    public function format(array $nutrition, bool $formatJson = false)
+
+    public function fill(array $nutrition, bool $formatJson = false)
     {
         $nutrition = array_merge($this->template(), $nutrition);
         if (!$formatJson) {
@@ -74,7 +83,7 @@ class NutritionTemplate
             throw new DataNotFoundException('食品营养数据不存在');
         }
 
-        $nutritionTemplate = $this->format($foodNutrition);
+        $nutritionTemplate = $this->fill($foodNutrition);
 
         // 高精度计算
         $totalWeight = bcmul((string)$foodUnitInfo->weight, (string)$number, 4);
@@ -85,5 +94,21 @@ class NutritionTemplate
         }
 
         return $nutritionTemplate;
+    }
+
+    public function format(array $nutrition): array
+    {
+        $template = $this->template(true);
+        foreach ($template as $key=> &$value) {
+            $field            = $value['value'];
+            if(!in_array($field, $this->showKey)){
+                unset($template[$key]);
+                continue;
+            }
+            $value['value'] = $nutrition[$field] ?? 0.00;
+            $value['key']   = $field;
+        }
+        unset($value);
+        return $template;
     }
 }
