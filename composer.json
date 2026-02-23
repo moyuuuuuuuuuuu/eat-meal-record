@@ -32,7 +32,8 @@
     "moyuuuuuuuu/qianfan": "^1.0",
     "webman/redis-queue": "^2.1",
     "webman/validation": "^2.2",
-    "webman/cache": "^2.1"
+    "webman/cache": "^2.1",
+    "symfony/mailer": "^7.4"
   },
   "suggest": {
     "ext-event": "For better performance. "

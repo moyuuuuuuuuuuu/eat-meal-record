@@ -1,0 +1,306 @@
+{
+  "code": 0,
+  "data": {
+    "foods": [
+      {
+        "name": "米饭",
+        "unit": "2 碗",
+        "weight": "300g",
+        "nutrition": [
+          {
+            "name": "protein",
+            "value": 7.8
+          },
+          {
+            "name": "fat",
+            "value": 0.9
+          },
+          {
+            "name": "carbohydrate",
+            "value": 84
+          },
+          {
+            "name": "fiber",
+            "value": 0.9
+          },
+          {
+            "name": "vitaminB1",
+            "value": 0.06
+          },
+          {
+            "name": "vitaminB2",
+            "value": 0.09
+          },
+          {
+            "name": "niacin",
+            "value": 5.7
+          },
+          {
+            "name": "vitaminE",
+            "value": 0.6
+          },
+          {
+            "name": "calcium",
+            "value": 21
+          },
+          {
+            "name": "phosphorus",
+            "value": 186
+          },
+          {
+            "name": "potassium",
+            "value": 90
+          },
+          {
+            "name": "sodium",
+            "value": 4.5
+          },
+          {
+            "name": "magnesium",
+            "value": 45
+          },
+          {
+            "name": "iron",
+            "value": 1.2
+          },
+          {
+            "name": "zinc",
+            "value": 0.9
+          },
+          {
+            "name": "selenium",
+            "value": 1.2
+          }
+        ]
+      },
+      {
+        "name": "黄焖鸡",
+        "unit": "1 份",
+        "weight": "200g",
+        "nutrition": [
+          {
+            "name": "protein",
+            "value": 39.6
+          },
+          {
+            "name": "fat",
+            "value": 18.8
+          },
+          {
+            "name": "carbohydrate",
+            "value": 2.6
+          },
+          {
+            "name": "fiber",
+            "value": 1.2
+          },
+          {
+            "name": "vitaminA",
+            "value": 48
+          },
+          {
+            "name": "vitaminB6",
+            "value": 0.6
+          },
+          {
+            "name": "vitaminB12",
+            "value": 0.6
+          },
+          {
+            "name": "vitaminE",
+            "value": 0.36
+          },
+          {
+            "name": "calcium",
+            "value": 18
+          },
+          {
+            "name": "phosphorus",
+            "value": 312
+          },
+          {
+            "name": "potassium",
+            "value": 502
+          },
+          {
+            "name": "sodium",
+            "value": 126.6
+          },
+          {
+            "name": "magnesium",
+            "value": 38
+          },
+          {
+            "name": "iron",
+            "value": 3
+          },
+          {
+            "name": "zinc",
+            "value": 3.6
+          },
+          {
+            "name": "selenium",
+            "value": 23.4
+          }
+        ]
+      },
+      {
+        "name": "苹果",
+        "unit": "1 个",
+        "weight": "150g",
+        "nutrition": [
+          {
+            "name": "protein",
+            "value": 0.3
+          },
+          {
+            "name": "fat",
+            "value": 0.2
+          },
+          {
+            "name": "carbohydrate",
+            "value": 20.7
+          },
+          {
+            "name": "fiber",
+            "value": 3.6
+          },
+          {
+            "name": "vitaminC",
+            "value": 6
+          },
+          {
+            "name": "potassium",
+            "value": 178
+          },
+          {
+            "name": "sodium",
+            "value": 1.5
+          },
+          {
+            "name": "magnesium",
+            "value": 9
+          },
+          {
+            "name": "iron",
+            "value": 0.3
+          },
+          {
+            "name": "zinc",
+            "value": 0.1
+          },
+          {
+            "name": "vitaminA",
+            "value": 3
+          },
+          {
+            "name": "vitaminE",
+            "value": 0.2
+          },
+          {
+            "name": "folate",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "name": "苏打水",
+        "unit": "1 盒",
+        "weight": "330g",
+        "nutrition": [
+          {
+            "name": "sodium",
+            "value": 33
+          }
+        ]
+      }
+    ],
+    "total_nutritions": [
+      {
+        "name": "protein",
+        "value": 47.7
+      },
+      {
+        "name": "fat",
+        "value": 19.9
+      },
+      {
+        "name": "carbohydrate",
+        "value": 107.3
+      },
+      {
+        "name": "fiber",
+        "value": 5.7
+      },
+      {
+        "name": "vitaminA",
+        "value": 51
+      },
+      {
+        "name": "vitaminC",
+        "value": 6
+      },
+      {
+        "name": "vitaminE",
+        "value": 1.16
+      },
+      {
+        "name": "vitaminB1",
+        "value": 0.06
+      },
+      {
+        "name": "vitaminB2",
+        "value": 0.09
+      },
+      {
+        "name": "vitaminB6",
+        "value": 0.6
+      },
+      {
+        "name": "vitaminB12",
+        "value": 0.6
+      },
+      {
+        "name": "niacin",
+        "value": 5.7
+      },
+      {
+        "name": "folate",
+        "value": 3
+      },
+      {
+        "name": "calcium",
+        "value": 39
+      },
+      {
+        "name": "phosphorus",
+        "value": 498
+      },
+      {
+        "name": "potassium",
+        "value": 770
+      },
+      {
+        "name": "sodium",
+        "value": 165.1
+      },
+      {
+        "name": "magnesium",
+        "value": 92
+      },
+      {
+        "name": "iron",
+        "value": 4.5
+      },
+      {
+        "name": "zinc",
+        "value": 4.6
+      },
+      {
+        "name": "selenium",
+        "value": 24.6
+      }
+    ]
+  },
+  "msg": ""
+}
