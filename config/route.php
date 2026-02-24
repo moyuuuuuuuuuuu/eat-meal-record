@@ -13,7 +13,7 @@
  */
 
 use Webman\Route;
-use app\controller\{
+use app\controller\{TopicController,
     UserController,
     RecommendationController,
     AuthController,
@@ -63,7 +63,13 @@ Route::group('/feed', function () {
     Route::get('/list', [FeedController::class, 'list']);
     Route::get('/detail', [FeedController::class, 'detail']);
     Route::get('/posts', [FeedController::class, 'posts']);
+    Route::post('/create', [FeedController::class, 'create']);
     Route::post('/post/like', [FeedController::class, 'like']);
+});
+
+//话题
+Route::group('/topic', function () {
+    Route::get('/search', [TopicController::class, 'search']);
 });
 
 

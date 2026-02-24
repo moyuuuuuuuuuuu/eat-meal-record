@@ -28270,10 +28270,10 @@ CREATE TABLE `blog`
     `id`            bigint                                                        NOT NULL AUTO_INCREMENT,
     `user_id`       bigint                                                        NULL DEFAULT 0 COMMENT '用户id',
     `title`         varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '标题',
-    `like_count`    int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '点赞数量',
-    `view_count`    int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '查看数量',
-    `comment_count` int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '评论数量',
-    `fav_count`     int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '收藏数量',
+    `like`    int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '点赞数量',
+    `view`    int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '查看数量',
+    `comment` int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '评论数量',
+    `fav`     int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '收藏数量',
     `content`       text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci         NULL,
     `status`        tinyint(1)                                                    NULL DEFAULT NULL COMMENT '状态 0隐藏 1所有人可见 2仅自己可见 3仅好友可见',
     `created_at`    datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -28285,17 +28285,6 @@ CREATE TABLE `blog`
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT = '博客'
   ROW_FORMAT = Dynamic;
-alter table blog
-    change like_count `like` int unsigned default '0' null comment '点赞数量';
-
-alter table blog
-    change view_count view int unsigned default '0' null comment '查看数量';
-
-alter table blog
-    change comment_count comment int unsigned default '0' null comment '评论数量';
-
-alter table blog
-    change fav_count fav int unsigned default '0' null comment '收藏数量';
 
 
 DROP TABLE IF EXISTS `blog_attach`;
@@ -28325,7 +28314,7 @@ CREATE TABLE `blog_comment`
     `user_id`    bigint                                                NULL DEFAULT 0 COMMENT '用户id',
     `content`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
     `parent_id`  bigint                                                NULL DEFAULT 0 COMMENT '父评论id',
-    `like_count` int                                                   NULL DEFAULT 0 COMMENT '点赞数量',
+    `like` int                                                   NULL DEFAULT 0 COMMENT '点赞数量',
     `created_at` datetime                                              NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` datetime                                              NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`) USING BTREE,
@@ -28475,7 +28464,7 @@ CREATE TABLE `recipe`
     `name`       varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
     `summary`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci         NULL,
     `content`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci         NULL,
-    `like_count` int                                                           NULL DEFAULT 0 COMMENT '点赞数量',
+    `like` int                                                           NULL DEFAULT 0 COMMENT '点赞数量',
     `created_at` datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`) USING BTREE,
@@ -28522,12 +28511,12 @@ CREATE TABLE `topic`
 (
     `id`          bigint                                                        NOT NULL AUTO_INCREMENT COMMENT '话题ID',
     `title`       varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '话题标题',
-    `cover_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '话题封面图片',
+    `thumb` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '话题封面图片',
     `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '话题描述',
     `creator_id`  bigint                                                        NOT NULL COMMENT '创建者用户ID',
     `status`      tinyint                                                       NULL DEFAULT 1 COMMENT '状态 1正常 0禁用',
-    `join_count`  int                                                           NULL DEFAULT 0 COMMENT '参与人数',
-    `post_count`  int                                                           NULL DEFAULT 0 COMMENT '关联文章/餐食记录数',
+    `join`  int                                                           NULL DEFAULT 0 COMMENT '参与人数',
+    `post`  int                                                           NULL DEFAULT 0 COMMENT '关联文章/餐食记录数',
     `created_at`  datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at`  datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`) USING BTREE,
@@ -28537,6 +28526,12 @@ CREATE TABLE `topic`
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = '话题表'
   ROW_FORMAT = Dynamic;
+
+
+
+rename table topic to topics;
+
+
 
 DROP TABLE IF EXISTS `topic_relation`;
 CREATE TABLE `topic_relation`

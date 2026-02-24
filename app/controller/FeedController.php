@@ -27,4 +27,9 @@ class FeedController extends BaseController
     {
         return $this->success('操作成功', FeedBusiness::instance()->like($request));
     }
+
+    public function create(Request $request)
+    {
+        return $this->success('ok', FeedBusiness::instance()->create($request));
+    }
 }

@@ -5,7 +5,7 @@ namespace app\common\validate;
 use app\common\enum\MealRecordType;
 use support\validation\{Rule, Validator};
 
-class MealRecordValidate extends Validator
+class MealRecordValidator extends Validator
 {
 
     protected array $messages = [

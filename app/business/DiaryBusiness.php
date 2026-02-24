@@ -8,7 +8,7 @@ use app\common\enum\BusinessCode;
 use app\common\enum\MealRecordType;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ParamException;
-use app\common\validate\MealRecordValidate;
+use app\common\validate\MealRecordValidator;
 use app\model\FoodModel;
 use app\model\FoodUnitModel;
 use app\model\MealRecordFoodModel;
@@ -184,7 +184,7 @@ class DiaryBusiness extends BaseBusiness
          ];*/
     }
 
-    #[Validate(validator: MealRecordValidate::class, scene: 'create')]
+    #[Validate(validator: MealRecordValidator::class, scene: 'create')]
     public function addMeal(Request $request)
     {
         return Db::transaction(function () use ($request) {
@@ -312,7 +312,7 @@ class DiaryBusiness extends BaseBusiness
         });
     }
 
-    #[Validate(validator: MealRecordValidate::class, scene: 'delete')]
+    #[Validate(validator: MealRecordValidator::class, scene: 'delete')]
     public function delete(Request $request)
     {
         return Db::transaction(function () use ($request) {
