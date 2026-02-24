@@ -28285,7 +28285,8 @@ CREATE TABLE `blog`
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT = '博客'
   ROW_FORMAT = Dynamic;
-
+alter table blog
+    change status visibility tinyint(1) null comment '状态 0隐藏 1所有人可见 2仅自己可见 3仅好友可见';
 
 DROP TABLE IF EXISTS `blog_attach`;
 CREATE TABLE `blog_attach`

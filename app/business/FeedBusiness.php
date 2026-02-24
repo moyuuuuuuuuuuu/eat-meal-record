@@ -2,10 +2,10 @@
 
 namespace app\business;
 
-use support\{Request, Db};
+use support\{Log, Request, Db};
 use support\exception\BusinessException;
 use support\validation\annotation\Validate;
-use app\common\enum\{BusinessCode, NormalStatus};
+use app\common\enum\{blog\Status, BusinessCode, NormalStatus};
 use app\common\{base\BaseBusiness, validate\FeedValidator};
 use app\model\{TopicModel, BlogModel, BlogLocationModel, BlogAttachModel, BlogTopicModel};
 
@@ -13,10 +13,32 @@ class FeedBusiness extends BaseBusiness
 {
     public function list(Request $request): array
     {
-        return [
-            ['id' => 1, 'title' => '今日份减脂餐', 'content' => '鸡胸肉+西兰花...', 'author' => '健康达人', 'likes' => 120],
-            ['id' => 2, 'title' => '坚持运动第30天', 'content' => '打卡！', 'author' => '运动狂', 'likes' => 350]
-        ];
+        $currentUserId = $request->userInfo->id;
+        $page          = (int)$request->get('page', 1);
+        $pageSize      = (int)$request->get('pageSize', 10);
+        $query         = BlogModel::query();
+        //status可见度 0隐藏 1公开 2尽自己可见 3仅好友可见
+        $query->where(function ($q) use ($currentUserId) {
+            $q->where('status', Status::ALL->value);
+            if ($currentUserId) {
+                $q->orWhere(function ($sq) use ($currentUserId) {
+                    $sq->where('status', Status::SELF->value)->where('user_id', $currentUserId);
+                });
+            }
+        });
+        //排序按照最新（优先级最高）、浏览量（优先级第三）、点赞量（优先级第二）、收藏量推荐（优先级第四）
+        $query->orderByDesc('id')
+            ->orderByDesc('like')
+            ->orderByDesc('view')
+            ->orderByDesc('fav');
+
+        $paginate = $query->paginate($pageSize, ['*'], 'page', $page);
+        $paginate->getCollection()->transform(function ($item) {
+            var_dump($item->format());
+            return $item->format();
+        });
+        var_dump($paginate);
+        return $paginate->toArray();
     }
 
     public function detail(Request $request): array
