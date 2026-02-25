@@ -4,14 +4,19 @@ namespace app\business;
 
 use app\common\base\BaseBusiness;
 use app\common\context\UserInfo;
+use app\format\UserInformationFormat;
 use app\model\UserModel;
 use app\model\MealRecordModel;
+use app\model\UserStepsModel;
+use app\queue\contant\QueueEventName;
 use app\service\wechat\WxMini;
 use app\util\Jwt;
 use Carbon\Carbon;
 use plugin\admin\app\model\User;
 use support\Context;
+use support\Db;
 use support\Request;
+use Webman\RedisQueue\Client;
 
 class UserBusiness extends BaseBusiness
 {
@@ -31,6 +36,7 @@ class UserBusiness extends BaseBusiness
 
         $openid  = $wxResult['openId'];
         $unionid = $wxResult['unionId'] ?? null;
+        $sessionKey = $wxResult['sessionKey'] ?? null;
 
         if (!$openid) {
             throw new \Exception('获取 openid 失败');
@@ -59,7 +65,65 @@ class UserBusiness extends BaseBusiness
             $user->save();
         }
 
+        // 临时存储 session_key 用于后续解密（通常可以存入 Redis，这里简化处理返回或后续由前端传入）
+        // 实际上 wx.getWeRunData 需要最新的 session_key，建议在登录时保存到 cache
+        if ($sessionKey) {
+            \support\Cache::set('wx_session_key_' . $user->id, $sessionKey, 7200);
+        }
+
+        /*Client::send(QueueEventName::AFTER_LOGIN->value, [
+            'userId'        => $user->id,
+            'ip'            => $ip,
+            'lastLoginTime' => now(),
+        ]);*/
         return UserInfo::setUserInfo(userInfo: $user);
+    }
+
+    /**
+     * 上传/同步微信步数
+     *
+     * @param Request $request
+     * @return bool
+     * @throws \Exception
+     */
+    public function uploadSteps(Request $request): bool
+    {
+        $userId        = $request->userInfo->id;
+        $encryptedData = $request->post('encryptedData');
+        $iv            = $request->post('iv');
+
+        if (!$encryptedData || !$iv) {
+            throw new \Exception('缺少必要参数');
+        }
+
+        // 从缓存获取 session_key
+        $sessionKey = \support\Cache::get('wx_session_key_' . $userId);
+        if (!$sessionKey) {
+            throw new \Exception('登录态已失效，请重新登录', 401);
+        }
+
+        // 解密数据
+        $data = WxMini::getInstance()->parseEncryptData($encryptedData, $sessionKey, $iv);
+        
+        // stepInfoList 包含过去三十天的步数
+        $stepInfoList = $data['stepInfoList'] ?? [];
+        if (empty($stepInfoList)) {
+            return false;
+        }
+
+        // 我们通常只关心今天的步数，或者同步最近几天的
+        // 这里同步所有返回的步数记录
+        foreach ($stepInfoList as $info) {
+            $date  = date('Y-m-d', $info['timestamp']);
+            $steps = $info['step'];
+
+            UserStepsModel::updateOrCreate(
+                ['user_id' => $userId, 'record_date' => $date],
+                ['steps' => $steps]
+            );
+        }
+
+        return true;
     }
 
     public function mock(int $id, string $ip)
@@ -144,5 +208,15 @@ class UserBusiness extends BaseBusiness
             'age'           => $age,
             'gender'        => $gender,
         ];
+    }
+
+    /**
+     * 用户信息
+     * @param Request $request
+     * @return array
+     */
+    public function information(Request $request): array
+    {
+        return (new UserInformationFormat($request))->format();
     }
 }

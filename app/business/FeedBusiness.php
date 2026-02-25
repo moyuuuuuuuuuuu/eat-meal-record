@@ -2,42 +2,67 @@
 
 namespace app\business;
 
-use support\{Log, Request, Db};
+use app\common\{base\BaseBusiness, validate\FeedValidator};
+use app\common\enum\{blog\Visibility, BusinessCode, LikeFavType, NormalStatus};
+use app\format\BlogFormat;
+use app\model\{BlogAttachModel, BlogLocationModel, BlogModel, BlogTopicModel, FollowModel, LikeModel, TopicModel};
+use support\{Db, Request};
 use support\exception\BusinessException;
 use support\validation\annotation\Validate;
-use app\common\enum\{blog\Status, BusinessCode, NormalStatus};
-use app\common\{base\BaseBusiness, validate\FeedValidator};
-use app\model\{TopicModel, BlogModel, BlogLocationModel, BlogAttachModel, BlogTopicModel};
 
 class FeedBusiness extends BaseBusiness
 {
+    /**
+     * 动态列表
+     * @param Request $request
+     * @return array
+     */
     public function list(Request $request): array
     {
-        $currentUserId = $request->userInfo->id;
-        $page          = (int)$request->get('page', 1);
-        $pageSize      = (int)$request->get('pageSize', 10);
-        $query         = BlogModel::query();
-        //status可见度 0隐藏 1公开 2尽自己可见 3仅好友可见
-        $query->where(function ($q) use ($currentUserId) {
-            $q->where('status', Status::ALL->value);
-            if ($currentUserId) {
-                $q->orWhere(function ($sq) use ($currentUserId) {
-                    $sq->where('status', Status::SELF->value)->where('user_id', $currentUserId);
-                });
-            }
-        });
-        //排序按照最新（优先级最高）、浏览量（优先级第三）、点赞量（优先级第二）、收藏量推荐（优先级第四）
+        $currentUserId = $request->userInfo->id ?? 0;
+
+        $page     = (int)$request->get('page', 1);
+        $pageSize = (int)$request->get('pageSize', 10);
+
+        $query = BlogModel::query();
+        $query->where('visibility', '!=', Visibility::HIDDEN->value)
+            ->where(function ($q) use ($currentUserId) {
+                // 公开
+                $q->where('visibility', Visibility::EVERYONE->value);
+                if ($currentUserId) {
+                    // 仅自己
+                    $q->orWhere(function ($sq) use ($currentUserId) {
+                        $sq->where('visibility', Visibility::SELF->value)
+                            ->where('user_id', $currentUserId);
+                    });
+                    // 仅好友（互相关注）
+                    $q->orWhere(function ($sq) use ($currentUserId) {
+                        $sq->where('visibility', Visibility::FRIEND->value)
+                            ->whereExists(function ($sub) use ($currentUserId) {
+                                $followTable = (new FollowModel())->getTable();
+                                $blogTable   = (new BlogModel())->getTable();
+                                $sub->select(Db::raw(1))
+                                    ->from($followTable)
+                                    ->whereColumn($followTable . '.follow_id', $blogTable . '.user_id')
+                                    ->where($followTable . '.user_id', $currentUserId)
+                                    ->where($followTable . '.is_attention', NormalStatus::YES);
+                            });
+                    });
+                }
+            });
+        // 排序优先级：最新 > 点赞 > 浏览 > 收藏
         $query->orderByDesc('id')
             ->orderByDesc('like')
             ->orderByDesc('view')
             ->orderByDesc('fav');
 
         $paginate = $query->paginate($pageSize, ['*'], 'page', $page);
-        $paginate->getCollection()->transform(function ($item) {
-            var_dump($item->format());
-            return $item->format();
+
+        $blogFormat = (new BlogFormat($request));
+        $paginate->getCollection()->transform(function ($item) use ($blogFormat) {
+            return $blogFormat->format($item);
         });
-        var_dump($paginate);
+
         return $paginate->toArray();
     }
 
@@ -53,9 +78,49 @@ class FeedBusiness extends BaseBusiness
         ];
     }
 
+    /**
+     * 点赞动态
+     * @param Request $request
+     * @return mixed
+     */
+    #[Validate(validator: FeedValidator::class, scene: 'like')]
     public function like(Request $request)
     {
-        return ['status' => 'success', 'new_likes' => 121];
+        $userId = $request->userInfo->id;
+        $blogId = $request->post('id');
+
+        return Db::transaction(function () use ($userId, $blogId) {
+            $blog = BlogModel::lockForUpdate()->find($blogId);
+            if (!$blog) {
+                throw new BusinessException('动态不存在', BusinessCode::BUSINESS_ERROR->value);
+            }
+
+            $like = LikeModel::where('user_id', $userId)
+                ->where('target_id', $blogId)
+                ->where('type', LikeFavType::BLOG->value)
+                ->first();
+
+            if ($like) {
+                // 取消点赞
+                $like->delete();
+                BlogModel::query()->where('id', $blogId)->decrement('like');
+                $isLike = false;
+            } else {
+                // 点赞
+                LikeModel::create([
+                    'user_id'   => $userId,
+                    'target_id' => $blogId,
+                    'type'      => LikeFavType::BLOG->value,
+                ]);
+                BlogModel::query()->where('id', $blogId)->increment('like');
+                $isLike = true;
+            }
+
+            return [
+                'isLike' => $isLike,
+                'like'   => $blog->like
+            ];
+        });
     }
 
     public function post(Request $request)
@@ -63,22 +128,29 @@ class FeedBusiness extends BaseBusiness
         return [];
     }
 
+    /**
+     * 新增动态
+     * @param Request $request
+     * @return array
+     */
     #[Validate(validator: FeedValidator::class, scene: 'create')]
     public function create(Request $request): array
     {
         return Db::transaction(function () use ($request) {
             $content     = $request->post('content');
-            $topicIdList = $request->post('topics');
+            $topicIdList = $request->post('topic');
             $location    = $request->post('location');
             $attach      = $request->post('attach');
+            $visibility  = $request->post('visibility', Visibility::EVERYONE->value);
 
             $blogInfo = BlogModel::create([
-                'user_id' => $request->userInfo->id,
-                'content' => $content,
-                'like'    => 0,
-                'fav'     => 0,
-                'view'    => 0,
-                'comment' => 0
+                'user_id'    => $request->userInfo->id,
+                'content'    => $content,
+                'like'       => 0,
+                'fav'        => 0,
+                'view'       => 0,
+                'comment'    => 0,
+                'visibility' => $visibility,
             ]);
             if (!$blogInfo) {
                 throw new BusinessException('动态发布失败', BusinessCode::BUSINESS_ERROR->value);
@@ -90,7 +162,7 @@ class FeedBusiness extends BaseBusiness
                 $topicList            = TopicModel::query()
                     ->whereIn('id', $topicIdList)
                     ->where('status', NormalStatus::YES->value)
-                    ->pluck('id');
+                    ->pluck('id')->toArray();
                 $batchTopicInsertList = [];
                 foreach ($topicList as $topic) {
                     $batchTopicInsertList[] = [
@@ -139,7 +211,7 @@ class FeedBusiness extends BaseBusiness
                     throw new BusinessException('动态附件保存失败', BusinessCode::BUSINESS_ERROR->value);
                 }
             }
-            return $blogInfo->format();
+            return (new BlogFormat($request))->format($blogInfo);
         });
     }
 }

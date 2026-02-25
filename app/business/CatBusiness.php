@@ -3,6 +3,7 @@
 namespace app\business;
 
 use app\common\base\BaseBusiness;
+use app\format\CatFormat;
 use app\model\CatModel;
 use support\Request;
 
@@ -13,9 +14,12 @@ class CatBusiness extends BaseBusiness
         if(!$this->isLoadedModel()){
             $this->loadModel(new CatModel());
         }
-        return $this->model::query()
+        $list = $this->model::query()
             ->orderBy('sort')
             ->orderBy('id')
-            ->get(['id', 'name', 'pid', 'sort'])->toArray();
+            ->get(['id', 'name', 'pid', 'sort']);
+        
+        $format = new CatFormat($request);
+        return $list->map(fn($item) => $format->format($item))->toArray();
     }
 }

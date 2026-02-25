@@ -201,39 +201,39 @@ CREATE TABLE `eat_clear`.`wa_uploads`
 DROP TABLE IF EXISTS `eat_clear`.`wa_users`;
 CREATE TABLE `eat_clear`.`wa_users`
 (
-    `id`         INT UNSIGNED                                                    NOT NULL AUTO_INCREMENT Comment "主键",
-    `username`   VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci    NOT NULL Comment "用户名",
-    `nickname`   VARCHAR(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci    NOT NULL Comment "昵称",
-    `password`   VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci   NOT NULL Comment "密码",
+    `id`         INT UNSIGNED                                                        NOT NULL AUTO_INCREMENT Comment "主键",
+    `username`   VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci        NOT NULL Comment "用户名",
+    `nickname`   VARCHAR(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci        NOT NULL Comment "昵称",
+    `password`   VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci       NOT NULL Comment "密码",
     `sex`        ENUM ("1","2","3") CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '1' Comment "性别1男2女3保密",
-    `avatar`     VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci   NULL Comment "头像",
-    `email`      VARCHAR(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci   NULL Comment "邮箱",
-    `mobile`     VARCHAR(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci    NULL Comment "手机",
-    `openid`     varchar(255) character set utf8mb4 collate utf8mb4_general_ci   null comment "微信openid",
-    `unionid`    varchar(255) character set utf8mb4 collate utf8mb4_general_ci   null comment "微信unionid",
-    `signature`  varchar(255) character set utf8mb4 collate utf8mb4_general_ci   null comment "个性签名",
-    `background` varchar(255) character set utf8mb4 collate utf8mb4_general_ci   null comment "背景图",
-    `age`        int                                                             null default 0 comment "年龄",
-    `tall`       int                                                             null default null comment "身高 cm",
-    `weight`     decimal(10, 2)                                                  null default null comment "体重 kg",
-    `bmi`        decimal(10, 2)                                                  null default null comment "bmi",
-    `bust`       decimal(10, 2)                                                  null default null comment "胸围 cm",
-    `waist`      decimal(10, 2)                                                  null default null comment "腰围 cm",
-    `hip`        decimal(10, 2)                                                  null default null comment "臀围 cm",
-    `target`     int                                                             null default null comment "卡路里目标",
-    `level`      TINYINT                                                         NOT NULL DEFAULT 0 Comment "等级",
-    `birthday`   DATE                                                            NULL Comment "生日",
-    `money`      DECIMAL(10, 2)                                                  NOT NULL DEFAULT 0.00 Comment "余额(元)",
-    `score`      INT                                                             NOT NULL DEFAULT 0 Comment "积分",
-    `last_time`  DATETIME                                                        NULL Comment "登录时间",
-    `last_ip`    VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci    NULL Comment "登录ip",
-    `join_time`  DATETIME                                                        NULL Comment "注册时间",
-    `join_ip`    VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci    NULL Comment "注册ip",
-    `token`      VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci    NULL Comment "token",
-    `created_at` DATETIME                                                        NULL Comment "创建时间",
-    `updated_at` DATETIME                                                        NULL Comment "更新时间",
-    `role`       INT                                                             NOT NULL DEFAULT 1 Comment "角色",
-    `status`     TINYINT                                                         NOT NULL DEFAULT 0 Comment "禁用",
+    `avatar`     VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci       NULL Comment "头像",
+    `email`      VARCHAR(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci       NULL Comment "邮箱",
+    `mobile`     VARCHAR(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci        NULL Comment "手机",
+    `openid`     varchar(255) character set utf8mb4 collate utf8mb4_general_ci       null comment "微信openid",
+    `unionid`    varchar(255) character set utf8mb4 collate utf8mb4_general_ci       null comment "微信unionid",
+    `signature`  varchar(255) character set utf8mb4 collate utf8mb4_general_ci       null comment "个性签名",
+    `background` varchar(255) character set utf8mb4 collate utf8mb4_general_ci       null comment "背景图",
+    `age`        int                                                                 null     default 0 comment "年龄",
+    `tall`       int                                                                 null     default null comment "身高 cm",
+    `weight`     decimal(10, 2)                                                      null     default null comment "体重 kg",
+    `bmi`        decimal(10, 2)                                                      null     default null comment "bmi",
+    `bust`       decimal(10, 2)                                                      null     default null comment "胸围 cm",
+    `waist`      decimal(10, 2)                                                      null     default null comment "腰围 cm",
+    `hip`        decimal(10, 2)                                                      null     default null comment "臀围 cm",
+    `target`     int                                                                 null     default null comment "卡路里目标",
+    `level`      TINYINT                                                             NOT NULL DEFAULT 0 Comment "等级",
+    `birthday`   DATE                                                                NULL Comment "生日",
+    `money`      DECIMAL(10, 2)                                                      NOT NULL DEFAULT 0.00 Comment "余额(元)",
+    `score`      INT                                                                 NOT NULL DEFAULT 0 Comment "积分",
+    `last_time`  DATETIME                                                            NULL Comment "登录时间",
+    `last_ip`    VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci        NULL Comment "登录ip",
+    `join_time`  DATETIME                                                            NULL Comment "注册时间",
+    `join_ip`    VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci        NULL Comment "注册ip",
+    `token`      VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci        NULL Comment "token",
+    `created_at` DATETIME                                                            NULL Comment "创建时间",
+    `updated_at` DATETIME                                                            NULL Comment "更新时间",
+    `role`       INT                                                                 NOT NULL DEFAULT 1 Comment "角色",
+    `status`     TINYINT                                                             NOT NULL DEFAULT 0 Comment "禁用",
     INDEX `email` (`email` ASC) USING BTREE,
     INDEX `join_time` (`join_time` ASC) USING BTREE,
     INDEX `mobile` (`mobile` ASC) USING BTREE,
@@ -28267,17 +28267,17 @@ VALUES (4166, 2160, 27);
 DROP TABLE IF EXISTS `blog`;
 CREATE TABLE `blog`
 (
-    `id`            bigint                                                        NOT NULL AUTO_INCREMENT,
-    `user_id`       bigint                                                        NULL DEFAULT 0 COMMENT '用户id',
-    `title`         varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '标题',
-    `like`    int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '点赞数量',
-    `view`    int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '查看数量',
-    `comment` int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '评论数量',
-    `fav`     int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '收藏数量',
-    `content`       text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci         NULL,
-    `status`        tinyint(1)                                                    NULL DEFAULT NULL COMMENT '状态 0隐藏 1所有人可见 2仅自己可见 3仅好友可见',
-    `created_at`    datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updated_at`    datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `id`         bigint                                                        NOT NULL AUTO_INCREMENT,
+    `user_id`    bigint                                                        NULL DEFAULT 0 COMMENT '用户id',
+    `title`      varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '标题',
+    `like`       int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '点赞数量',
+    `view`       int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '查看数量',
+    `comment`    int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '评论数量',
+    `fav`        int UNSIGNED                                                  NULL DEFAULT 0 COMMENT '收藏数量',
+    `content`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci         NULL,
+    `status`     tinyint(1)                                                    NULL DEFAULT NULL COMMENT '状态 0隐藏 1所有人可见 2仅自己可见 3仅好友可见',
+    `created_at` datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`) USING BTREE,
     INDEX `idx_user_id` (`user_id` ASC) USING BTREE
 ) ENGINE = InnoDB
@@ -28287,7 +28287,6 @@ CREATE TABLE `blog`
   ROW_FORMAT = Dynamic;
 alter table blog
     change status visibility tinyint(1) null comment '状态 0隐藏 1所有人可见 2仅自己可见 3仅好友可见';
-
 DROP TABLE IF EXISTS `blog_attach`;
 CREATE TABLE `blog_attach`
 (
@@ -28315,7 +28314,7 @@ CREATE TABLE `blog_comment`
     `user_id`    bigint                                                NULL DEFAULT 0 COMMENT '用户id',
     `content`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
     `parent_id`  bigint                                                NULL DEFAULT 0 COMMENT '父评论id',
-    `like` int                                                   NULL DEFAULT 0 COMMENT '点赞数量',
+    `like`       int                                                   NULL DEFAULT 0 COMMENT '点赞数量',
     `created_at` datetime                                              NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` datetime                                              NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`) USING BTREE,
@@ -28385,12 +28384,40 @@ CREATE TABLE `favorite`
     `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE INDEX `idx_user_id_type_target` (`user_id` ASC, `type` ASC, `target` ASC) USING BTREE
+    UNIQUE KEY `user_target_type` (`user_id`, `target`, `type`),
+    KEY `target_type` (`target`, `type`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 3
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_unicode_ci
   ROW_FORMAT = Dynamic;
+CREATE TABLE `user_steps`
+(
+    `id`          int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `user_id`     int(11)          NOT NULL COMMENT '用户ID',
+    `steps`       int(11)          NOT NULL DEFAULT '0' COMMENT '步数',
+    `record_date` date             NOT NULL COMMENT '记录日期',
+    `created_at`  datetime                  DEFAULT NULL,
+    `updated_at`  datetime                  DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `user_date` (`user_id`, `record_date`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='用户步数记录表';
+
+DROP TABLE IF EXISTS `like`;
+CREATE TABLE `like`
+(
+    `id`         int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `user_id`    int(11)          NOT NULL COMMENT '用户ID',
+    `target`     int(11)          NOT NULL COMMENT '目标ID (动态ID/食谱ID/用户ID等)',
+    `type`       tinyint(1)       NOT NULL DEFAULT '1' COMMENT '类型: 1=动态, 2=食谱, 3=用户',
+    `created_at` datetime                  DEFAULT NULL COMMENT '点赞时间',
+    `updated_at` datetime                  DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `user_target_type` (`user_id`, `target`, `type`),
+    KEY `target_type` (`target`, `type`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='通用点赞记录表';
 
 DROP TABLE IF EXISTS `follow`;
 CREATE TABLE `follow`
@@ -28465,7 +28492,7 @@ CREATE TABLE `recipe`
     `name`       varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
     `summary`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci         NULL,
     `content`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci         NULL,
-    `like` int                                                           NULL DEFAULT 0 COMMENT '点赞数量',
+    `like`       int                                                           NULL DEFAULT 0 COMMENT '点赞数量',
     `created_at` datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`) USING BTREE,
@@ -28512,12 +28539,12 @@ CREATE TABLE `topic`
 (
     `id`          bigint                                                        NOT NULL AUTO_INCREMENT COMMENT '话题ID',
     `title`       varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '话题标题',
-    `thumb` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '话题封面图片',
+    `thumb`       varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '话题封面图片',
     `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '话题描述',
     `creator_id`  bigint                                                        NOT NULL COMMENT '创建者用户ID',
     `status`      tinyint                                                       NULL DEFAULT 1 COMMENT '状态 1正常 0禁用',
-    `join`  int                                                           NULL DEFAULT 0 COMMENT '参与人数',
-    `post`  int                                                           NULL DEFAULT 0 COMMENT '关联文章/餐食记录数',
+    `join`        int                                                           NULL DEFAULT 0 COMMENT '参与人数',
+    `post`        int                                                           NULL DEFAULT 0 COMMENT '关联文章/餐食记录数',
     `created_at`  datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at`  datetime                                                      NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`) USING BTREE,

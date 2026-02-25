@@ -56,28 +56,53 @@ final class UserInfoData implements \JsonSerializable
     protected ?int    $tall;
     protected ?float  $weight;
     protected ?float  $bmi;
-    protected ?float  $bust;
-    protected ?float  $waist;
-    protected ?float  $hip;
+    /**
+     * 胸围
+     * @var float|null
+     */
+    protected ?float $bust;
+    /**
+     * 腰围
+     * @var float|null
+     */
+    protected ?float $waist;
+    /**
+     * 臀围
+     * @var float|null
+     */
+    protected ?float $hip;
+    /**
+     * 卡路里目标
+     * @var int|null
+     */
     protected ?int    $target;
     protected ?int    $level;
     protected ?string $birthday;
     protected ?int    $status;
     protected ?string $sex_text;
     protected ?string $status_text;
+    protected array   $data   = [];
+    protected array   $hidden = [];
 
     public function __construct(array $userInfo)
     {
         foreach ($userInfo as $k => $v) {
             if (property_exists($this, $k)) {
-                $this->{$k} = $v;
+                $this->data[$k] = $v;
             }
         }
     }
 
     public function toArray(): array
     {
-        return get_object_vars($this);
+        $array = [];
+        foreach ($this->data as $k => $v) {
+            if (in_array($k, $this->hidden)) {
+                unset($array[$k]);
+            }
+            $array[$k] = $v;
+        }
+        return $array;
     }
 
     public function jsonSerialize(): array
@@ -87,6 +112,13 @@ final class UserInfoData implements \JsonSerializable
 
     public function __get(string $name)
     {
-        return $this->{$name};
+        return $this->data[$name] ?? null;
     }
+
+    public function hidden(...$field): self
+    {
+        $this->hidden = $field;
+        return $this;
+    }
+
 }

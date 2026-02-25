@@ -9,6 +9,8 @@ use app\common\enum\MealRecordType;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ParamException;
 use app\common\validate\MealRecordValidator;
+use app\format\MealRecordFoodFormat;
+use app\format\MealRecordFormat;
 use app\model\FoodModel;
 use app\model\FoodUnitModel;
 use app\model\MealRecordFoodModel;
@@ -29,8 +31,6 @@ class DiaryBusiness extends BaseBusiness
      */
     public function meals(Request $request): array
     {
-        // 模拟从 MealRecordModel 获取并格式化为 mock 结构
-        // 实际开发中可根据 user_id 和日期筛选
         $date  = $request->get('date', date('Y-m-d'));
         $time  = Carbon::parse($date);
         $query = MealRecordModel::query()
@@ -42,100 +42,18 @@ class DiaryBusiness extends BaseBusiness
         if ($request->userInfo) {
             $query->where('user_id', $request->userInfo->id);
         }
-        $list    = $query->get();
-        $newList = [];
-        $list->each(function ($item) use (&$newList) {
-            $foods = [];
-            $item->foods->each(function ($item) use (&$foods) {
-                /*{"id": "1","name": "全麦面包","amount": 2,"unit": "片","calories": 180,"protein": 8,"fat": 2,"carbs": 32}*/
-                $foods[] = [
-                    'id'       => $item->id,
-                    'name'     => $item->food?->name,
-                    'amount'   => intval($item->number),
-                    'unit'     => $item->unit?->name,
-                    'calories' => $item->nutrition['kcal'],
-                    'protein'  => $item->nutrition['protein'],
-                    'carbs'    => $item->nutrition['carbohydrate'],
-                ];
+        $list                 = $query->get();
+        $mealRecordFoodFormat = new MealRecordFoodFormat($request);
+        $newList              = $list
+            ->groupBy('type')
+            ->map(function ($items) use ($mealRecordFoodFormat) {
+                return $items->flatMap(function ($meal) use ($mealRecordFoodFormat) {
+                    return $meal->foods->map(function ($foodItem) use ($mealRecordFoodFormat) {
+                        return $mealRecordFoodFormat->format($foodItem);
+                    });
+                })->values();
             });
-            if (!isset($newList[$item->type])) {
-                $newList[$item->type] = $foods;
-            } else {
-                $newList[$item->type] = array_merge($newList[$item->type], $foods);
-            }
-        });
-        /*
-    "早餐": [
-      {
-        "id": "1",
-        "name": "全麦面包",
-        "amount": 2,
-        "unit": "片",
-        "calories": 180,
-        "protein": 8,
-        "fat": 2,
-        "carbs": 32
-      },
-      {
-        "id": "2",
-        "name": "煮鸡蛋",
-        "amount": 1,
-        "unit": "个",
-        "calories": 78,
-        "protein": 6,
-        "fat": 5,
-        "carbs": 1
-      }
-    ],
-    "午餐": [
-      {
-        "id": "4",
-        "name": "糙米饭",
-        "amount": 150,
-        "unit": "g",
-        "calories": 180,
-        "protein": 4,
-        "fat": 1,
-        "carbs": 38
-      },
-      {
-        "id": "5",
-        "name": "鸡胸肉",
-        "amount": 120,
-        "unit": "g",
-        "calories": 165,
-        "protein": 31,
-        "fat": 4,
-        "carbs": 0
-      }
-    ],*/
-        return [
-            'data' => $newList
-        ];
-        /*return [
-            [
-                'id'       => 1,
-                'type'     => '早餐',
-                'time'     => '08:00',
-                'calories' => 450,
-                'foods'    => [
-                    ['id' => 101, 'name' => '全麦面包', 'amount' => '2片', 'kcal' => 150],
-                    ['id' => 102, 'name' => '牛奶', 'amount' => '250ml', 'kcal' => 150],
-                    ['id' => 103, 'name' => '煎蛋', 'amount' => '1个', 'kcal' => 150]
-                ]
-            ],
-            [
-                'id'       => 2,
-                'type'     => '午餐',
-                'time'     => '12:30',
-                'calories' => 850,
-                'foods'    => [
-                    ['id' => 201, 'name' => '糙米饭', 'amount' => '150g', 'kcal' => 200],
-                    ['id' => 202, 'name' => '西兰花炒鸡胸肉', 'amount' => '300g', 'kcal' => 450],
-                    ['id' => 203, 'name' => '西红柿蛋汤', 'amount' => '1碗', 'kcal' => 200]
-                ]
-            ]
-        ];*/
+        return $newList->toArray();
     }
 
     /**
@@ -171,17 +89,6 @@ class DiaryBusiness extends BaseBusiness
             ],
             'burnedCalories' => 0.00
         ];
-        /* return [
-             'target'    => 2100,
-             'consumed'  => 1300,
-             'remaining' => 800,
-             'burned'    => 350,
-             'nutrients' => [
-                 'protein' => ['target' => 75, 'current' => 45, 'unit' => 'g'],
-                 'fat'     => ['target' => 60, 'current' => 38, 'unit' => 'g'],
-                 'carbs'   => ['target' => 250, 'current' => 120, 'unit' => 'g']
-             ]
-         ];*/
     }
 
     #[Validate(validator: MealRecordValidator::class, scene: 'create')]
@@ -229,7 +136,7 @@ class DiaryBusiness extends BaseBusiness
 
                 if (!$mealRecordFoodInfo) {
                     // 不存在，计算并准备插入
-                    $itemNutrition = $nutritionTemplateInstance->calcute(foodId: $item['food_id'], unitId: $item['unit_id'], number: $item['number']);
+                    $itemNutrition = $nutritionTemplateInstance->calculate(foodId: $item['food_id'], unitId: $item['unit_id'], number: $item['number']);
                     $allNutrition->push($itemNutrition);
 
                     $foodName = $item['name'] ?? null;
@@ -254,7 +161,7 @@ class DiaryBusiness extends BaseBusiness
 
                     if ($currentUnitId == $oldUnitId) {
                         // 单位相同，直接计算当前增量营养并累加
-                        $incrementalNutrition = $nutritionTemplateInstance->calcute(foodId: $item['food_id'], unitId: $currentUnitId, number: $currentNumber);
+                        $incrementalNutrition = $nutritionTemplateInstance->calculate(foodId: $item['food_id'], unitId: $currentUnitId, number: $currentNumber);
                         $newNumber            = bcadd((string)$mealRecordFoodInfo->number, (string)$currentNumber, 2);
                     } else {
                         // 单位不同，需要将新添加的数量转换成旧单位的数量
@@ -271,7 +178,7 @@ class DiaryBusiness extends BaseBusiness
                         $incrementalNumber = bcmul((string)$currentNumber, $ratio, 2);
                         $newNumber         = bcadd((string)$mealRecordFoodInfo->number, $incrementalNumber, 2);
                         // 计算基于旧单位的增量营养
-                        $incrementalNutrition = $nutritionTemplateInstance->calcute(foodId: $item['food_id'], unitId: $oldUnitId, number: $incrementalNumber);
+                        $incrementalNutrition = $nutritionTemplateInstance->calculate(foodId: $item['food_id'], unitId: $oldUnitId, number: $incrementalNumber);
                     }
 
                     // 更新该食物的营养总计（原营养 + 增量）

@@ -13,7 +13,8 @@
  */
 
 use Webman\Route;
-use app\controller\{TopicController,
+use app\controller\{
+    TopicController,
     UserController,
     RecommendationController,
     AuthController,
@@ -44,8 +45,13 @@ Route::group('/diary', function () {
     Route::post('/meal/food/delete', [DiaryController::class, 'delete']);
     Route::get('/summary', [DiaryController::class, 'summary']);
 });
+
 // 用户统计与资料
-Route::get('/user/stats', [UserController::class, 'stats']);
+Route::group('/user', function () {
+    Route::get('/stats', [UserController::class, 'stats']);
+    Route::get('/information', [UserController::class, 'information']);
+    Route::post('/steps', [UserController::class, 'steps']);
+});
 
 // 宠物相关 (Pet)
 Route::group('/pet', function () {

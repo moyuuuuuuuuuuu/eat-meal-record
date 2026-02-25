@@ -3,12 +3,15 @@
 namespace app\common\validate;
 
 use app\common\enum\blog\AttachType;
+use app\common\enum\blog\Visibility;
 use support\validation\{Validator, Rule};
 
 class FeedValidator extends Validator
 {
 
     protected array $messages = [
+        'visibility.required'         => '请选择可见度',
+        'visibility.in'               => '可见度参数错误',
         'content.required'            => '内容不能为空',
         'content.string'              => '内容必须是字符串',
         'content.max'                 => '内容最多不能超过255个字符',
@@ -33,12 +36,15 @@ class FeedValidator extends Validator
 
     protected array $scenes = [
         'create' => ['content', 'attach', 'topics', 'location'],
+        'like'   => ['id']
     ];
 
     public function rules(): array
     {
         $this->rule = [
+            'id'                 => ['required', 'numeric', 'min:1'],
             'content'            => ['required', 'string', 'max:255'],
+            'visibility'         => ['required', Rule::in(Visibility::cases())],
             'attach'             => ['required', 'array', 'max:255'],
             'attach.*.type'      => ['required', Rule::in(AttachType::values())],
             'attach.*.attach'    => ['required'],

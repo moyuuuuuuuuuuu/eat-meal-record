@@ -3,6 +3,7 @@
 namespace app\business;
 
 use app\common\base\BaseBusiness;
+use app\format\FoodFormat;
 use app\model\FoodModel as Food;
 use app\model\MealRecordModel as MealRecord;
 use support\Request;
@@ -20,17 +21,17 @@ class RecommendationBusiness extends BaseBusiness
 
         if (!$user) {
             // 未登录：根据当前时间推荐
-            return $this->recommendByTime();
+            return $this->recommendByTime($request);
         }
 
         // 已登录：根据近期营养摄入推荐
-        return $this->recommendByUserContext($user['id']);
+        return $this->recommendByUserContext($request, $user['id']);
     }
 
     /**
      * 根据当前时间段推荐 (早餐/午餐/晚餐/加餐)
      */
-    public function recommendByTime(): array
+    public function recommendByTime(Request $request): array
     {
         $config = config('recommendation');
         $hour = (int)date('H');
@@ -74,8 +75,7 @@ class RecommendationBusiness extends BaseBusiness
             throw new \RuntimeException('暂无食物推荐');
         }
 
-        $data = $food->toArray();
-        $data['unit_list'] = $food->getUnits();
+        $data = (new FoodFormat($request))->format($food);
         $data['recommend_reason'] = "适合现在的" . $tagName;
 
         return $data;
@@ -84,7 +84,7 @@ class RecommendationBusiness extends BaseBusiness
     /**
      * 根据用户近期摄入分析推荐 (低糖/少油/高蛋白)
      */
-    public function recommendByUserContext(int $userId): array
+    public function recommendByUserContext(Request $request, int $userId): array
     {
         $config = config('recommendation');
         // 获取最近3天的记录
@@ -134,11 +134,10 @@ class RecommendationBusiness extends BaseBusiness
 
         // 兜底逻辑
         if (!$food) {
-            return $this->recommendByTime();
+            return $this->recommendByTime($request);
         }
 
-        $data = $food->toArray();
-        $data['unit_list'] = $food->getUnits();
+        $data = (new FoodFormat($request))->format($food);
         $data['recommend_reason'] = $reason;
 
         return $data;

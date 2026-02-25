@@ -3,8 +3,8 @@
 namespace app\common\context;
 
 use app\model\UserModel;
+use app\service\wechat\WxMini;
 use app\util\Jwt;
-use support\Log;
 
 final class UserInfo
 {
@@ -38,7 +38,8 @@ final class UserInfo
             'status',
             'sex_text',
             'avatar_text',
-            'status_text'
+            'status_text',
+            'created_at'
         ]));
         $token    = Jwt::encode($userInfo, 86400 * 7); // 7天有效期
         return [
@@ -69,5 +70,10 @@ final class UserInfo
             $token = substr($token, 7);
         }
         return Jwt::decode($token);
+    }
+
+    static function parseUserEncryptData(string $encryptedData, string $sessionKey, string $iv)
+    {
+        return WxMini::getInstance()->parseEncryptData($encryptedData, $sessionKey, $iv);
     }
 }

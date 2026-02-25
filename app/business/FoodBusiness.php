@@ -6,6 +6,7 @@ use app\common\base\BaseBusiness;
 use app\common\enum\BusinessCode;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ParamException;
+use app\format\FoodFormat;
 use app\model\{FoodModel as Food, FoodUnitModel, FoodModel};
 use support\Db;
 use support\Request;
@@ -37,26 +38,16 @@ class FoodBusiness extends BaseBusiness
                 ->from($subTable)
                 ->whereColumn($subTable . '.food_id', $mainTable . '.id');
         });
-        $paginate = $query->with([
+        $paginate   = $query->with([
             'cat' => function ($q) {
                 $q->select('cats.id', 'cats.name');
             },
             'unit'
         ])
             ->paginate($pageSize, ['*'], 'page', $page);
-
-        $paginate->getCollection()->transform(function ($item) {
-            return [
-                'id'       => $item->id,
-                'name'     => $item->name,
-                'category' => $item->cat->name,
-                'unit'     => $item->unit->name,
-                'calories' => $item->nutrition['kcal'],
-                'protein'  => $item->nutrition['protein'],
-                'carbs'    => $item->nutrition['carbohydrate'],
-                'fibers'   => $item->nutrition['fiber'],
-                'units'    => $item->getUnits()
-            ];
+        $foodFormat = new FoodFormat($request);
+        $paginate->getCollection()->transform(function ($item)use($foodFormat) {
+            return $foodFormat->format($item);
         });
         return $paginate->toArray();
     }
@@ -78,8 +69,6 @@ class FoodBusiness extends BaseBusiness
             throw new DataNotFoundException();
         }
 
-        $data         = $food->toArray();
-        $data['unit'] = $food->getUnits();
-        return $data;
+        return (new FoodFormat($request))->format($food);
     }
 }

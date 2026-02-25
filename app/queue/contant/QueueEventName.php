@@ -13,4 +13,9 @@ enum QueueEventName: string
      * 文件上传同步
      */
     case UPLOAD_SYNC = 'upload_sync';
+
+    /**
+     * 登陆后操作
+     */
+    case AFTER_LOGIN = 'after_login';
 }

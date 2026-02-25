@@ -5,6 +5,7 @@ namespace app\common\context;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ParamException;
 use app\model\FoodUnitModel;
+use app\util\Calculate;
 use plugin\admin\app\model\Dict;
 use plugin\admin\app\model\Food;
 use support\Cache;
@@ -60,9 +61,9 @@ class NutritionTemplate
         return json_encode($nutrition, JSON_UNESCAPED_UNICODE);
     }
 
-    public function calcute(int $foodId, int $unitId, $number)
+    public function calculate(int $foodId, int $unitId, $number)
     {
-        if (bccomp((string)$number, '0', 4) <= 0) {
+        if (Calculate::comp($number, '0', 4) <= 0) {
             throw new ParamException('数量必须大于0');
         }
 
@@ -85,15 +86,11 @@ class NutritionTemplate
 
         $nutritionTemplate = $this->fill($foodNutrition);
 
-        // 高精度计算
-        $totalWeight = bcmul((string)$foodUnitInfo->weight, (string)$number, 4);
-        $ratio       = bcdiv($totalWeight, '100', 4);
+        // 使用通用工具类进行高精度计算
+        $totalWeight = Calculate::mul($foodUnitInfo->weight, $number, 4);
+        $ratio       = Calculate::div($totalWeight, '100', 4);
 
-        foreach ($nutritionTemplate as $key => $value) {
-            $nutritionTemplate[$key] = bcmul((string)$value, $ratio, 2);
-        }
-
-        return $nutritionTemplate;
+        return Calculate::mapMul($nutritionTemplate, $ratio, 2);
     }
 
     public function format(array $nutrition): array

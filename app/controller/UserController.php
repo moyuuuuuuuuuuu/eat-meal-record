@@ -18,4 +18,20 @@ class UserController extends BaseController
         $data = UserBusiness::instance()->stats($request);
         return $this->success('ok', $data);
     }
+
+    public function information(Request $request)
+    {
+        return $this->success('ok', UserBusiness::instance()->information($request));
+    }
+
+    /**
+     * 同步步数
+     * @param Request $request
+     * @return \support\Response
+     */
+    public function steps(Request $request)
+    {
+        UserBusiness::instance()->uploadSteps($request);
+        return $this->success('同步成功');
+    }
 }

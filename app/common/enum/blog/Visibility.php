@@ -5,7 +5,7 @@ namespace app\common\enum\blog;
 /**
  * 博客可见度
  */
-enum Status:int
+enum Visibility:int
 {
     /**
      * 隐藏
@@ -14,7 +14,7 @@ enum Status:int
     /**
      * 所有人可见
      */
-    case ALL = 1;
+    case EVERYONE = 1;
     /**
      * 仅自己可见
      */
