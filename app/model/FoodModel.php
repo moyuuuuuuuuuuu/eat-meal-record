@@ -76,7 +76,7 @@ class FoodModel extends BaseModel
 
     public function nutrition()
     {
-        return $this->hasOne(FoodNutrient::class, 'id', 'food_id');
+        return $this->hasOne(FoodNutrient::class, 'food_id', 'id')->select(explode(',', getenv('NUTRITION_TEMPLATE_SHOW_KEY')));
     }
 
     public function unit()

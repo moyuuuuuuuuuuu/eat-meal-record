@@ -18,10 +18,10 @@ class FoodFormat extends BaseFormat
             'name'     => $model->name,
             'category' => $model->cat?->name,
             'unit'     => $model->unit?->name,
-            'calories' => $model->nutrition['kcal'],
-            'protein'  => $model->nutrition['protein'],
-            'carbs'    => $model->nutrition['carbohydrate'],
-            'fibers'   => $model->nutrition['fiber'],
+            'calories' => $model->nutrition?->kcal,
+            'protein'  => $model->nutrition?->protein,
+            'carbs'    => $model->nutrition?->carbohydrate,
+            'fibers'   => $model->nutrition?->fiber,
             'units'    => $this->getUnits($model)
         ];
     }

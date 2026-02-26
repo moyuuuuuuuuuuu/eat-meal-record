@@ -1,19 +1,22 @@
 <?php
 
-namespace plugin\admin\app\model\contants;
+namespace plugin\admin\app\model\addtional;
 
 use plugin\admin\app\model\Dict;
 use plugin\admin\app\model\Food;
+use plugin\admin\app\model\FoodNutrient;
 
-class FoodContant extends Food
+class FoodModelAdditional extends Food
 {
+
     protected $appends = [
-        'user'
+        'user',
+        'nutrition',
     ];
 
-    public function getNutritionAttribute(string $value)
+    public function getNutritionAttribute()
     {
-        $data          = json_decode($value, true);
+        $data          = FoodNutrient::query()->where('food_id', $this->id)->first();
         $nutritionDict = (array)Dict::get('nutrition');
         $nutrition     = [];
         foreach ($nutritionDict as $item) {
@@ -28,5 +31,4 @@ class FoodContant extends Food
     {
         return $this->user();
     }
-
 }

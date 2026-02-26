@@ -2,7 +2,7 @@
 
 namespace plugin\admin\app\controller;
 
-use plugin\admin\app\model\contants\FoodContant;
+use plugin\admin\app\model\addtional\FoodModelAdditional;
 use plugin\admin\app\model\Dict;
 use plugin\admin\app\model\Food;
 use support\exception\BusinessException;
@@ -27,7 +27,7 @@ class FoodController extends Crud
      */
     public function __construct()
     {
-        $this->model = new FoodContant();
+        $this->model = new FoodModelAdditional();
     }
 
     /**
