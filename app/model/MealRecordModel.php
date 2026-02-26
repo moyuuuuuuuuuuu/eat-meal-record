@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class MealRecordModel extends BaseModel
 {
-    protected $table      = 'meal_record';
+    protected $table      = 'meal_records';
     protected $primaryKey = 'id';
     protected $fillable   = [
         'user_id',

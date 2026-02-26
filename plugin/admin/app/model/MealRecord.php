@@ -14,6 +14,6 @@ namespace plugin\admin\app\model;
  */
 class MealRecord extends Base
 {
-    protected $table = 'meal_record';
+    protected $table = 'meal_records';
     protected $primaryKey = 'id';
 }

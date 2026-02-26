@@ -6,7 +6,7 @@ use app\common\base\BaseModel;
 
 class FollowModel extends BaseModel
 {
-    protected $table    = 'follow';
+    protected $table    = 'follows';
     protected $fillable = [
         'user_id',
         'follow_id',

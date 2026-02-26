@@ -8,7 +8,7 @@ class BlogLocationModel extends BaseModel
 {
     const CREATED_AT = null;
     const UPDATED_AT = null;
-    protected $table    = 'blog_location';
+    protected $table    = 'blog_locations';
     protected $fillable = [
         'blog_id',
         'latitude',

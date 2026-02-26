@@ -8,7 +8,7 @@ use app\common\base\BaseModel;
 
 class MealRecordFoodModel extends BaseModel
 {
-    protected $table      = 'meal_record_food';
+    protected $table      = 'meal_record_foods';
     protected $primaryKey = 'id';
 
     protected $fillable = [

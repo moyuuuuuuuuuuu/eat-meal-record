@@ -8,7 +8,7 @@ use app\common\enum\NormalStatus;
 
 class BlogAttachModel extends BaseModel
 {
-    protected $table = 'blog_attach';
+    protected $table = 'blog_attaches';
 
     protected $fillable = [
         'blog_id',

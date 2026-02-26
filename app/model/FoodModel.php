@@ -25,7 +25,6 @@ class FoodModel extends BaseModel
     protected $primaryKey = 'id';
 
     protected $casts = [
-        'nutrition' => 'json',
     ];
 
     /**
@@ -73,6 +72,11 @@ class FoodModel extends BaseModel
     public function cat()
     {
         return $this->hasOne(CatModel::class, 'id', 'cat_id');
+    }
+
+    public function nutrition()
+    {
+        return $this->hasOne(FoodNutrient::class, 'id', 'food_id');
     }
 
     public function unit()

@@ -7,7 +7,7 @@ use app\common\enum\LikeFavType;
 
 class FavoriteModel extends BaseModel
 {
-    protected $table = 'favorite';
+    protected $table = 'favorites';
 
     /**
      * 是否收藏

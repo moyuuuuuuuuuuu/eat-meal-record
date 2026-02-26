@@ -24,7 +24,7 @@ class Blog extends Base
      *
      * @var string
      */
-    protected $table = 'blog';
+    protected $table = 'blogs';
 
     /**
      * The primary key associated with the table.
@@ -32,7 +32,7 @@ class Blog extends Base
      * @var string
      */
     protected $primaryKey = 'id';
-    
-    
-    
+
+
+
 }

@@ -12,7 +12,7 @@ use app\common\enum\LikeFavType;
  */
 class LikeModel extends BaseModel
 {
-    protected $table = 'like';
+    protected $table = 'likes';
 
     protected $fillable = [
         'user_id',

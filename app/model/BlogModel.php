@@ -19,7 +19,7 @@ use Carbon\Carbon;
  */
 class BlogModel extends BaseModel
 {
-    protected $table = 'blog';
+    protected $table = 'blogs';
 
     protected $fillable = [
         'user_id',
