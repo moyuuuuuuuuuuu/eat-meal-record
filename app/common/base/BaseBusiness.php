@@ -23,12 +23,17 @@ abstract class BaseBusiness
      */
     public static function instance(BaseModel $model = null): static
     {
-        if (static::$instance === null) {
+        if (!static::$instance instanceof static) {
             static::$instance = new static($model);
         }
 
         // 每次返回前重置状态，防止 CLI 环境下的数据污染
-        return static::$instance;
+        return static::$instance->reset();
+    }
+
+    public function reset(): static{
+        $this->model = null;
+        return $this;
     }
 
     private function __clone() {}

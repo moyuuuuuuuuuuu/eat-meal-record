@@ -8,6 +8,10 @@ use support\Request;
 
 class FeedController extends BaseController
 {
+    protected $noNeedLogin = [
+        'list',
+        'detail'
+    ];
     public function list(Request $request)
     {
         return $this->success('ok', FeedBusiness::instance()->list($request));

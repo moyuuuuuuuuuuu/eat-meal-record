@@ -46,7 +46,8 @@ class BlogModel extends BaseModel
     public function topics()
     {
         $topicTable = (new TopicModel())->getTable();
-        return $this->belongsToMany(TopicModel::class, 'blog_topic', 'blog_id', 'topic_id')
+        $blogTopicTable = (new BlogTopicModel())->getTable();
+        return $this->belongsToMany(TopicModel::class, $blogTopicTable, 'blog_id', 'topic_id')
             ->where('status', NormalStatus::YES->value)
             ->select([
                 $topicTable . '.id',

@@ -58,7 +58,11 @@ class FoodModel extends BaseModel
         return $units;
     }
 
-    #===========
+
+    public function getNutrition(){
+        $this->nutrition = FoodNutrient::query()->where('food_id',$this->id)->first();
+        return $this;
+    }
 
     /**
      * 模型关联逻辑

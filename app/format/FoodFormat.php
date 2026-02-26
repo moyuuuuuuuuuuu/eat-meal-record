@@ -13,6 +13,7 @@ class FoodFormat extends BaseFormat
 
     public function format(?BaseModel $model = null): array
     {
+        $model->getNutrition();
         return [
             'id'       => $model->id,
             'name'     => $model->name,
@@ -44,7 +45,7 @@ class FoodFormat extends BaseFormat
             if (!$unit) continue;
 
             $ratio         = Calculate::div($fu->weight, '100');
-            $calcNutrition = Calculate::mapMul($model->nutrition, $ratio, 4);
+            $calcNutrition = Calculate::mapMul($model->nutrition?->toArray() ?? [], $ratio);
             $units[]       = [
                 'unit_id'    => $fu->unit_id,
                 'unit_name'  => $unit->name,

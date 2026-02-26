@@ -31,13 +31,13 @@ class FoodBusiness extends BaseBusiness
         if ($catId) {
             $query->where('cat_id', $catId);
         }
-        /*$query->whereExists(function ($query) {
+        $query->whereExists(function ($query) {
             $mainTable = (new FoodModel())->getTable();
             $subTable  = (new FoodUnitModel)->getTable();
             $query->select(Db::raw(1))
                 ->from($subTable)
                 ->whereColumn($subTable . '.food_id', $mainTable . '.id');
-        });*/
+        });
         $paginate   = $query->with([
             'cat' => function ($q) {
                 $q->select('cats.id', 'cats.name');
