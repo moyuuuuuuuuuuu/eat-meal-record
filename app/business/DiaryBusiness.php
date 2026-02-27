@@ -15,6 +15,7 @@ use app\model\FoodModel;
 use app\model\FoodUnitModel;
 use app\model\MealRecordFoodModel;
 use app\model\MealRecordModel;
+use app\util\Calculate;
 use Carbon\Carbon;
 use plugin\admin\app\model\MealRecord;
 use support\Context;
@@ -162,7 +163,7 @@ class DiaryBusiness extends BaseBusiness
                     if ($currentUnitId == $oldUnitId) {
                         // 单位相同，直接计算当前增量营养并累加
                         $incrementalNutrition = $nutritionTemplateInstance->calculate(foodId: $item['food_id'], unitId: $currentUnitId, number: $currentNumber);
-                        $newNumber            = bcadd((string)$mealRecordFoodInfo->number, (string)$currentNumber, 2);
+                        $newNumber            = Calculate::add((string)$mealRecordFoodInfo->number, (string)$currentNumber, 2);
                     } else {
                         // 单位不同，需要将新添加的数量转换成旧单位的数量
                         $foodUnitWeights = FoodUnitModel::query()
@@ -174,9 +175,10 @@ class DiaryBusiness extends BaseBusiness
                         }
 
                         // 转换率 = 当前单位重量 / 旧单位重量
-                        $ratio             = bcdiv((string)$foodUnitWeights[$currentUnitId], (string)$foodUnitWeights[$oldUnitId], 8);
-                        $incrementalNumber = bcmul((string)$currentNumber, $ratio, 2);
-                        $newNumber         = bcadd((string)$mealRecordFoodInfo->number, $incrementalNumber, 2);
+
+                        $ratio             = Calculate::div((string)$foodUnitWeights[$currentUnitId], (string)$foodUnitWeights[$oldUnitId], 8);
+                        $incrementalNumber = Calculate::mul((string)$currentNumber, $ratio, 2);
+                        $newNumber         = Calculate::add((string)$mealRecordFoodInfo->number, $incrementalNumber, 2);
                         // 计算基于旧单位的增量营养
                         $incrementalNutrition = $nutritionTemplateInstance->calculate(foodId: $item['food_id'], unitId: $oldUnitId, number: $incrementalNumber);
                     }
@@ -185,7 +187,7 @@ class DiaryBusiness extends BaseBusiness
                     $oldNutrition     = $mealRecordFoodInfo->nutrition ?: $nutritionTemplateInstance->template();
                     $newFoodNutrition = [];
                     foreach ($oldNutrition as $key => $val) {
-                        $newFoodNutrition[$key] = bcadd((string)$val, (string)($incrementalNutrition[$key] ?? 0), 2);
+                        $newFoodNutrition[$key] = Calculate::add((string)$val, (string)($incrementalNutrition[$key] ?? 0), 2);
                     }
 
                     $mealRecordFoodInfo->number    = $newNumber;
@@ -202,7 +204,7 @@ class DiaryBusiness extends BaseBusiness
             $currentNutrition = $mealRecord->nutrition ?: $nutritionTemplateInstance->template();
             $totalNutrition   = $allNutrition->reduce(function ($carry, $item) {
                 foreach ($item as $key => $value) {
-                    $carry[$key] = bcadd((string)($carry[$key] ?? '0'), (string)$value, 2);
+                    $carry[$key] = Calculate::add((string)($carry[$key] ?? '0'), (string)$value, 2);
                 }
                 return $carry;
             }, $currentNutrition);

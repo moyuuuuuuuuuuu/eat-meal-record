@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3a1f6fc8c0a7e8f090d07f4977da7f66",
+    "content-hash": "4a50fe5d9d3aeadcd7a9fe511c73cdf0",
     "packages": [
         {
             "name": "brick/math",
@@ -5642,6 +5642,36 @@
                 "wiki": "http://www.workerman.net/doc/webman"
             },
             "time": "2026-02-26T02:45:43+00:00"
+        },
+        {
+            "name": "webman/cors",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/webman-php/cors.git",
+                "reference": "a5396634fd2ee4e7b15abba0bab45f28e1c1ad02"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/webman-php/cors/zipball/a5396634fd2ee4e7b15abba0bab45f28e1c1ad02",
+                "reference": "a5396634fd2ee4e7b15abba0bab45f28e1c1ad02",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Webman\\Cors\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "support": {
+                "issues": "https://github.com/webman-php/cors/issues",
+                "source": "https://github.com/webman-php/cors/tree/v1.0.1"
+            },
+            "time": "2022-11-05T11:16:20+00:00"
         },
         {
             "name": "webman/database",

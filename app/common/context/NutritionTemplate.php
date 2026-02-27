@@ -4,6 +4,7 @@ namespace app\common\context;
 
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ParamException;
+use app\model\FoodNutrient;
 use app\model\FoodUnitModel;
 use app\util\Calculate;
 use plugin\admin\app\model\Dict;
@@ -76,15 +77,17 @@ class NutritionTemplate
             throw new DataNotFoundException('不存在该单位的食品');
         }
 
-        $foodNutrition = Food::query()
-            ->where('id', $foodId)
-            ->value('nutrition');
+        $foodNutrition = FoodNutrient::query()
+            ->select(explode(',',getenv('NUTRITION_TEMPLATE_SHOW_KEY')))
+            ->where('food_id', $foodId)
+
+            ->first();
 
         if (!$foodNutrition) {
             throw new DataNotFoundException('食品营养数据不存在');
         }
 
-        $nutritionTemplate = $this->fill($foodNutrition);
+        $nutritionTemplate = $this->fill($foodNutrition->toArray());
 
         // 使用通用工具类进行高精度计算
         $totalWeight = Calculate::mul($foodUnitInfo->weight, $number, 4);
