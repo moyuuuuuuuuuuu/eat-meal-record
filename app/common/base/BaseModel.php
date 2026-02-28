@@ -7,7 +7,7 @@ use DateTimeInterface;
 
 class BaseModel extends Model
 {
-
+    protected $dateFormat = 'Y-m-d H:i:s';
     /**
      * 格式化日期
      *

@@ -42,4 +42,17 @@ enum BusinessCode:int
      * 资源为找到
      */
     case NOT_FOUND = 404;
+    public function label(): string
+    {
+        return match ($this) {
+            self::SUCCESS => '请求成功',
+            self::NO_LOGIN => '未登录',
+            self::NO_AUTH => '未授权',
+            self::PARAM_ERROR => '参数错误',
+            self::BUSINESS_ERROR => '业务逻辑错误',
+            self::SYSTEM_ERROR => '系统异常',
+            self::NOT_FOUND => '资源未找到',
+        };
+    }
+
 }

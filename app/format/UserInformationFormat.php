@@ -6,6 +6,7 @@ use app\common\base\BaseFormat;
 use app\common\base\BaseModel;
 use app\common\context\UserInfo;
 use app\model\MealRecordModel;
+use app\model\UserGoalModel;
 use app\model\UserStepsModel;
 use app\util\Energy;
 use Carbon\Carbon;
@@ -17,6 +18,20 @@ class UserInformationFormat extends BaseFormat
     {
         $userInfoObj = UserInfo::getUserInfo();
         $userInfo    = $userInfoObj->hidden(['openid', 'unionid'])->toArray();
+
+        // 获取用户目标设置
+        $goal = UserGoalModel::where('user_id', $userInfoObj->id)->first();
+        if (!$goal) {
+            $goal = [
+                'daily_calories' => $userInfoObj->target ?? 2000,
+                'protein'        => 150,
+                'fat'            => 55,
+                'carbohydrate'   => 225,
+                'weight'    => 60.00
+            ];
+        } else {
+            $goal = $goal->toArray();
+        }
 
         // 获取当日步数
         $today = Carbon::today()->toDateString();
@@ -41,8 +56,9 @@ class UserInformationFormat extends BaseFormat
             'totalRecords'  => 0,
             'avgCalories'   => 0,
             'currentWeight' => $userInfoObj->weight ?? 0,
-            'targetWeight'  => 0,
-            'energy'        => $energyResult
+            'targetWeight'  => $goal['weight'] ?? 0,
+            'energy'        => $energyResult,
+            'goal'          => $goal
         ]);
     }
 }

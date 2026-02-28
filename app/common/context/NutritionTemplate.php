@@ -3,8 +3,8 @@
 namespace app\common\context;
 
 use app\common\exception\DataNotFoundException;
-use app\common\exception\ParamException;
-use app\model\FoodNutrient;
+use app\common\exception\ValidationException;
+use app\model\FoodNutrientModel;
 use app\model\FoodUnitModel;
 use app\util\Calculate;
 use plugin\admin\app\model\Dict;
@@ -66,7 +66,7 @@ class NutritionTemplate
     public function calculate(int $foodId, int $unitId, $number)
     {
         if (Calculate::comp($number, '0', 4) <= 0) {
-            throw new ParamException('数量必须大于0');
+            throw new ValidationException('数量必须大于0');
         }
 
         $foodUnitInfo = FoodUnitModel::query()
@@ -78,7 +78,7 @@ class NutritionTemplate
             throw new DataNotFoundException('不存在该单位的食品');
         }
 
-        $foodNutrition = FoodNutrient::query()
+        $foodNutrition = FoodNutrientModel::query()
             ->select(explode(',', getenv('NUTRITION_TEMPLATE_SHOW_KEY')))
             ->where('food_id', $foodId)
             ->first();
@@ -115,11 +115,11 @@ class NutritionTemplate
     public function transformation(?array $nutrition = []): array
     {
         return [
-            'calories' => $nutrition['kcal'] ?? 0.00,
-            'protein'  => $nutrition['protein'] ?? 0.00,
-            'carbs'    => $nutrition['carbohydrate'] ?? 0.00,
-            'fibers'   => $nutrition['fiber'] ?? 0.00,
-            'fat'      => $nutrition['fat'] ?? 0.00,
+            'calories' => sprintf('%.2f', $nutrition['kcal'] ?? 0.00),
+            'protein'  => sprintf('%.2f', $nutrition['protein'] ?? 0.00),
+            'carbs'    => sprintf('%.2f', $nutrition['carbohydrate'] ?? 0.00),
+            'fibers'   => sprintf('%.2f', $nutrition['fiber'] ?? 0.00),
+            'fat'      => sprintf('%.2f', $nutrition['fat'] ?? 0.00),
         ];
     }
 }

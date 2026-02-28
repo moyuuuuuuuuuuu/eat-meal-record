@@ -7,7 +7,7 @@ use app\common\enum\LikeFavType;
 
 /**
  * @property int $user_id
- * @property int $target_id
+ * @property int $target
  * @property int $type
  */
 class LikeModel extends BaseModel
@@ -16,7 +16,7 @@ class LikeModel extends BaseModel
 
     protected $fillable = [
         'user_id',
-        'target_id',
+        'target',
         'type',
     ];
 

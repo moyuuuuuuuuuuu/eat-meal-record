@@ -30,4 +30,13 @@ enum MealRecordType: int
      */
     case OTHER = 4;
 
+    public function label(): string
+    {
+        return match ($this) {
+            self::BREAK_FIRST => '早餐',
+            self::LUNCH => '午餐',
+            self::DINNER => '晚餐',
+            self::OTHER => '加餐',
+        };
+    }
 }

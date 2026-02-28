@@ -23,4 +23,14 @@ enum Visibility:int
      * 仅好友可见
      */
     case FRIEND = 3;
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::HIDDEN => '隐藏',
+            self::EVERYONE => '所有人可见',
+            self::SELF => '仅自己可见',
+            self::FRIEND => '仅好友可见',
+        };
+    }
 }

@@ -6,12 +6,16 @@ use app\common\base\BaseBusiness;
 use app\common\context\UserInfo;
 use app\common\enum\BusinessCode;
 use app\common\enum\NormalStatus;
+use app\common\enum\user\Sex;
+use app\common\validate\LoginValidator;
+use app\common\validate\UserValidator;
 use app\format\UserInformationFormat;
 use app\model\UserModel;
 use app\model\MealRecordModel;
 use app\model\UserStepsModel;
 use app\queue\contant\QueueEventName;
 use app\service\wechat\WxMini;
+use app\util\Calculate;
 use app\util\Jwt;
 use Carbon\Carbon;
 use plugin\admin\app\model\User;
@@ -20,6 +24,7 @@ use support\Db;
 use support\exception\BusinessException;
 use support\Request;
 use Webman\RedisQueue\Client;
+use Webman\Validation\Annotation\Validate;
 
 class UserBusiness extends BaseBusiness
 {
@@ -34,7 +39,7 @@ class UserBusiness extends BaseBusiness
     public function login(string $code, string $ip): array
     {
         // 1. 调用微信接口换取 openid
-        $wxMini   = WxMini::getInstance();
+        $wxMini   = WxMini::instance();
         $wxResult = $wxMini->jsCode2Session($code);
 
         $openid     = $wxResult['openId'];
@@ -81,13 +86,13 @@ class UserBusiness extends BaseBusiness
         ]);*/
         return UserInfo::setUserInfo(userInfo: $user);
     }
-
+    #[Validate(validator: LoginValidator::class, scene: 'sms')]
     public function sms(Request $request): array
     {
         $mobile = $request->post('mobile');
         $code   = $request->post('code');
         if (!(SmsBusiness::instance()->check($mobile, $code))) {
-            throw new BusinessException('短信验证码错误', BusinessCode::PARAM_ERROR);
+            throw new BusinessException('短信验证码错误', BusinessCode::PARAM_ERROR->value);
         }
         // 2. 查找或创建用户
         $user = UserModel::where('mobile', $mobile)->first();
@@ -98,7 +103,7 @@ class UserBusiness extends BaseBusiness
                 'username'  => 'm_' . substr(md5($mobile), 0, 8),
                 'join_time' => date('Y-m-d H:i:s'),
                 'join_ip'   => $request->getRealIp(),
-                'status'    => NormalStatus::YES
+                'status'    => NormalStatus::YES->value
             ]);
         } else {
             // 更新登录信息
@@ -106,12 +111,6 @@ class UserBusiness extends BaseBusiness
             $user->last_ip   = $request->getRealIp();
             $user->save();
         }
-
-        /*Client::send(QueueEventName::AFTER_LOGIN->value, [
-            'userId'        => $user->id,
-            'ip'            => $ip,
-            'lastLoginTime' => now(),
-        ]);*/
         return UserInfo::setUserInfo(userInfo: $user);
     }
 
@@ -139,7 +138,7 @@ class UserBusiness extends BaseBusiness
         }
 
         // 解密数据
-        $data = WxMini::getInstance()->parseEncryptData($encryptedData, $sessionKey, $iv);
+        $data = WxMini::instance()->parseEncryptData($encryptedData, $sessionKey, $iv);
 
         // stepInfoList 包含过去三十天的步数
         $stepInfoList = $data['stepInfoList'] ?? [];
@@ -199,20 +198,16 @@ class UserBusiness extends BaseBusiness
         // 获取当前用户，若无登录信息则使用 id=1 作为演示用户
         $userInfo = $request->userInfo;
 
-        // 加入天数：优先使用用户的 created_at，否则为 0
-        $joinDays = 0;
-        if ($userInfo && isset($userInfo->created_at)) {
-            try {
-                $joinDays = Carbon::parse($userInfo->created_at)->diffInDays();
-            } catch (\Throwable $e) {
-                $joinDays = 0;
-            }
+        // 已坚持天数
+        try {
+            $joinDays = 0;
+        } catch (\Throwable $e) {
+            $joinDays = 0;
         }
 
         // 记录总数：基于 MealRecordModel，若表缺失或字段缺失，则返回 0
-        $totalRecords = 0;
         try {
-            $totalRecords = (int)MealRecordModel::query()->count();
+            $totalRecords = MealRecordModel::query()->distinct()->where('user_id',$request->userInfo->id)->count('meal_date');
         } catch (\Throwable $e) {
             $totalRecords = 0;
         }
@@ -220,8 +215,9 @@ class UserBusiness extends BaseBusiness
         // 平均摄入热量：若无法统计则给出一个合理占位
         $avgCalories = 0;
         try {
+            $allCalories = MealRecordModel::query()->where('user_id', $userInfo->id)->sum(Db::raw("nutrition->>'$.kcal'"));
             // 如果后续有每日摄入热量表，可在此改为 AVG 统计
-            $avgCalories = $userInfo->target; // 合理占位，待接入真实数据
+            $avgCalories = Calculate::div((string)$allCalories,(string)$totalRecords); // 合理占位，待接入真实数据
         } catch (\Throwable $e) {
             $avgCalories = 0;
         }
@@ -231,7 +227,7 @@ class UserBusiness extends BaseBusiness
         $targetWeight  = 0;
         $height        = $userInfo->tall;
         $age           = $userInfo->age;
-        $gender        = '未知';
+        $gender        = Sex::tryFrom($userInfo->sex)->label();
 
         return [
             'name'          => $user->username ?? '用户',
@@ -253,6 +249,36 @@ class UserBusiness extends BaseBusiness
      */
     public function information(Request $request): array
     {
+        return (new UserInformationFormat($request))->format();
+    }
+
+    /**
+     * 更新用户信息
+     * @param Request $request
+     * @return array
+     */
+    #[Validate(validator: UserValidator::class, scene: 'update')]
+    public function update(Request $request): array
+    {
+        $userId = $request->userInfo->id;
+        $user   = UserModel::find($userId);
+        if (!$user) {
+            throw new BusinessException('用户不存在', BusinessCode::NOT_FOUND->value);
+        }
+
+        $params = $request->post();
+        $fields = ['nickname', 'avatar', 'sex', 'signature', 'age', 'tall', 'weight', 'birthday', 'target'];
+
+        foreach ($fields as $field) {
+            if ($request->post($field) !== null) {
+                $user->$field = $params[$field];
+            }
+        }
+
+        if (!$user->save()) {
+            throw new BusinessException('保存失败', BusinessCode::BUSINESS_ERROR->value);
+        }
+
         return (new UserInformationFormat($request))->format();
     }
 }

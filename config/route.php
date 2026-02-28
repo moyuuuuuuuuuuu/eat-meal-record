@@ -13,19 +13,22 @@
  */
 
 use Webman\Route;
-use app\controller\{
+use app\controller\{MealRecordController,
     TopicController,
     UserController,
+    UserGoalController,
     RecommendationController,
     AuthController,
     CategoryController,
     FoodController,
     DiaryController,
     FeedController,
-    SmsController
-};
+    SmsController,
+    UploadController};
 
 Route::group('/api', function () {
+    Route::any('/test',[\app\controller\IndexController::class,'index']);
+    Route::post('/upload', [UploadController::class, 'upload']);
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/sms/login', [AuthController::class, 'sms']);
     Route::post('/auth/login/mock', [AuthController::class, 'mock']);
@@ -44,7 +47,7 @@ Route::group('/api', function () {
 
     #饮食记录 (Diary)
     Route::group('/diary', function () {
-        Route::get('/meals', [DiaryController::class, 'meals']);
+        Route::get('', [DiaryController::class, 'meals']);
         Route::post('/meal/add', [DiaryController::class, 'add']);
         Route::post('/meal/food/delete', [DiaryController::class, 'delete']);
         Route::get('/summary', [DiaryController::class, 'summary']);
@@ -55,6 +58,11 @@ Route::group('/api', function () {
         Route::get('/stats', [UserController::class, 'stats']);
         Route::get('/information', [UserController::class, 'information']);
         Route::post('/steps', [UserController::class, 'steps']);
+        Route::post('/update', [UserController::class, 'update']);
+        Route::group('/goal', function () {
+            Route::get('', [UserGoalController::class, 'get']);
+            Route::post('/save', [UserGoalController::class, 'save']);
+        });
     });
 
     #动态社交 (Feed)
@@ -71,6 +79,15 @@ Route::group('/api', function () {
         Route::get('/search', [TopicController::class, 'search']);
         Route::get('/hot', [TopicController::class, 'hot']);
         Route::post('/create', [TopicController::class, 'create']);
+    });
+
+    #餐食记录
+    Route::group('/meal', function () {
+        Route::get('/history', [MealRecordController::class, 'history']);
+        Route::get('/relation', [MealRecordController::class, 'relation']);
+    });
+    Route::group('/location', function () {
+        Route::get('/reverse/geo',[\app\controller\LocationController::class, 'rgeo']);
     });
 });
 

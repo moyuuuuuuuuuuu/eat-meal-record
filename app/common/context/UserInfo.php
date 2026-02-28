@@ -2,6 +2,8 @@
 
 namespace app\common\context;
 
+use app\common\enum\user\Sex;
+use app\model\UserGoalModel;
 use app\model\UserModel;
 use app\service\wechat\WxMini;
 use app\util\Jwt;
@@ -13,7 +15,19 @@ final class UserInfo
     {
         $userInfo->setAppends(['sex_text', 'avatar_text', 'status_text']);
         $userInfo = $userInfo->toArray();
-        $userInfo = array_intersect_key($userInfo, array_flip([
+        $goal     = UserGoalModel::query()->where('user_id', $userInfo['id'])->first();
+        if (!$goal) {
+            // 返回默认值，逻辑参考图片
+            $goal = [
+                'daily_calories' => 2000,
+                'protein'        => 150,
+                'fat'            => 55,
+                'carbohydrate'   => 225,
+                'weight'         => 60.00
+            ];
+        }
+        $userInfo['goal'] = $goal;
+        $userInfo         = array_intersect_key($userInfo, array_flip([
             'id',
             'username',
             'nickname',
@@ -39,9 +53,11 @@ final class UserInfo
             'sex_text',
             'avatar_text',
             'status_text',
-            'created_at'
+            'created_at',
+            'goal'
         ]));
-        $token    = Jwt::encode($userInfo, 86400 * 7); // 7天有效期
+
+        $token = Jwt::instance()->encode($userInfo, 86400 * 7); // 7天有效期
         return [
             'token'    => $token,
             'userInfo' => $userInfo
@@ -69,11 +85,12 @@ final class UserInfo
         if (str_starts_with($token, 'Bearer ')) {
             $token = substr($token, 7);
         }
-        return Jwt::decode($token);
+        return Jwt::instance()->decode($token);
     }
 
     static function parseUserEncryptData(string $encryptedData, string $sessionKey, string $iv)
     {
-        return WxMini::getInstance()->parseEncryptData($encryptedData, $sessionKey, $iv);
+        return WxMini::instance()->parseEncryptData($encryptedData, $sessionKey, $iv);
     }
+
 }

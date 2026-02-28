@@ -1,3 +1,19 @@
+CREATE TABLE `user_goals`
+(
+    `id`             int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `user_id`        int(11) unsigned NOT NULL COMMENT '用户ID',
+    `daily_calories` int(11)          NOT NULL DEFAULT '2000' COMMENT '每日热量目标 (kcal)',
+    `protein`        int(11)          NOT NULL DEFAULT '150' COMMENT '蛋白质 (g)',
+    `fat`            int(11)          NOT NULL DEFAULT '55' COMMENT '脂肪 (g)',
+    `carbohydrate`   int(11)          NOT NULL DEFAULT '225' COMMENT '碳水化合物 (g)',
+    `weight`    decimal(10, 2)   NOT NULL DEFAULT '60.00' COMMENT '体重目标 (kg)',
+    `created_at`     datetime                  DEFAULT NULL COMMENT '创建时间',
+    `updated_at`     datetime                  DEFAULT NULL COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `idx_user_id` (`user_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT ='用户目标设置';
 -- blog_attaches ddl
 CREATE TABLE `blog_attaches`
 (

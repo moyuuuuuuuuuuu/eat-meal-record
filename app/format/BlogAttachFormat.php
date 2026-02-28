@@ -16,14 +16,15 @@ class BlogAttachFormat extends BaseFormat
     public function format(?BaseModel $model = null): array
     {
         return [
-            'attach' => match ($model->type) {
+            'attach'     => match ($model->type) {
                 AttachType::FOOD->value => $this->food($model),
                 AttachType::RECORD->value => $this->record($model),
                 AttachType::REPRICE->value => $this->reprice($model),
                 default => source($model->attach)
             },
-            'type'   => $model->type,
-            'poster' => source($model->poster),
+            'type'       => $model->type,
+            'attachType' => AttachType::tryFrom($model->type)->label(),
+            'poster'     => source($model->poster),
         ];
     }
 

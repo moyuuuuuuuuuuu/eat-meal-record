@@ -2,11 +2,12 @@
 
 namespace app\business;
 
+use app\service\baidu\Ibs;
 use app\common\{base\BaseBusiness, validate\FeedValidator};
 use app\common\enum\{blog\Visibility, BusinessCode, LikeFavType, NormalStatus};
 use app\format\BlogFormat;
 use app\model\{BlogAttachModel, BlogLocationModel, BlogModel, BlogTopicModel, FollowModel, LikeModel, TopicModel};
-use support\{Db, Request};
+use support\{Db, Log, Request};
 use support\exception\BusinessException;
 use Webman\Validation\Annotation\Validate;
 
@@ -90,35 +91,38 @@ class FeedBusiness extends BaseBusiness
         $blogId = $request->post('id');
 
         return Db::transaction(function () use ($userId, $blogId) {
-            $blog = BlogModel::lockForUpdate()->find($blogId);
+            $blog = BlogModel::query()->lockForUpdate()->find($blogId);
             if (!$blog) {
                 throw new BusinessException('动态不存在', BusinessCode::BUSINESS_ERROR->value);
             }
+            $blogLikes = $blog->likes;
 
             $like = LikeModel::where('user_id', $userId)
-                ->where('target_id', $blogId)
+                ->where('target', $blogId)
                 ->where('type', LikeFavType::BLOG->value)
                 ->first();
 
             if ($like) {
                 // 取消点赞
                 $like->delete();
-                BlogModel::query()->where('id', $blogId)->decrement('likes');
+                $blog->decrement('likes');
+                $blogLikes--;
                 $isLike = false;
             } else {
                 // 点赞
                 LikeModel::create([
-                    'user_id'   => $userId,
-                    'target_id' => $blogId,
-                    'type'      => LikeFavType::BLOG->value,
+                    'user_id' => $userId,
+                    'target'  => $blogId,
+                    'type'    => LikeFavType::BLOG->value,
                 ]);
-                BlogModel::query()->where('id', $blogId)->increment('likes');
+                $blog->increment('likes');
+                $blogLikes++;
                 $isLike = true;
             }
 
             return [
                 'isLike' => $isLike,
-                'likes'  => $blog->likes
+                'likes'  => $blogLikes
             ];
         });
     }
@@ -181,13 +185,23 @@ class FeedBusiness extends BaseBusiness
             }
 
             if ($location) {
+                if (!empty($location['latitude']) && !empty($location['longitude']) && empty($location['address'])) {
+                    $addressData = Ibs::instance()->getAddress($location['latitude'], $location['longitude']);
+                    $location['address'] = ($addressData['addressComponent']['province'] ?? '') . ($addressData['addressComponent']['city'] ?? '');
+                    $location['name']    = explode(',', $addressData['business']);
+                    if (!empty($location['name'])) {
+                        $location['name'] = array_pop($location['name']);
+                    } else {
+                        $location['name'] = $addressData['addressComponent']['city'] ?? '';
+                    }
+                }
                 BlogLocationModel::query()->where('blog_id', $blogInfo->id)->delete();
                 $blogLocationInfo = BlogLocationModel::create([
                     'blog_id'   => $blogInfo->id,
                     'latitude'  => $location['latitude'],
                     'longitude' => $location['longitude'],
-                    'address'   => $location['address'],
-                    'name'      => $location['name'],
+                    'address'   => $location['address'] ?? '',
+                    'name'      => $location['name'] ?? '',
                 ]);
                 if (!$blogLocationInfo) {
                     throw new BusinessException('动态位置信息保存失败', BusinessCode::BUSINESS_ERROR->value);

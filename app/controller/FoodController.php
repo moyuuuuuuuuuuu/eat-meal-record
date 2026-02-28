@@ -6,7 +6,8 @@ use app\business\FoodBusiness;
 use app\common\base\BaseController;
 use app\common\enum\BusinessCode;
 use app\common\enum\NutritionInputType;
-use app\common\exception\ParamException;
+use app\common\exception\DataNotFoundException;
+use app\common\exception\ValidationException;
 use app\model\FoodModel;
 use app\model\FoodModel as Food;
 use app\queue\contant\QueueEventName;
@@ -41,6 +42,7 @@ class FoodController extends BaseController
     {
         return $this->success('ok', FoodBusiness::instance()->detail($request));
     }
+
     /**
      * AI识别餐食营养信息
      * @param Request $request
@@ -53,7 +55,7 @@ class FoodController extends BaseController
         $type    = $request->post('type', null);
         $options = $request->post('options', []);
         if (!$type || !$content) {
-            throw new ParamException('类型', '内容');
+            throw new ValidationException('类型', '内容');
         }
 
         if (!in_array($type, Helper::cases(NutritionInputType::class))) {
@@ -63,7 +65,9 @@ class FoodController extends BaseController
             $nutritionService = new Nutrition();
             $result           = $nutritionService->request($type, $content, $options);
             Log::info($type . '的请求结果', $result);
-            Client::send(QueueEventName::REMOTE_FOOD_SYNC->value, $result);
+            if (!isset($result['foods']) || empty($result['foods'])) {
+                throw new DataNotFoundException('识别失败');
+            }
             return $this->success('', $result);
         } catch (\Exception $exception) {
             return $this->fail($exception->getMessage());

@@ -62,11 +62,7 @@ class UserModel extends BaseModel
     {
         return Attribute::make(
             get: function ($value, $attributes) {
-                return match ($attributes['sex'] ?? null) {
-                    Sex::MAN->value => '男',
-                    Sex::WOMEN->value => '女',
-                    default => '未知',
-                };
+                return Sex::tryFrom($attributes['sex'])->label() ?? '未知';
             }
         );
     }
@@ -75,12 +71,7 @@ class UserModel extends BaseModel
     {
         return Attribute::make(
             get: function ($value, $attributes) {
-                return match ($attributes['status'] ?? null) {
-                    Status::NORMAL->value => '正常',
-                    Status::FORBID->value => '禁用',
-                    Status::OFF->value => '临时封禁',
-                    default => '未知',
-                };
+                return Status::tryFrom($attributes['status']??'')->label() ?? '未知';
             }
         );
     }

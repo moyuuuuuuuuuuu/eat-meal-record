@@ -29,4 +29,15 @@ enum AttachType: int
      * 餐食记录
      */
     case RECORD = 4;
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::IMG => '图片',
+            self::VIDEO => '视频',
+            self::FOOD => '食物',
+            self::REPRICE => '食谱',
+            self::RECORD => '餐食记录',
+        };
+    }
 }

@@ -1,0 +1,82 @@
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "current_page": 1,
+    "per_page": 10,
+    "total": 25,
+    "last_page": 3,
+    "data": [
+      {
+        "id": "2026-03-01",
+        "date": "2026-03-01",
+        "totalCalories": 1850,
+        "totalBurned": 450,
+        "mealCount": 3,
+        "meals": [
+          {
+            "id": "m1",
+            "mealType": "早餐",
+            "totalCalories": 450,
+            "items": [
+              { "name": "全麦面包", "amount": "2片" },
+              { "name": "煮鸡蛋", "amount": "1个" },
+              { "name": "牛奶", "amount": "250ml" }
+            ]
+          },
+          {
+            "id": "m2",
+            "mealType": "午餐",
+            "totalCalories": 850,
+            "items": [
+              { "name": "糙米饭", "amount": "150g" },
+              { "name": "西兰花炒鸡胸肉", "amount": "200g" }
+            ]
+          },
+          {
+            "id": "m3",
+            "mealType": "晚餐",
+            "totalCalories": 550,
+            "items": [
+              { "name": "三文鱼沙拉", "amount": "1份" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "2026-02-28",
+        "date": "2026-02-28",
+        "totalCalories": 1600,
+        "totalBurned": 300,
+        "mealCount": 2,
+        "meals": [
+          {
+            "id": "m4",
+            "mealType": "午餐",
+            "totalCalories": 900,
+            "items": [
+              { "name": "牛肉面", "amount": "1碗" }
+            ]
+          },
+          {
+            "id": "m5",
+            "mealType": "晚餐",
+            "totalCalories": 700,
+            "items": [
+              { "name": "煎鸡排", "amount": "150g" },
+              { "name": "清炒时蔬", "amount": "100g" }
+            ]
+          }
+        ]
+      }
+    ],
+    "first_page_url": "...",
+    "last_page_url": "...",
+    "next_page_url": "...",
+    "prev_page_url": null,
+    "path": "/api/diary/history",
+    "from": 1,
+    "to": 10,
+    "links": []
+  }
+}

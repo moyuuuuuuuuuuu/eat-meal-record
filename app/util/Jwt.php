@@ -21,6 +21,20 @@ class Jwt
      * @var string
      */
     protected static $aesIv;
+    protected static $instance;
+
+    protected function __construct()
+    {
+
+    }
+
+    static function instance()
+    {
+        if (!self::$instance instanceof self) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
 
     /**
      * 生成 JWT Token
@@ -29,7 +43,7 @@ class Jwt
      * @param int|null $exp
      * @return string
      */
-    public static function encode(array $payload, int $exp = null): string
+    public function encode(array $payload, int $exp = null): string
     {
         $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
 
@@ -60,7 +74,7 @@ class Jwt
      * @param string $token
      * @return UserInfoData
      */
-    public static function decode(string $token): UserInfoData|null
+    public function decode(string $token): UserInfoData|null
     {
         $parts = explode('.', $token);
         if (count($parts) !== 3) {
@@ -89,7 +103,6 @@ class Jwt
 
         // 解密数据部分
         $payloadJson = openssl_decrypt($jwtPayload['data'], 'AES-256-CBC', static::getAesKey(), 0, static::getAesIv());
-
         if ($payloadJson === false) {
             return null;
         }
@@ -116,7 +129,7 @@ class Jwt
     protected static function getKey(): string
     {
         if (!static::$key) {
-            static::$key = getenv('JWT_KEY') ?: 'default_key_123456';
+            static::$key = getenv('JWT_KEY');
         }
         return static::$key;
     }
@@ -129,8 +142,8 @@ class Jwt
     protected static function getAesKey(): string
     {
         if (!static::$aesKey) {
-            $key            = getenv('JWT_AES_KEY') ?: 'default_aes_key_654321_098765432';
-            static::$aesKey = substr(hash('sha256', $key,true), 0, 32);
+            $key            = getenv('JWT_AES_KEY');
+            static::$aesKey = substr(hash('sha256', $key, true), 0, 32);
         }
         return static::$aesKey;
     }
@@ -143,8 +156,8 @@ class Jwt
     protected static function getAesIv(): string
     {
         if (!static::$aesIv) {
-            $iv            = getenv('JWT_AES_IV') ?: 'default_iv_123456';
-            static::$aesIv = substr(hash('sha256', $iv,true), 0, 16);
+            $iv            = getenv('JWT_AES_IV');
+            static::$aesIv = substr(hash('sha256', $iv, true), 0, 16);
         }
         return static::$aesIv;
     }

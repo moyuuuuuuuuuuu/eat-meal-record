@@ -4,7 +4,7 @@ namespace app\controller;
 
 use app\business\UserBusiness;
 use app\common\base\BaseController;
-use app\common\exception\ParamException;
+use app\common\exception\ValidationException;
 use app\common\validate\LoginValidator;
 use support\Request;
 use support\Response;
@@ -42,7 +42,6 @@ class AuthController extends BaseController
         }
     }
 
-    #[Validate(validator: LoginValidator::class, scene: 'sms')]
     public function sms(Request $request): Response
     {
         try {

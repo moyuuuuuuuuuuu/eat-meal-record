@@ -24,7 +24,11 @@ class FoodModel extends BaseModel
      */
     protected $primaryKey = 'id';
 
-    protected $casts = [
+    protected $fillable = [
+        'name',
+        'cat_id',
+        'user_id',
+        'status'
     ];
 
     /**
@@ -59,8 +63,9 @@ class FoodModel extends BaseModel
     }
 
 
-    public function getNutrition(){
-        $this->nutrition = FoodNutrient::query()->where('food_id',$this->id)->first();
+    public function getNutrition()
+    {
+        $this->nutrition = FoodNutrientModel::query()->where('food_id', $this->id)->first();
         return $this;
     }
 
@@ -80,7 +85,7 @@ class FoodModel extends BaseModel
 
     public function nutrition()
     {
-        return $this->hasOne(FoodNutrient::class, 'food_id', 'id')->select(explode(',', getenv('NUTRITION_TEMPLATE_SHOW_KEY')));
+        return $this->hasOne(FoodNutrientModel::class, 'food_id', 'id')->select(explode(',', getenv('NUTRITION_TEMPLATE_SHOW_KEY')));
     }
 
     public function unit()

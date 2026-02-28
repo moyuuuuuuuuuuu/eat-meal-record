@@ -13,7 +13,7 @@ abstract class BaseGuzzleHttpClient
     /**
      * @return static
      */
-    public static function getInstance()
+    public static function instance(): static
     {
         if (static::$instance == null) {
             static::$instance = new static();
@@ -29,7 +29,7 @@ abstract class BaseGuzzleHttpClient
     protected function handleResponse($response): array
     {
         if ($response->getStatusCode() != 200) {
-            throw new \RuntimeException($response->getRe);
+            throw new \RuntimeException($response->getReasonPhrase());
         }
         $body = $response->getBody()->getContents();
         $data = json_decode($body, true);

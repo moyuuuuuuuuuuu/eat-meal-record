@@ -25,6 +25,16 @@ class UserController extends BaseController
     }
 
     /**
+     * 更新用户信息
+     * @param Request $request
+     * @return \support\Response
+     */
+    public function update(Request $request)
+    {
+        return $this->success('保存成功', UserBusiness::instance()->update($request));
+    }
+
+    /**
      * 同步步数
      * @param Request $request
      * @return \support\Response
@@ -34,4 +44,5 @@ class UserController extends BaseController
         UserBusiness::instance()->uploadSteps($request);
         return $this->success('同步成功');
     }
+
 }

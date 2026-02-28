@@ -3,6 +3,7 @@
 namespace app\controller;
 
 use app\business\DiaryBusiness;
+use app\business\MealRecordBusiness;
 use app\common\base\BaseController;
 use support\Request;
 
@@ -36,7 +37,7 @@ class DiaryController extends BaseController
      */
     public function add(Request $request)
     {
-        $data = DiaryBusiness::instance()->addMeal($request);
+        $data = MealRecordBusiness::instance()->create($request);
         return $this->success('添加成功', $data);
     }
 
