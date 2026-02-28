@@ -8,7 +8,10 @@ use support\Request;
 
 class DiaryController extends BaseController
 {
-    protected $noNeedLogin = [];
+    protected $noNeedLogin = [
+        'meals',
+        'summary'
+    ];
 
     /**
      * 获取饮食记录列表

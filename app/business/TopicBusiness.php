@@ -27,4 +27,33 @@ class TopicBusiness extends BaseBusiness
 
         return $paginate->toArray();
     }
+
+    public function hot(Request $request)
+    {
+        $title = $request->get('title');
+        $query = TopicModel::query()->select('id', 'title', 'join', 'thumb', 'description', 'post');
+        $query->when($title, function ($query) use ($title) {
+            $query->where('title', 'like', "%{$title}%");
+        })->where('status', NormalStatus::YES->value);
+        $query->orderBy('join', 'desc');
+
+        $topicList = $query->limit(10)->get();
+        $format    = new TopicFormat($request);
+        $topicList->transform(fn($item) => $format->format($item));
+        return $topicList->toArray();
+    }
+
+    public function create(Request $request)
+    {
+        $name      = $request->post('title');
+        $topicInfo = TopicModel::query()->where('status', NormalStatus::YES->value)->where('title', $name)->first();
+        if (!$topicInfo) {
+            $topicInfo = TopicModel::create([
+                'title'  => $name,
+                'status' => NormalStatus::YES->value
+            ]);
+        }
+        $topicInfo->increment('join');
+        return $topicInfo;
+    }
 }

@@ -19,11 +19,8 @@ class FoodFormat extends BaseFormat
             'name'     => $model->name,
             'category' => $model->cat?->name,
             'unit'     => $model->unit?->name,
-            'calories' => $model->nutrition?->kcal,
-            'protein'  => $model->nutrition?->protein,
-            'carbs'    => $model->nutrition?->carbohydrate,
-            'fibers'   => $model->nutrition?->fiber,
-            'units'    => $this->getUnits($model)
+            ... NutritionTemplate::instance()->transformation($model->nutrition?->toArray()),
+            'units'    => $this->getUnits($model),
         ];
     }
 
@@ -51,7 +48,7 @@ class FoodFormat extends BaseFormat
                 'unit_name'  => $unit->name,
                 'weight'     => (float)$fu->weight,
                 'is_default' => (bool)$fu->is_default,
-                'nutrition'  => NutritionTemplate::instance()->format($calcNutrition)
+                'nutrition'  => NutritionTemplate::instance()->transformation($calcNutrition)
             ];
         }
 

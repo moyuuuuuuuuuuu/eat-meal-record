@@ -23,7 +23,7 @@ use support\Db;
 use support\exception\BusinessException;
 use support\Request;
 use function Symfony\Component\Clock\now;
-use support\validation\annotation\Validate;
+use Webman\Validation\Annotation\Validate;
 
 class DiaryBusiness extends BaseBusiness
 {
@@ -32,6 +32,9 @@ class DiaryBusiness extends BaseBusiness
      */
     public function meals(Request $request): array
     {
+        if (!$request->userInfo) {
+            return [];
+        }
         $date  = $request->get('date', date('Y-m-d'));
         $time  = Carbon::parse($date);
         $query = MealRecordModel::query()
@@ -64,28 +67,36 @@ class DiaryBusiness extends BaseBusiness
     {
 
         //每日卡路里目标
-        $target             = $request->userInfo->target ?? 2000;
-        $dailyGoal          = $this->calcMacroFromKcal($target);
-        $totalNutritionList = MealRecordModel::query()
-            ->where('user_id', $request->userInfo->id)
-            ->where('meal_date', Carbon::today())
-            ->pluck('nutrition')->toArray();
-        $totalNutrition     = [];
-        foreach ($totalNutritionList as $item) {
-            foreach ($item as $k => $v) {
-                if (!isset($totalNutrition[$k])) {
-                    $totalNutrition[$k] = $v;
-                    continue;
+        $target    = $request->userInfo->target ?? 2000;
+        $dailyGoal = $this->calcMacroFromKcal($target);
+        if ($request->userInfo) {
+            $totalNutritionList = MealRecordModel::query()
+                ->where('user_id', $request->userInfo->id)
+                ->where('meal_date', Carbon::today())
+                ->pluck('nutrition')->toArray();
+            $totalNutrition     = [];
+            foreach ($totalNutritionList as $item) {
+                foreach ($item as $k => $v) {
+                    if (!isset($totalNutrition[$k])) {
+                        $totalNutrition[$k] = $v;
+                        continue;
+                    }
+
+                    $totalNutrition[$k] = Calculate::add($totalNutrition[$k], $v);
                 }
-                $totalNutrition[$k] = bcadd($totalNutrition[$k], $v);
             }
         }
         return [
-            'dailyGoal'      => $dailyGoal,
+            'dailyGoal'      => $dailyGoal ?? [
+                    'calories'    => $target,
+                    'protein' => 0.00,
+                    'fat'     => 0.00,
+                    'carbs'   => 0.00,
+                ],
             'totalIntake'    => [
-                'calories' => $totalNutrition['kcal'],
-                'protein'  => $totalNutrition['protein'],
-                'fat'      => $totalNutrition['fat'],
+                'calories' => $totalNutrition['kcal'] ?? 0.00,
+                'protein'  => $totalNutrition['protein'] ?? 0.00,
+                'fat'      => $totalNutrition['fat'] ?? 0.00,
                 'carbs'    => $totalNutrition['carbohydrate'] ?? 00,
             ],
             'burnedCalories' => 0.00
@@ -296,7 +307,7 @@ class DiaryBusiness extends BaseBusiness
         $carbsKcal   = bcmul((string)$target, (string)$ratio['carbs'], 2);
 
         return [
-            'kcal'    => $target,
+            'calories'    => $target,
             'protein' => bcdiv($proteinKcal, '4', 2), // 4 kcal/g
             'fat'     => bcdiv($fatKcal, '9', 2),     // 9 kcal/g
             'carbs'   => bcdiv($carbsKcal, '4', 2),   // 4 kcal/g

@@ -13,7 +13,4 @@
  */
 
 return [
-    '' => [
-        \Webman\Cors\CORS::class
-    ]
 ];

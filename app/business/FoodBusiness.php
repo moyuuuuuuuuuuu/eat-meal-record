@@ -4,6 +4,7 @@ namespace app\business;
 
 use app\common\base\BaseBusiness;
 use app\common\enum\BusinessCode;
+use app\common\enum\NormalStatus;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ParamException;
 use app\format\FoodFormat;
@@ -22,7 +23,14 @@ class FoodBusiness extends BaseBusiness
         $pageSize = (int)$request->get('pageSize', 10);
         $pageSize = max(1, min($pageSize, 50));
         $query    = FoodModel::query()
-            ->where('status', 1);
+            ->with([
+                'cat' => function ($q) {
+                    $q->select('cats.id', 'cats.name');
+                },
+                'unit',
+                'nutrition'
+            ])
+            ->where('status', NormalStatus::YES->value);
 
         if ($name) {
             $query->where('name', 'like', "%$name%");
@@ -38,16 +46,10 @@ class FoodBusiness extends BaseBusiness
                 ->from($subTable)
                 ->whereColumn($subTable . '.food_id', $mainTable . '.id');
         });
-        $paginate   = $query->with([
-            'cat' => function ($q) {
-                $q->select('cats.id', 'cats.name');
-            },
-            'unit',
-            'nutrition'
-        ])
+        $paginate   = $query->orderByDesc('id')
             ->paginate($pageSize, ['*'], 'page', $page);
         $foodFormat = new FoodFormat($request);
-        $paginate->getCollection()->transform(function ($item)use($foodFormat) {
+        $paginate->getCollection()->transform(function ($item) use ($foodFormat) {
             return $foodFormat->format($item);
         });
         return $paginate->toArray();

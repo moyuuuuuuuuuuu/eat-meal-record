@@ -15,11 +15,12 @@ use support\Log;
 class NutritionTemplate
 {
     const KEY_NAME = 'nutrition';
-    static $instance;
+    static    $instance;
     protected $showKey = [];
+
     private function __construct()
     {
-        $this->showKey = explode(',',getenv('NUTRITION_TEMPLATE_SHOW_KEY'));
+        $this->showKey = explode(',', getenv('NUTRITION_TEMPLATE_SHOW_KEY'));
     }
 
     static function instance()
@@ -78,9 +79,8 @@ class NutritionTemplate
         }
 
         $foodNutrition = FoodNutrient::query()
-            ->select(explode(',',getenv('NUTRITION_TEMPLATE_SHOW_KEY')))
+            ->select(explode(',', getenv('NUTRITION_TEMPLATE_SHOW_KEY')))
             ->where('food_id', $foodId)
-
             ->first();
 
         if (!$foodNutrition) {
@@ -99,9 +99,9 @@ class NutritionTemplate
     public function format(array $nutrition): array
     {
         $template = $this->template(true);
-        foreach ($template as $key=> &$value) {
-            $field            = $value['value'];
-            if(!in_array($field, $this->showKey)){
+        foreach ($template as $key => &$value) {
+            $field = $value['value'];
+            if (!in_array($field, $this->showKey)) {
                 unset($template[$key]);
                 continue;
             }
@@ -110,5 +110,16 @@ class NutritionTemplate
         }
         unset($value);
         return $template;
+    }
+
+    public function transformation(?array $nutrition = []): array
+    {
+        return [
+            'calories' => $nutrition['kcal'] ?? 0.00,
+            'protein'  => $nutrition['protein'] ?? 0.00,
+            'carbs'    => $nutrition['carbohydrate'] ?? 0.00,
+            'fibers'   => $nutrition['fiber'] ?? 0.00,
+            'fat'      => $nutrition['fat'] ?? 0.00,
+        ];
     }
 }

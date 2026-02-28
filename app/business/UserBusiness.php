@@ -4,6 +4,8 @@ namespace app\business;
 
 use app\common\base\BaseBusiness;
 use app\common\context\UserInfo;
+use app\common\enum\BusinessCode;
+use app\common\enum\NormalStatus;
 use app\format\UserInformationFormat;
 use app\model\UserModel;
 use app\model\MealRecordModel;
@@ -15,6 +17,7 @@ use Carbon\Carbon;
 use plugin\admin\app\model\User;
 use support\Context;
 use support\Db;
+use support\exception\BusinessException;
 use support\Request;
 use Webman\RedisQueue\Client;
 
@@ -34,8 +37,8 @@ class UserBusiness extends BaseBusiness
         $wxMini   = WxMini::getInstance();
         $wxResult = $wxMini->jsCode2Session($code);
 
-        $openid  = $wxResult['openId'];
-        $unionid = $wxResult['unionId'] ?? null;
+        $openid     = $wxResult['openId'];
+        $unionid    = $wxResult['unionId'] ?? null;
         $sessionKey = $wxResult['sessionKey'] ?? null;
 
         if (!$openid) {
@@ -43,9 +46,9 @@ class UserBusiness extends BaseBusiness
         }
 
         // 2. 查找或创建用户
-        $user = User::where('openid', $openid)->first();
+        $user = UserModel::where('openid', $openid)->first();
         if (!$user) {
-            $user            = new User();
+            $user            = new UserModel();
             $user->openid    = $openid;
             $user->unionid   = $unionid;
             $user->username  = 'wx_' . substr(md5($openid), 0, 8);
@@ -69,6 +72,39 @@ class UserBusiness extends BaseBusiness
         // 实际上 wx.getWeRunData 需要最新的 session_key，建议在登录时保存到 cache
         if ($sessionKey) {
             \support\Cache::set('wx_session_key_' . $user->id, $sessionKey, 7200);
+        }
+
+        /*Client::send(QueueEventName::AFTER_LOGIN->value, [
+            'userId'        => $user->id,
+            'ip'            => $ip,
+            'lastLoginTime' => now(),
+        ]);*/
+        return UserInfo::setUserInfo(userInfo: $user);
+    }
+
+    public function sms(Request $request): array
+    {
+        $mobile = $request->post('mobile');
+        $code   = $request->post('code');
+        if (!(SmsBusiness::instance()->check($mobile, $code))) {
+            throw new BusinessException('短信验证码错误', BusinessCode::PARAM_ERROR);
+        }
+        // 2. 查找或创建用户
+        $user = UserModel::where('mobile', $mobile)->first();
+        if (!$user) {
+            $user = UserModel::create([
+                'mobile'    => $mobile,
+                'nickname'  => substr($mobile, 7) . rand(10000, 99999),
+                'username'  => 'm_' . substr(md5($mobile), 0, 8),
+                'join_time' => date('Y-m-d H:i:s'),
+                'join_ip'   => $request->getRealIp(),
+                'status'    => NormalStatus::YES
+            ]);
+        } else {
+            // 更新登录信息
+            $user->last_time = date('Y-m-d H:i:s');
+            $user->last_ip   = $request->getRealIp();
+            $user->save();
         }
 
         /*Client::send(QueueEventName::AFTER_LOGIN->value, [
@@ -104,7 +140,7 @@ class UserBusiness extends BaseBusiness
 
         // 解密数据
         $data = WxMini::getInstance()->parseEncryptData($encryptedData, $sessionKey, $iv);
-        
+
         // stepInfoList 包含过去三十天的步数
         $stepInfoList = $data['stepInfoList'] ?? [];
         if (empty($stepInfoList)) {

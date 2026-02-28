@@ -21,12 +21,15 @@ use app\controller\{
     CategoryController,
     FoodController,
     DiaryController,
-    FeedController
+    FeedController,
+    SmsController
 };
 
 Route::group('/api', function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/sms/login', [AuthController::class, 'sms']);
     Route::post('/auth/login/mock', [AuthController::class, 'mock']);
+    Route::post('/sms/send', [SmsController::class, 'send']);
 
     #食品相关
     Route::group('/food', function () {
@@ -66,6 +69,8 @@ Route::group('/api', function () {
     #话题
     Route::group('/topic', function () {
         Route::get('/search', [TopicController::class, 'search']);
+        Route::get('/hot', [TopicController::class, 'hot']);
+        Route::post('/create', [TopicController::class, 'create']);
     });
 });
 

@@ -8,7 +8,7 @@ use app\format\BlogFormat;
 use app\model\{BlogAttachModel, BlogLocationModel, BlogModel, BlogTopicModel, FollowModel, LikeModel, TopicModel};
 use support\{Db, Request};
 use support\exception\BusinessException;
-use support\validation\annotation\Validate;
+use Webman\Validation\Annotation\Validate;
 
 class FeedBusiness extends BaseBusiness
 {
@@ -19,43 +19,43 @@ class FeedBusiness extends BaseBusiness
      */
     public function list(Request $request): array
     {
-        $currentUserId = $request->userInfo->id ?? 0;
+        $currentUserId = $request->userInfo->id ?? null;
 
         $page     = (int)$request->get('page', 1);
         $pageSize = (int)$request->get('pageSize', 10);
 
         $query = BlogModel::query();
-        $query->where('visibility', '!=', Visibility::HIDDEN->value)
-            ->where(function ($q) use ($currentUserId) {
+        if (!$currentUserId) {
+            $query->where('visibility', Visibility::EVERYONE->value);
+        } else {
+            $query->where(function ($q) use ($currentUserId) {
                 // 公开
                 $q->where('visibility', Visibility::EVERYONE->value);
-                if ($currentUserId) {
-                    // 仅自己
-                    $q->orWhere(function ($sq) use ($currentUserId) {
-                        $sq->where('visibility', Visibility::SELF->value)
-                            ->where('user_id', $currentUserId);
-                    });
-                    // 仅好友（互相关注）
-                    $q->orWhere(function ($sq) use ($currentUserId) {
-                        $sq->where('visibility', Visibility::FRIEND->value)
-                            ->whereExists(function ($sub) use ($currentUserId) {
-                                $followTable = (new FollowModel())->getTable();
-                                $blogTable   = (new BlogModel())->getTable();
-                                $sub->select(Db::raw(1))
-                                    ->from($followTable)
-                                    ->whereColumn($followTable . '.follow_id', $blogTable . '.user_id')
-                                    ->where($followTable . '.user_id', $currentUserId)
-                                    ->where($followTable . '.is_attention', NormalStatus::YES);
-                            });
-                    });
-                }
+                // 仅自己
+                $q->orWhere(function ($sq) use ($currentUserId) {
+                    $sq->where('visibility', Visibility::SELF->value)
+                        ->where('user_id', $currentUserId);
+                });
+                // 仅好友（互相关注）
+                $q->orWhere(function ($sq) use ($currentUserId) {
+                    $sq->where('visibility', Visibility::FRIEND->value)
+                        ->whereExists(function ($sub) use ($currentUserId) {
+                            $followTable = (new FollowModel())->getTable();
+                            $blogTable   = (new BlogModel())->getTable();
+                            $sub->select(Db::raw(1))
+                                ->from($followTable)
+                                ->whereColumn($followTable . '.follow_id', $blogTable . '.user_id')
+                                ->where($followTable . '.user_id', $currentUserId)
+                                ->where($followTable . '.is_attention', NormalStatus::YES);
+                        });
+                });
             });
+        }
         // 排序优先级：最新 > 点赞 > 浏览 > 收藏
         $query->orderByDesc('id')
-            ->orderByDesc('like')
-            ->orderByDesc('view')
-            ->orderByDesc('fav');
-
+            ->orderByDesc('likes')
+            ->orderByDesc('views')
+            ->orderByDesc('favs');
         $paginate = $query->paginate($pageSize, ['*'], 'page', $page);
 
         $blogFormat = (new BlogFormat($request));
@@ -103,7 +103,7 @@ class FeedBusiness extends BaseBusiness
             if ($like) {
                 // 取消点赞
                 $like->delete();
-                BlogModel::query()->where('id', $blogId)->decrement('like');
+                BlogModel::query()->where('id', $blogId)->decrement('likes');
                 $isLike = false;
             } else {
                 // 点赞
@@ -112,13 +112,13 @@ class FeedBusiness extends BaseBusiness
                     'target_id' => $blogId,
                     'type'      => LikeFavType::BLOG->value,
                 ]);
-                BlogModel::query()->where('id', $blogId)->increment('like');
+                BlogModel::query()->where('id', $blogId)->increment('likes');
                 $isLike = true;
             }
 
             return [
                 'isLike' => $isLike,
-                'like'   => $blog->like
+                'likes'  => $blog->likes
             ];
         });
     }
@@ -146,10 +146,10 @@ class FeedBusiness extends BaseBusiness
             $blogInfo = BlogModel::create([
                 'user_id'    => $request->userInfo->id,
                 'content'    => $content,
-                'like'       => 0,
-                'fav'        => 0,
-                'view'       => 0,
-                'comment'    => 0,
+                'likes'      => 0,
+                'favs'       => 0,
+                'views'      => 0,
+                'comments'   => 0,
                 'visibility' => $visibility,
             ]);
             if (!$blogInfo) {

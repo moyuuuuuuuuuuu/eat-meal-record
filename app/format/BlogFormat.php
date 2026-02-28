@@ -13,28 +13,28 @@ class BlogFormat extends BaseFormat
         return [
             'id'         => $model->id,
             'content'    => $model->content,
-            'like'       => $model->like,
-            'view'       => $model->view,
-            'fav'        => $model->fav,
-            'comment'    => $model->comment,
+            'likes'       => $model->likes,
+            'views'       => $model->views,
+            'favs'        => $model->favs,
+            'comments'    => $model->comments,
             'status'     => $model->status,
             'is_like'    => LikeModel::isLiked($this->request?->userInfo?->id, $model->id),
             'is_fav'     => FavoriteModel::isFav($this->request?->userInfo?->id, $model->id),
             'created_at' => Carbon::parse($model->created_at)->format('Y-m-d H:i:s'),
-            'user'       => $this->user($model),
+            'author'       => $this->author($model),
             'topics'     => $this->topic($model),
             'attach'     => $this->attach($model),
             'location'   => $this->location($model),
-            'comments'   => []
+            'comment_list'   => []
         ];
     }
 
-    public function location(BaseModel $model): array
+    public function location(BaseModel $model): ?array
     {
         return $model->location?->toArray();
     }
 
-    public function user(BaseModel $model): array
+    public function author(BaseModel $model): array
     {
         $userInfo = $model->user?->toArray();
         if ($this->request?->userInfo?->id != $model->user_id) {
@@ -43,12 +43,12 @@ class BlogFormat extends BaseFormat
         return $userInfo;
     }
 
-    public function topic($model): array
+    public function topic($model): ?array
     {
         return $model->topics?->toArray();
     }
 
-    public function attach($model): array
+    public function attach($model): ?array
     {
         $blogAttachFormat = (new BlogAttachFormat($this->request));
         return BlogAttachModel::query()

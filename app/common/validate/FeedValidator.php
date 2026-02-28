@@ -2,11 +2,12 @@
 
 namespace app\common\validate;
 
+use app\common\base\BaseValidator;
 use app\common\enum\blog\AttachType;
 use app\common\enum\blog\Visibility;
-use support\validation\{Validator, Rule};
+use support\validation\{Rule};
 
-class FeedValidator extends Validator
+class FeedValidator extends BaseValidator
 {
 
     protected array $messages = [
@@ -32,6 +33,9 @@ class FeedValidator extends Validator
         'location.longitude.numeric'  => '经度必须是数字',
         'location.address.string'     => '地址必须是字符串',
         'location.name.string'        => '位置名称必须是字符串',
+        'id.required'                 => '请选择动态',
+        'id.numeric'                  => '请选择动态',
+        'id.min'                      => '请选择动态',
     ];
 
     protected array $scenes = [

@@ -2,9 +2,11 @@
 
 namespace app\controller;
 
+use support\Request;
 use app\business\FeedBusiness;
 use app\common\base\BaseController;
-use support\Request;
+use app\common\validate\FeedValidator;
+use Webman\Validation\Annotation\Validate;
 
 class FeedController extends BaseController
 {
@@ -31,7 +33,6 @@ class FeedController extends BaseController
     {
         return $this->success('操作成功', FeedBusiness::instance()->like($request));
     }
-
     public function create(Request $request)
     {
         return $this->success('ok', FeedBusiness::instance()->create($request));
