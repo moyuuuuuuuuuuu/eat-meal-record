@@ -7,13 +7,14 @@ use app\common\context\UserInfo;
 use app\common\enum\BusinessCode;
 use app\common\enum\NormalStatus;
 use app\common\enum\user\Sex;
+use app\common\enum\user\Status;
 use app\common\validate\LoginValidator;
 use app\common\validate\UserValidator;
 use app\format\UserInformationFormat;
 use app\model\UserModel;
 use app\model\MealRecordModel;
 use app\model\UserStepsModel;
-use app\queue\contant\QueueEventName;
+use app\queue\constant\QueueEventName;
 use app\service\wechat\WxMini;
 use app\util\Calculate;
 use app\util\Jwt;
@@ -61,7 +62,8 @@ class UserBusiness extends BaseBusiness
             $user->password  = ''; // 小程序用户不需要密码
             $user->join_time = date('Y-m-d H:i:s');
             $user->join_ip   = $ip;
-            $user->status    = 0;
+            $user->status    = Status::NORMAL->value;
+            $user->sex       = Sex::NONE->value;
             $user->save();
         } else {
             // 更新登录信息
@@ -78,14 +80,9 @@ class UserBusiness extends BaseBusiness
         if ($sessionKey) {
             \support\Cache::set('wx_session_key_' . $user->id, $sessionKey, 7200);
         }
-
-        /*Client::send(QueueEventName::AFTER_LOGIN->value, [
-            'userId'        => $user->id,
-            'ip'            => $ip,
-            'lastLoginTime' => now(),
-        ]);*/
         return UserInfo::setUserInfo(userInfo: $user);
     }
+
     #[Validate(validator: LoginValidator::class, scene: 'sms')]
     public function sms(Request $request): array
     {
@@ -207,7 +204,7 @@ class UserBusiness extends BaseBusiness
 
         // 记录总数：基于 MealRecordModel，若表缺失或字段缺失，则返回 0
         try {
-            $totalRecords = MealRecordModel::query()->distinct()->where('user_id',$request->userInfo->id)->count('meal_date');
+            $totalRecords = MealRecordModel::query()->distinct()->where('user_id', $request->userInfo->id)->count('meal_date');
         } catch (\Throwable $e) {
             $totalRecords = 0;
         }
@@ -217,7 +214,7 @@ class UserBusiness extends BaseBusiness
         try {
             $allCalories = MealRecordModel::query()->where('user_id', $userInfo->id)->sum(Db::raw("nutrition->>'$.kcal'"));
             // 如果后续有每日摄入热量表，可在此改为 AVG 统计
-            $avgCalories = Calculate::div((string)$allCalories,(string)$totalRecords); // 合理占位，待接入真实数据
+            $avgCalories = Calculate::div((string)$allCalories, (string)$totalRecords); // 合理占位，待接入真实数据
         } catch (\Throwable $e) {
             $avgCalories = 0;
         }

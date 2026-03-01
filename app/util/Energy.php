@@ -2,6 +2,9 @@
 
 namespace app\util;
 
+use app\common\enum\user\Sex;
+use support\Log;
+
 class Energy
 {
     /**
@@ -28,7 +31,7 @@ class Energy
      */
     public static function bmi($weight, $height): string
     {
-        $heightM = Calculate::div($height, '100', 4);
+        $heightM  = Calculate::div($height, '100', 4);
         $heightSq = Calculate::mul($heightM, $heightM, 4);
         return Calculate::div($weight, $heightSq, 4, 2);
     }
@@ -42,10 +45,9 @@ class Energy
             return '0.00';
         }
 
-        $strideRate = ($gender == 1 || $gender === 'male') ? '0.415' : '0.413';
-        $stride = Calculate::mul($height, $strideRate, 4);
-        $distance = Calculate::div(Calculate::mul($steps, $stride, 4), '100000', 8);
-
+        $strideRate = $gender == Sex::MAN->value ? '0.415' : '0.413';
+        $stride     = Calculate::mul($height, $strideRate, 4);
+        $distance   = Calculate::div(Calculate::mul($steps, $stride, 4), '100000', 8);
         return Calculate::mul(Calculate::mul($weight, $distance, 4), '1.036', 4, 2);
     }
 
@@ -62,27 +64,27 @@ class Energy
         $intake = $data['intake'] ?? 0;
         $target = $data['target'] ?? Calculate::mul($weight, '7');
 
-        $bmr = self::bmr($gender, $weight, $height, $age);
+        $bmr         = self::bmr($gender, $weight, $height, $age);
         $runningBurn = self::runningBurn($gender, $weight, $height, $steps);
-        $neat = Calculate::mul($bmr, '0.1');
-        $totalBurn = Calculate::add(Calculate::add($bmr, $runningBurn), $neat);
-        
-        $deficit = Calculate::sub($totalBurn, $intake);
+        $neat        = Calculate::mul($bmr, '0.1');
+        $totalBurn   = Calculate::add(Calculate::add($bmr, $runningBurn), $neat);
+
+        $deficit        = Calculate::sub($totalBurn, $intake);
         $completionRate = Calculate::comp($target, '0') > 0
             ? Calculate::div($deficit, $target, 4, 2)
             : '0.00';
 
         return [
-            'bmr'             => $bmr,
-            'runningBurn'     => $runningBurn,
-            'neat'            => $neat,
-            'totalBurn'       => $totalBurn,
-            'intake'          => Calculate::format($intake),
-            'deficit'         => $deficit,
-            'target'          => Calculate::format($target),
-            'completionRate'  => $completionRate,
-            'bmi'             => self::bmi($weight, $height),
-            'status'          => self::resolveStatus((float)$completionRate)
+            'bmr'            => $bmr,
+            'runningBurn'    => $runningBurn,
+            'neat'           => $neat,
+            'totalBurn'      => $totalBurn,
+            'intake'         => Calculate::format($intake),
+            'deficit'        => $deficit,
+            'target'         => Calculate::format($target),
+            'completionRate' => $completionRate,
+            'bmi'            => self::bmi($weight, $height),
+            'status'         => self::resolveStatus((float)$completionRate)
         ];
     }
 

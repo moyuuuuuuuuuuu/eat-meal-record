@@ -6,6 +6,7 @@ namespace app\model;
 use app\common\base\BaseModel;
 use app\common\context\NutritionTemplate;
 use app\common\enum\foodUnit\IsDefault;
+use plugin\admin\app\model\Tag;
 use support\Log;
 
 class FoodModel extends BaseModel
@@ -31,38 +32,6 @@ class FoodModel extends BaseModel
         'status'
     ];
 
-    /**
-     * 获取食物关联的所有单位及其换算后的营养成分
-     *
-     * @return array
-     */
-    public function getUnits()
-    {
-        $foodUnits = FoodUnitModel::query()->where('food_id', $this->id)->get();
-        $units     = [];
-        $nutrition = $this->nutrition;
-        foreach ($foodUnits as $fu) {
-            $unit = $fu->unit;
-            if (!$unit) continue;
-
-            $ratio   = $fu->weight / 100;
-            $units[] = [
-                'unit_id'    => $fu->unit_id,
-                'unit_name'  => $unit->name,
-                'weight'     => (float)$fu->weight,
-                'is_default' => (bool)$fu->is_default,
-                'nutrition'  => NutritionTemplate::instance()->format(array_map(function ($value) use ($ratio) {
-                    return is_numeric($value)
-                        ? round($value * $ratio, 2)
-                        : $value;
-                }, $nutrition))
-            ];
-        }
-
-        return $units;
-    }
-
-
     public function getNutrition()
     {
         $this->nutrition = FoodNutrientModel::query()->where('food_id', $this->id)->first();
@@ -86,6 +55,11 @@ class FoodModel extends BaseModel
     public function nutrition()
     {
         return $this->hasOne(FoodNutrientModel::class, 'food_id', 'id')->select(explode(',', getenv('NUTRITION_TEMPLATE_SHOW_KEY')));
+    }
+
+    public function getTag(int $limit = 3)
+    {
+        return TagModel::query()->whereIn('id', FoodTagModel::query()->select('tag_id')->where('food_id', $this->id))->limit($limit)->get();
     }
 
     public function unit()

@@ -18,6 +18,7 @@ enum Status: int
             self::NORMAL => '正常',
             self::FORBID => '封禁',
             self::OFF => '临时封禁',
+            default => '未知',
         };
     }
 }

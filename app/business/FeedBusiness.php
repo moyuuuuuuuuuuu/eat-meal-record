@@ -2,13 +2,15 @@
 
 namespace app\business;
 
+use app\common\enum\QueueEventName;
 use app\service\baidu\Ibs;
-use app\common\{base\BaseBusiness, validate\FeedValidator};
+use app\common\{base\BaseBusiness, exception\DataNotFoundException, validate\FeedValidator};
 use app\common\enum\{blog\Visibility, BusinessCode, LikeFavType, NormalStatus};
 use app\format\BlogFormat;
 use app\model\{BlogAttachModel, BlogLocationModel, BlogModel, BlogTopicModel, FollowModel, LikeModel, TopicModel};
-use support\{Db, Log, Request};
+use support\{Db, Request};
 use support\exception\BusinessException;
+use Webman\RedisQueue\Client;
 use Webman\Validation\Annotation\Validate;
 
 class FeedBusiness extends BaseBusiness
@@ -59,24 +61,26 @@ class FeedBusiness extends BaseBusiness
             ->orderByDesc('favs');
         $paginate = $query->paginate($pageSize, ['*'], 'page', $page);
 
-        $blogFormat = (new BlogFormat($request));
-        $paginate->getCollection()->transform(function ($item) use ($blogFormat) {
+        $blogFormat     = (new BlogFormat($request));
+        $increaseIdList = [];
+        $paginate->getCollection()->transform(function ($item) use ($blogFormat, &$increaseIdList) {
+            $increaseIdList[] = $item->id;
             return $blogFormat->format($item);
         });
+        Client::send(QueueEventName::FEED_VIEW_INCREASE->value, $increaseIdList);
 
         return $paginate->toArray();
     }
 
     public function detail(Request $request): array
     {
-        return [
-            'id'       => 1,
-            'title'    => '今日份减脂餐',
-            'content'  => '详细做法如下...',
-            'comments' => [
-                ['user' => '路人甲', 'text' => '学到了']
-            ]
-        ];
+        $blogId = $request->get('id');
+        $blog   = BlogModel::find($blogId);
+        if (empty($blog)) {
+            throw new DataNotFoundException();
+        }
+
+        return (new BlogFormat($request))->format($blog);
     }
 
     /**
@@ -186,7 +190,7 @@ class FeedBusiness extends BaseBusiness
 
             if ($location) {
                 if (!empty($location['latitude']) && !empty($location['longitude']) && empty($location['address'])) {
-                    $addressData = Ibs::instance()->getAddress($location['latitude'], $location['longitude']);
+                    $addressData         = Ibs::instance()->getAddress($location['latitude'], $location['longitude']);
                     $location['address'] = ($addressData['addressComponent']['province'] ?? '') . ($addressData['addressComponent']['city'] ?? '');
                     $location['name']    = explode(',', $addressData['business']);
                     if (!empty($location['name'])) {

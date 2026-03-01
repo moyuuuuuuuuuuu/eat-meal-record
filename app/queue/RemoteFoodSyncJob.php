@@ -22,7 +22,7 @@ use support\Log;
  */
 class RemoteFoodSyncJob extends BaseConsumer
 {
-    public $queue = 'remote_food_sync';
+    public $queue = 'remoteFoodSync';
 
     public function consume($data)
     {

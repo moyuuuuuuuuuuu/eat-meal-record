@@ -2,11 +2,15 @@
 
 namespace app\common\context;
 
+use app\common\base\BaseModel;
 use app\common\enum\user\Sex;
 use app\model\UserGoalModel;
 use app\model\UserModel;
+use app\model\UserStepsModel;
 use app\service\wechat\WxMini;
+use app\util\Energy;
 use app\util\Jwt;
+use support\Log;
 
 final class UserInfo
 {
@@ -93,4 +97,26 @@ final class UserInfo
         return WxMini::instance()->parseEncryptData($encryptedData, $sessionKey, $iv);
     }
 
+    static function getUserSteps(string $date, $userId): ?int
+    {
+        $timestamp = strtotime($date);
+        $date      = date('Y-m-d', $timestamp);
+        return UserStepsModel::query()->where('user_id', $userId)->where('record_date', $date)->value('steps') ?? 0;
+    }
+
+    static function getUserBurned(string $date, ?UserInfoData $userInfo)
+    {
+        if (!$userInfo) {
+            return 0;
+        }
+        $step     = self::getUserSteps($date, $userInfo->id);
+        $userInfo = UserModel::query()->select('sex', 'weight', 'tall')->where('id', $userInfo->id)->first();
+
+        return Energy::runningBurn(
+            $userInfo->sex,
+            $userInfo->weight,
+            $userInfo->tall,
+            $step
+        );
+    }
 }

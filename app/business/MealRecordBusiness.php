@@ -179,6 +179,7 @@ class MealRecordBusiness extends BaseBusiness
                 'dateLabel'     => $dateLabel,
                 'totalCalories' => (float)$totalCalories,
                 'totalBurned'   => $totalBurned,
+                'totalIntake'   => Calculate::sub($totalCalories, $totalBurned),
                 'mealCount'     => $dayMeals->count(),
                 'meals'         => $meals,
             ];

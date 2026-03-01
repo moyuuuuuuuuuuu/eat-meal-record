@@ -10,7 +10,7 @@ use app\common\exception\DataNotFoundException;
 use app\common\exception\ValidationException;
 use app\model\FoodModel;
 use app\model\FoodModel as Food;
-use app\queue\contant\QueueEventName;
+use app\queue\constant\QueueEventName;
 use app\service\Nutrition;
 use app\util\Helper;
 use support\Log;
@@ -50,7 +50,8 @@ class FoodController extends BaseController
      */
     public function recognize(Request $request)
     {
-
+        /*$response = json_decode(file_get_contents(public_path() . '/qianfan_response.json'), true);
+        return $this->success('ok', FoodBusiness::instance()->syncRemote($response));*/
         $content = $request->post('content', null);
         $type    = $request->post('type', null);
         $options = $request->post('options', []);

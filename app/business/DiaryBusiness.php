@@ -4,6 +4,7 @@ namespace app\business;
 
 use app\common\base\BaseBusiness;
 use app\common\context\NutritionTemplate;
+use app\common\context\UserInfo;
 use app\common\enum\BusinessCode;
 use app\common\enum\MealRecordType;
 use app\common\exception\DataNotFoundException;
@@ -15,7 +16,9 @@ use app\model\FoodModel;
 use app\model\FoodUnitModel;
 use app\model\MealRecordFoodModel;
 use app\model\MealRecordModel;
+use app\model\UserGoalModel;
 use app\util\Calculate;
+use app\util\Energy;
 use Carbon\Carbon;
 use plugin\admin\app\model\MealRecord;
 use support\Context;
@@ -66,10 +69,10 @@ class DiaryBusiness extends BaseBusiness
     public function summary(Request $request): array
     {
 
+        $target = 2000;
         //每日卡路里目标
-        $target    = $request->userInfo->target ?? 2000;
-        $dailyGoal = $this->calcMacroFromKcal($target);
         if ($request->userInfo) {
+            $target    = UserGoalModel::query()->where('user_id', $request->userInfo->id)->value('daily_calories') ?? 2000;
             $totalNutritionList = MealRecordModel::query()
                 ->where('user_id', $request->userInfo->id)
                 ->where('meal_date', Carbon::today())
@@ -86,20 +89,22 @@ class DiaryBusiness extends BaseBusiness
                 }
             }
         }
+        $dailyGoal = $this->calcMacroFromKcal($target);
+        $dailyGoal = array_merge([
+            'calories' => $target,
+            'protein'  => 0.00,
+            'fat'      => 0.00,
+            'carbs'    => 0.00,
+        ], $dailyGoal);
         return [
-            'dailyGoal'      => $dailyGoal ?? [
-                    'calories' => $target,
-                    'protein'  => 0.00,
-                    'fat'      => 0.00,
-                    'carbs'    => 0.00,
-                ],
+            'dailyGoal'      => $dailyGoal,
             'totalIntake'    => [
                 'calories' => $totalNutrition['kcal'] ?? 0.00,
                 'protein'  => $totalNutrition['protein'] ?? 0.00,
                 'fat'      => $totalNutrition['fat'] ?? 0.00,
                 'carbs'    => $totalNutrition['carbohydrate'] ?? 00,
             ],
-            'burnedCalories' => 0.00
+            'burnedCalories' => UserInfo::getUserBurned(date('Y-m-d'), $request->userInfo),
         ];
     }
 

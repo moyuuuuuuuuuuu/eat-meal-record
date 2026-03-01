@@ -42,7 +42,7 @@ Route::group('/api', function () {
         Route::get('/categories', [CategoryController::class, 'index']);
     });
 
-    Route::get('/recommendation/today', [RecommendationController::class, 'today']);
+    Route::get('/recommendation', [RecommendationController::class, 'today']);
 
 
     #饮食记录 (Diary)
@@ -51,6 +51,7 @@ Route::group('/api', function () {
         Route::post('/meal/add', [DiaryController::class, 'add']);
         Route::post('/meal/food/delete', [DiaryController::class, 'delete']);
         Route::get('/summary', [DiaryController::class, 'summary']);
+        Route::get('/history', [MealRecordController::class, 'history']);
     });
 
     #用户统计与资料
@@ -83,7 +84,6 @@ Route::group('/api', function () {
 
     #餐食记录
     Route::group('/meal', function () {
-        Route::get('/history', [MealRecordController::class, 'history']);
         Route::get('/relation', [MealRecordController::class, 'relation']);
     });
     Route::group('/location', function () {

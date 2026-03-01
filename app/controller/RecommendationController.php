@@ -8,6 +8,7 @@ use support\Response;
 
 class RecommendationController extends BaseController
 {
+    protected $noNeedLogin = ['*'];
     /**
      * 今日吃什么推荐
      *

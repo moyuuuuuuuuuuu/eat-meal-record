@@ -6,7 +6,7 @@ use app\common\base\BaseConsumer;
 
 class AfterLoginJob extends BaseConsumer
 {
-    public $queue = 'after_login';
+    public $queue = 'afterLogin';
 
     public function consume($data)
     {

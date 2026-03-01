@@ -71,7 +71,7 @@ class UserModel extends BaseModel
     {
         return Attribute::make(
             get: function ($value, $attributes) {
-                return Status::tryFrom($attributes['status']??'')->label() ?? '未知';
+                return Status::tryFrom($attributes['status']??0)->label() ?? '未知';
             }
         );
     }
