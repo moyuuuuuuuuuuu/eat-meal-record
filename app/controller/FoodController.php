@@ -50,8 +50,8 @@ class FoodController extends BaseController
      */
     public function recognize(Request $request)
     {
-        /*$response = json_decode(file_get_contents(public_path() . '/qianfan_response.json'), true);
-        return $this->success('ok', FoodBusiness::instance()->syncRemote($response));*/
+        /* $response = json_decode(file_get_contents(public_path() . '/qianfan_response.json'), true);
+         return $this->success('ok', FoodBusiness::instance()->syncRemote($response));*/
         $content = $request->post('content', null);
         $type    = $request->post('type', null);
         $options = $request->post('options', []);
@@ -65,11 +65,10 @@ class FoodController extends BaseController
         try {
             $nutritionService = new Nutrition();
             $result           = $nutritionService->request($type, $content, $options);
-            Log::info($type . '的请求结果', $result);
             if (!isset($result['foods']) || empty($result['foods'])) {
                 throw new DataNotFoundException('识别失败');
             }
-            return $this->success('', $result);
+            return $this->success('ok', FoodBusiness::instance()->syncRemote($result));
         } catch (\Exception $exception) {
             return $this->fail($exception->getMessage());
         }

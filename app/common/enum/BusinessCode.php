@@ -4,10 +4,11 @@ namespace app\common\enum;
 
 use app\common\trait\EnumCases;
 
-enum BusinessCode:int
+enum BusinessCode: int
 {
 
     use EnumCases;
+
     /**
      * 请求成功
      */
@@ -38,10 +39,12 @@ enum BusinessCode:int
      */
     case SYSTEM_ERROR = 505;
 
+    case THREE_PART_ERROR = 503;
     /**
      * 资源为找到
      */
     case NOT_FOUND = 404;
+
     public function label(): string
     {
         return match ($this) {
@@ -52,6 +55,7 @@ enum BusinessCode:int
             self::BUSINESS_ERROR => '业务逻辑错误',
             self::SYSTEM_ERROR => '系统异常',
             self::NOT_FOUND => '资源未找到',
+            self::THREE_PART_ERROR => '三方侧异常',
         };
     }
 

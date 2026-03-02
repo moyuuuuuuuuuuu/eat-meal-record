@@ -16,17 +16,29 @@ return [
     'default' => [
         'handlers' => [
             [
-                'class' => Monolog\Handler\RotatingFileHandler::class,
+                'class'       => Monolog\Handler\RotatingFileHandler::class,
                 'constructor' => [
                     runtime_path() . '/logs/webman.log',
                     7, //$maxFiles
                     Monolog\Logger::DEBUG,
                 ],
-                'formatter' => [
-                    'class' => Monolog\Formatter\LineFormatter::class,
+                'formatter'   => [
+                    'class'       => Monolog\Formatter\LineFormatter::class,
                     'constructor' => [null, 'Y-m-d H:i:s', true],
                 ],
-            ]
+            ],
+        ],
+    ],
+    'access'  => [
+        'handlers' => [
+            [
+                'class'       => Monolog\Handler\BufferHandler::class,
+                'constructor' => [
+                    new Monolog\Handler\RotatingFileHandler(runtime_path() . '/logs/request/access.log', 10),
+                    1,
+                    Monolog\Logger::INFO,
+                ],
+            ],
         ],
     ],
 ];

@@ -12,10 +12,11 @@
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-use app\middleware\{AuthMiddleware,UserInfoMiddleware};
+use app\middleware\{AuthMiddleware, UserInfoMiddleware, AccessLog};
 
 return [
     '' => [
+        AccessLog::class,
         UserInfoMiddleware::class,
         AuthMiddleware::class,
     ],

@@ -2137,21 +2137,21 @@
         },
         {
             "name": "moyuuuuuuuu/qianfan",
-            "version": "1.0.0",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/moyuuuuuuuuuuu/qianfan.git",
-                "reference": "2ffde0bc887deed9f584a527503dc4ff09cc28b1"
+                "reference": "59815678f0a0909e57e90451db5b55783a39c358"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/moyuuuuuuuuuuu/qianfan/zipball/2ffde0bc887deed9f584a527503dc4ff09cc28b1",
-                "reference": "2ffde0bc887deed9f584a527503dc4ff09cc28b1",
+                "url": "https://api.github.com/repos/moyuuuuuuuuuuu/qianfan/zipball/59815678f0a0909e57e90451db5b55783a39c358",
+                "reference": "59815678f0a0909e57e90451db5b55783a39c358",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^7.10",
-                "php": ">=7.4"
+                "php": ">=8.0"
             },
             "type": "library",
             "autoload": {
@@ -2172,9 +2172,9 @@
             "description": "千帆api客户端",
             "support": {
                 "issues": "https://github.com/moyuuuuuuuuuuu/qianfan/issues",
-                "source": "https://github.com/moyuuuuuuuuuuu/qianfan/tree/1.0.0"
+                "source": "https://github.com/moyuuuuuuuuuuu/qianfan/tree/v1.0.1"
             },
-            "time": "2026-01-16T13:25:50+00:00"
+            "time": "2026-03-02T15:35:34+00:00"
         },
         {
             "name": "nesbot/carbon",
