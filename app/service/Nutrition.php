@@ -4,7 +4,6 @@ namespace app\service;
 
 use app\common\enum\BusinessCode;
 use app\common\enum\NutritionInputType;
-use app\common\exception\DataNotFoundException;
 use Moyuuuuuuuu\QianFan\{Contants\RequestMethod, Contants\Role, Payload\Universal, Request};
 use support\exception\BusinessException;
 use support\Log;
@@ -98,8 +97,8 @@ class Nutrition
         $payload->add('messages', $message);
         try {
             $request = new Request(getenv('API_KEY'), ['timeout' => 300]);
-            $result  = $request->send($payload, ['stream' => true, 'read_timeout' => null, 'connect_timeout' => 10,]);
-            Log::debug('千帆Api返回结果',[$result]);
+            $result  = $request->send($payload, ['stream' => true, 'read_timeout' => null, 'connect_timeout' => 10, 'verify' => false, 'proxy' => '']);
+            Log::channel('access')->debug('千帆Api返回结果', [$result]);
             if (isset($result['error'])) {
                 throw new BusinessException($result['error']['message'], BusinessCode::THREE_PART_ERROR->value);
             }

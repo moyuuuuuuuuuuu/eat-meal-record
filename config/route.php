@@ -28,7 +28,7 @@ use app\controller\{MealRecordController,
 
 Route::group('/api', function () {
     Route::any('/test',[\app\controller\IndexController::class,'index']);
-    Route::post('/upload', [UploadController::class, 'upload']);
+    Route::post('/upload', [UploadController::class, 'uploadForBos']);
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/sms/login', [AuthController::class, 'sms']);
     Route::post('/auth/login/mock', [AuthController::class, 'mock']);
