@@ -129,7 +129,7 @@
     // 字段 食物分类 cat_id
     layui.use(["jquery", "xmSelect", "popup"], function () {
         layui.$.ajax({
-            url: "/app/admin/cat/select?format=select",
+            url: "/app/admin/cat/select?format=select&limit=500",
             dataType: "json",
             success: function (res) {
                 let value = layui.$("#cat_id").attr("value");

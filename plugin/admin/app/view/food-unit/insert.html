@@ -82,7 +82,7 @@
             // 字段 食物 food_id
             layui.use(["jquery", "xmSelect", "popup"], function() {
                 layui.$.ajax({
-                    url: "/app/admin/food/select?format=select",
+                    url: "/app/admin/food/select?format=select&limit=10000",
                     dataType: "json",
                     success: function (res) {
                         let value = layui.$("#food_id").attr("value");
@@ -108,7 +108,7 @@
             // 字段 所属单位 unit_id
             layui.use(["jquery", "xmSelect", "popup"], function() {
                 layui.$.ajax({
-                    url: "/app/admin/unit/select?format=select",
+                    url: "/app/admin/unit/select?format=select&limit=10000",
                     dataType: "json",
                     success: function (res) {
                         let value = layui.$("#unit_id").attr("value");

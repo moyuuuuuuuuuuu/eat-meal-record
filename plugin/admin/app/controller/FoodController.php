@@ -5,6 +5,7 @@ namespace plugin\admin\app\controller;
 use plugin\admin\app\model\addtional\FoodModelAdditional;
 use plugin\admin\app\model\Dict;
 use plugin\admin\app\model\Food;
+use plugin\admin\app\model\FoodNutrient;
 use support\exception\BusinessException;
 use support\Request;
 use support\Response;
@@ -48,9 +49,15 @@ class FoodController extends Crud
     public function insert(Request $request): Response
     {
         if ($request->method() === 'POST') {
-            $data              = $request->post();
-            $data['nutrition'] = json_encode($data['nutrition']);
-            $id                = $this->doInsert($data);
+            $data                 = $request->only(['name', 'cat_id', 'user_id', 'status']);
+            if (!$data['user_id']) {
+                $data['user_id'] = 0;
+            }
+            $id                   = $this->doInsert($data);
+            $nutrients            = $request->post('nutrients');
+            $nutrients['food_id'] = $id;
+            FoodNutrient::query()->where('food_id', $id)->delete();
+            FoodNutrient::query()->insert($nutrients);
             return $this->json(0, 'ok', ['id' => $id]);
         }
         $nutritionDict = Dict::get('nutrition');
@@ -67,15 +74,19 @@ class FoodController extends Crud
     public function update(Request $request): Response
     {
         if ($request->method() === 'POST') {
-            [$id, $data] = $this->updateInput($request);
-            $nutritionDict   = Dict::get('nutrition');
-            $submitNutrition = json_decode($data['nutrition'], true);
-            $nutrition       = [];
-            foreach ($nutritionDict as $item) {
-                $nutrition[$item['value']] = $submitNutrition[$item['name']];
+            $data = $request->only(['name', 'cat_id', 'user_id', 'status']);
+            $id   = $request->post('id');
+            if (!$this->model->newQuery()->where('id', $id)->exists()) {
+                return $this->fail('食品不存在');
             }
-            $data['nutrition'] = json_encode($nutrition);
-            $this->doUpdate($id, $data);
+            if (!$data['user_id']) {
+                $data['user_id'] = 0;
+            }
+            if (!$this->model::query()->where('id', $id)->update($data)) return $this->fail('编辑失败');
+            $nutrients            = $request->post('nutrients');
+            $nutrients['food_id'] = $id;
+            FoodNutrient::query()->where('food_id', $id)->delete();
+            FoodNutrient::query()->insert($nutrients);
             return $this->json(0);
         }
 
