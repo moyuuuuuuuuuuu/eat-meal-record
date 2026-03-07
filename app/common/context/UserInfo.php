@@ -11,10 +11,10 @@ use app\service\wechat\WxMini;
 use app\util\Energy;
 use app\util\Jwt;
 use support\Log;
+use Webman\Context;
 
 final class UserInfo
 {
-
     static function setUserInfo(UserModel $userInfo)
     {
         $userInfo->setAppends(['sex_text', 'avatar_text', 'status_text']);
@@ -89,7 +89,9 @@ final class UserInfo
         if (str_starts_with($token, 'Bearer ')) {
             $token = substr($token, 7);
         }
-        return Jwt::instance()->decode($token);
+        $userInfo = Jwt::instance()->decode($token);
+        Context::set(\app\common\enum\Context::UserId->value, $userInfo->id);
+        return $userInfo;
     }
 
     static function parseUserEncryptData(string $encryptedData, string $sessionKey, string $iv)

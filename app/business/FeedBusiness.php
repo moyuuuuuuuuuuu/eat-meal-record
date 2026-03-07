@@ -67,8 +67,7 @@ class FeedBusiness extends BaseBusiness
             $increaseIdList[] = $item->id;
             return $blogFormat->format($item);
         });
-        Client::send(QueueEventName::FEED_VIEW_INCREASE->value, $increaseIdList);
-
+        Client::send(QueueEventName::FeedViewIncrease->value, $increaseIdList);
         return $paginate->toArray();
     }
 

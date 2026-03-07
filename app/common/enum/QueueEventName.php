@@ -1,21 +1,22 @@
 <?php
-namespace  app\common\enum;
+
+namespace app\common\enum;
 
 enum QueueEventName: string
 {
     /**
      * ai识别结果同步
      */
-    case REMOTE_FOOD_SYNC = 'remoteFoodSync';
+    case RemoteFoodSync = 'remoteFoodSync';
 
     /**
      * 文件上传同步
      */
-    case UPLOAD_SYNC = 'uploadSync';
+    case UploadSync = 'uploadSync';
 
     /**
      * 登陆后操作
      */
-    case AFTER_LOGIN        = 'afterLogin';
-    case FEED_VIEW_INCREASE = 'feedViewIncrease';
+    case AfterLogin       = 'afterLogin';
+    case FeedViewIncrease = 'feedViewIncrease';
 }

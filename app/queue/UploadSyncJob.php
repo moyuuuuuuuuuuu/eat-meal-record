@@ -30,7 +30,7 @@ use app\common\base\BaseConsumer;
  */
 class UploadSyncJob extends BaseConsumer
 {
-    public $queue = 'uploadSyncß';
+    public $queue = 'uploadSync';
 
     public function consume($data)
     {
