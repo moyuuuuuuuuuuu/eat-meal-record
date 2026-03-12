@@ -5,6 +5,7 @@ namespace app\controller;
 use app\business\FoodBusiness;
 use app\common\base\BaseController;
 use app\common\enum\NutritionInputType;
+use app\service\BooHee;
 use app\service\Food;
 use support\Log;
 use support\Request;
@@ -13,7 +14,9 @@ class IndexController extends BaseController
 {
     public function index(Request $request)
     {
-        return ;
+        $result = BooHee::instance()->info('suimojiding');
+        return $this->success('', $result);
+        return;
         $result = Food::tag(['馒头']);
 //        $result = Food::nutrition('我吃了一个馒头两碗米饭和三盒牛奶', NutritionInputType::TEXT);
 //        Log::error('口子', $result);

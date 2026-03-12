@@ -11,19 +11,18 @@
  * @link      http://www.workerman.net/
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-
 return [
     'default' => [
-        'password' => env('REDIS_PASSWORD'),
-        'host'     => env('REDIS_HOST'),
-        'port'     => env('REDIS_PORT'),
-        'database' => env('REDIS_DATABASE'),
+        'password' => getenv('REDIS_PASSWORD'),
+        'host'     => getenv('REDIS_HOST'),
+        'port'     => (int)getenv('REDIS_PORT'),
+        'database' => (int)getenv('REDIS_DATABASE'),
         'pool'     => [
-            'max_connections'    => env('REDIS_MAX_CONNECTIONS'),
-            'min_connections'    => env('REDIS_MIN_CONNECTIONS'),
-            'wait_timeout'       => env('REDIS_WAIT_TIMEOUT'),
-            'idle_timeout'       => env('REDIS_IDLE_TIMEOUT'),
-            'heartbeat_interval' => env('REDIS_HEART_BEAT_INTERVAL'),
+            'max_connections'    => (int)getenv('REDIS_MAX_CONNECTIONS'),
+            'min_connections'    => (int)getenv('REDIS_MIN_CONNECTIONS'),
+            'wait_timeout'       => (int)getenv('REDIS_WAIT_TIMEOUT'),
+            'idle_timeout'       => (int)getenv('REDIS_IDLE_TIMEOUT'),
+            'heartbeat_interval' => (int)getenv('REDIS_HEART_BEAT_INTERVAL'),
         ],
     ]
 ];
