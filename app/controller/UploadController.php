@@ -10,6 +10,8 @@ use support\Request;
 
 class UploadController extends BaseController
 {
+    protected $noNeedLogin = [];
+
     public function upload(Request $request)
     {
         $file = $request->file('file');
@@ -19,23 +21,24 @@ class UploadController extends BaseController
             throw new BusinessException('请选择要上传的文件', BusinessCode::BUSINESS_ERROR->value);
         }
 
-        $year = date('Y');
-        $monthDay = date('md');
+        $year      = date('Y');
+        $monthDay  = date('md');
         $extension = $file->getUploadExtension();
         if ($extension) {
             $extension = '.' . $extension;
         }
-        $filename = 'sv' . bin2hex(random_bytes(8)) . $extension;
-        $relativeDir = "/uploads/$year/$monthDay";
+        $filename     = 'sv' . bin2hex(random_bytes(8)) . $extension;
+        $relativeDir  = "/uploads/$year/$monthDay";
         $absolutePath = public_path() . $relativeDir . '/' . $filename;
 
         $file->move($absolutePath);
 
         return $this->success('ok', [
             'path' => $relativeDir . '/' . $filename,
-            'url'  => 'http://'.$request->host() . $relativeDir . '/' . $filename,
+            'url'  => 'http://' . $request->host() . $relativeDir . '/' . $filename,
         ]);
     }
+
     public function uploadForBos(Request $request)
     {
         $file = $request->file('file');
