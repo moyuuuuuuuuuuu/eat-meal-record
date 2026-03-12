@@ -90,7 +90,9 @@ final class UserInfo
             $token = substr($token, 7);
         }
         $userInfo = Jwt::instance()->decode($token);
-        Context::set(\app\common\enum\Context::UserId->value, $userInfo->id);
+        if ($userInfo) {
+            Context::set(\app\common\enum\Context::UserId->value, $userInfo->id);
+        }
         return $userInfo;
     }
 
