@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use Coze\Auth\OAuthClient;
 use Coze\Workflow\Run;
 use app\service\BaseGuzzleHttpClient;
-use Illuminate\Support\Facades\Cache;
+use support\Cache;
 
 class WorkFlow extends BaseGuzzleHttpClient
 {
@@ -25,10 +25,10 @@ class WorkFlow extends BaseGuzzleHttpClient
     {
         $this->appId      = getenv('COZE_APPID'); // 应用ID
         $this->publicKey  = getenv('COZE_PUBLIC_KEY'); // 公钥指纹
-        $this->privateKey = file_get_contents(runtime_path() . getenv('COZE_PRIVATE_KEY_PATH')); // 私钥
+        $this->privateKey = file_get_contents(runtime_path() . '/' . getenv('COZE_PRIVATE_KEY_PATH')); // 私钥
         $this->client     = new Client([
             'base_uri' => 'https://api.coze.cn',
-            'timeout'  => 5,
+            'timeout'  => 200,
         ]);
     }
 
@@ -41,22 +41,20 @@ class WorkFlow extends BaseGuzzleHttpClient
         $this->oauth = new OAuthClient($this->appId, $this->publicKey, $this->privateKey, $this->client);
         $result      = $this->oauth->getAccessToken();
         $accessToken = $result['access_token'];
-        Cache::set('access_token', $this->accessToken, $result['expires_in'] - 100);
+        Cache::set('access_token', $accessToken, $result['expires_in'] - 100);
         return $accessToken;
     }
 
     /**
-     * @param array{
-     *     text:string,
-     *     image:string,
-     *     audio:string
-     * } $params
+     * @param  $params
      * @return array
      * @throws \Exception
      */
-    public function run(array $params)
+    public function run($workFlowId, array $params)
     {
-        $run = new Run($this->client, $this->getAccessToken(), getenv('COZE_WORKFLOW_ID'));
-        return $run->handle($params);
+        $run    = new Run($this->client, $this->getAccessToken(), $workFlowId);
+        $result = $run->handle($params);
+        unset($run);
+        return $result;
     }
 }

@@ -5,7 +5,7 @@ namespace app\business;
 use app\common\enum\QueueEventName;
 use app\service\baidu\Ibs;
 use app\common\{base\BaseBusiness, exception\DataNotFoundException, validate\FeedValidator};
-use app\common\enum\{blog\Visibility, BusinessCode, LikeFavType, NormalStatus};
+use app\common\enum\{blog\AttachType, blog\Visibility, BusinessCode, LikeFavType, NormalStatus};
 use app\format\BlogFormat;
 use app\model\{BlogAttachModel, BlogLocationModel, BlogModel, BlogTopicModel, FollowModel, LikeModel, TopicModel};
 use support\{Db, Request};
@@ -215,6 +215,14 @@ class FeedBusiness extends BaseBusiness
                 BlogAttachModel::query()->where('blog_id', $blogInfo->id)->delete();
                 $attachInsertList = [];
                 foreach ($attach as $key => $item) {
+                    if (!empty($item['poster'])) {
+                        $item['attach'] = '/' . ltrim($item['poster'], '/');
+                    }
+
+                    if (in_array($item['type'], [AttachType::VIDEO->value, AttachType::IMG->value]) && !empty($item['attach'])) {
+                        $item['attach'] = '/' . ltrim($item['attach'], '/');
+                    }
+
                     $attachInsertList[] = [
                         'blog_id' => $blogInfo->id,
                         'attach'  => $item['attach'],

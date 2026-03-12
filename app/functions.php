@@ -10,7 +10,8 @@ if (!function_exists('source')) {
         if (str_starts_with($uri, 'http://') || str_starts_with($uri, 'https://')) {
             return $uri;
         }
-        $uri = ltrim($uri, '/');
-        return getenv('SOURCE_DOMAIN') . $uri;
+        $uri    = ltrim($uri, '/');
+        $domain = rtrim(getenv('SOURCE_DOMAIN'), '/');
+        return $domain . '/' . $uri;
     }
 }
