@@ -12,13 +12,27 @@ use GuzzleHttp\Exception\{GuzzleException, RequestException};
 
 class Bos extends BaseGuzzleHttpClient
 {
-    protected        $needSignHeaderField = [
+    protected $needSignHeaderField = [
         'host',
         'content-length',
         'content-type',
         'content-md5',
         'x-bce-date',
         'x-bce-acl'
+    ];
+
+    private array $mimes = [
+        'hp'   => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'jpg'  => 'image/jpeg',
+        'png'  => 'image/png',
+        'gif'  => 'image/gif',
+        'mp3'  => 'audio/mpeg',
+        'aac'  => 'audio/aac',
+        'm4a'  => 'audio/mp4',
+        'mp4'  => 'video/mp4',
+        'wav'  => 'audio/wav',
+        'txt'  => 'text/plain',
     ];
 
     protected function __construct()
@@ -33,21 +47,19 @@ class Bos extends BaseGuzzleHttpClient
     public function putObj(UploadFile $uploadFile): string
     {
         Log::debug(sprintf('https://%s.bcebos.com/', getenv('BOS_REGION')));
-        $filename = $this->getFileName($uploadFile);
-        $now = time();
+        $filename    = $this->getFileName($uploadFile);
+        $now         = time();
         $iso8601Zulu = gmdate('Y-m-d\TH:i:s\Z', $now);
-        $headers  = [
+        $headers     = [
             'Host'           => sprintf('%s.%s.bcebos.com', getenv('BOS_BUCKET'), getenv('BOS_REGION')),
             'Content-Type'   => $uploadFile->getUploadMimeType(),
             'x-bce-date'     => $iso8601Zulu,
             'x-bce-acl'      => 'public-read',
             'Content-Length' => $uploadFile->getSize(),
         ];
-        Log::debug('putObj', [$filename, $headers, $iso8601Zulu]);
         list($canonicalRequest, $signedHeaders) = $this->canonicalRequest('PUT', $filename, '', $headers);
         $authorization            = $this->authorization($canonicalRequest, $signedHeaders, $now);
         $headers['Authorization'] = $authorization;
-        Log::debug('putObj headers', [$headers]);
         $filePath                 = $uploadFile->getRealPath();
         $handle                   = fopen($filePath, 'r');
         try {
@@ -59,18 +71,16 @@ class Bos extends BaseGuzzleHttpClient
 
             $statusCode = $response->getStatusCode();
             $result     = $response->getBody()->getContents();
-            Log::debug('putObj', [$filename, $statusCode, $response->getHeaders(), $result]);
             if ($statusCode != 200) {
                 throw new BusinessException("上传失败，状态码：" . $statusCode, BusinessCode::BUSINESS_ERROR->value);
             }
-            Log::debug('putObj result', [$result]);
             return $filename;
         } catch (RequestException $e) {
             $message = "网络请求错误：" . $e->getMessage();
             if ($e->hasResponse()) {
                 $errorBody = $e->getResponse()->getBody()->getContents();
-                $message = json_decode($errorBody, true);
-                $message = $message['message'] ?? '网络请求错误：未知错误';
+                $message   = json_decode($errorBody, true);
+                $message   = $message['message'] ?? '网络请求错误：未知错误';
             }
             Log::error($message);
             throw new BusinessException($message, BusinessCode::BUSINESS_ERROR->value);
@@ -84,6 +94,72 @@ class Bos extends BaseGuzzleHttpClient
         }
     }
 
+    /**
+     * @param string $content
+     * @param array{
+     *     format:string
+     * } $option
+     * @return string
+     */
+    public function putObjFromBase(string $content, array $option = [])
+    {
+        if (preg_match('/^(data:(.*?);base64,)/', $content, $result)) {
+            $mimeType = $result[2]; // 例如: audio/mp3, image/jpeg
+            $content  = base64_decode(str_replace($result[1], '', $content));
+
+            // 根据 MIME 得到后缀
+            $extension = explode('/', $mimeType)[1] ?? 'bin';
+            // 特殊处理一些后缀转换（如 audio/mpeg -> mp3）
+            $extension = str_replace('mpeg', 'mp3', $extension);
+        } elseif (isset($option['format'])) {
+            // 如果没有前缀，默认二进制流
+            $mimeType  = $this->mimes[$option['format']] ?? 'application/octet-stream';
+            $content   = base64_decode($content);
+            $extension = $option['format'];
+        } else {
+            $mimeType  = 'application/octet-stream';
+            $content   = base64_decode($content);
+            $extension = 'bin';
+        }
+        $now         = time();
+        $date        = date('Y/md', $now);
+        $iso8601Zulu = gmdate('Y-m-d\TH:i:s\Z', $now);
+        $filename    = sprintf('uploads/%s/%s.%s', $date, uniqid(), $extension);
+        $headers     = [
+            'Host'         => sprintf('%s.%s.bcebos.com', getenv('BOS_BUCKET'), getenv('BOS_REGION')),
+            'Content-Type' => $mimeType,
+            'x-bce-date'   => $iso8601Zulu,
+            'x-bce-acl'    => 'public-read',
+        ];
+        list($canonicalRequest, $signedHeaders) = $this->canonicalRequest('PUT', $filename, '', $headers);
+        $authorization            = $this->authorization($canonicalRequest, $signedHeaders, $now);
+        $headers['Authorization'] = $authorization;
+        try {
+            $response = $this->client->put($filename, [
+                'headers' => $headers,
+                'body'    => $content, // 传入资源句柄
+                'timeout' => 30.0,    // 建议加上超时设置
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $result     = $response->getBody()->getContents();
+            if ($statusCode != 200) {
+                throw new BusinessException("上传失败，状态码：" . $statusCode, BusinessCode::BUSINESS_ERROR->value);
+            }
+            return $filename;
+        } catch (RequestException $e) {
+            $message = "网络请求错误：" . $e->getMessage();
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $message   = json_decode($errorBody, true);
+                $message   = $message['message'] ?? '网络请求错误：未知错误';
+            }
+            throw new BusinessException($message, BusinessCode::BUSINESS_ERROR->value);
+        } catch (GuzzleException $e) {
+            $message = "Guzzle 通用错误：" . $e->getMessage();
+            throw new BusinessException($message, BusinessCode::BUSINESS_ERROR->value);
+        }
+    }
 
     protected function getFileName(UploadFile $uploadFile): string
     {
@@ -96,15 +172,15 @@ class Bos extends BaseGuzzleHttpClient
     {
         $authStringPrefix = $this->authStringPrefix($now);
         Log::debug('authStringPrefix', [$canonicalRequest, $authStringPrefix]);
-        $signedKey        = hash_hmac('sha256', $authStringPrefix, getenv('BOS_ACCESS_KEY_SECRET'));
-        $signature        = hash_hmac('sha256', $canonicalRequest, $signedKey);
+        $signedKey = hash_hmac('sha256', $authStringPrefix, getenv('BOS_ACCESS_KEY_SECRET'));
+        $signature = hash_hmac('sha256', $canonicalRequest, $signedKey);
         return sprintf('%s/%s/%s', $authStringPrefix, $signedHeader, $signature);
     }
 
-    protected function authStringPrefix($now = null):string
+    protected function authStringPrefix($now = null): string
     {
-        $now              = $now ?: time();
-        $iso8601Zulu      = gmdate('Y-m-d\TH:i:s\Z', $now);
+        $now                       = $now ?: time();
+        $iso8601Zulu               = gmdate('Y-m-d\TH:i:s\Z', $now);
         $expirationPeriodInSeconds = 10800; // 3 hours
         return sprintf('bce-auth-v1/%s/%s/%d', getenv('BOS_ACCESS_KEY_ID'), $iso8601Zulu, $expirationPeriodInSeconds);
     }

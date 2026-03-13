@@ -22,7 +22,7 @@ class FoodService
      * @return array
      * @throws \Exception
      */
-    static function nutrition(string $content, NutritionInputType $type)
+    static function nutrition(NutritionInputType $type, string $content)
     {
         if (!$content) {
             throw new DataNotFoundException('无数据');
