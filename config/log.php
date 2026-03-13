@@ -18,7 +18,7 @@ return [
             [
                 'class'       => Monolog\Handler\RotatingFileHandler::class,
                 'constructor' => [
-                    runtime_path() . '/logs/webman.log',
+                    runtime_path() . '/logs/webman/log.log',
                     7, //$maxFiles
                     Monolog\Logger::DEBUG,
                 ],
@@ -37,6 +37,22 @@ return [
                     new Monolog\Handler\RotatingFileHandler(runtime_path() . '/logs/request/access.log', 10),
                     1,
                     Monolog\Logger::INFO,
+                ],
+            ],
+        ],
+    ],
+    'llm'     => [
+        'handlers' => [
+            [
+                'class'       => Monolog\Handler\RotatingFileHandler::class,
+                'constructor' => [
+                    runtime_path() . '/logs/llm/log.log',
+                    7, //$maxFiles
+                    Monolog\Logger::DEBUG,
+                ],
+                'formatter'   => [
+                    'class'       => Monolog\Formatter\LineFormatter::class,
+                    'constructor' => [null, 'Y-m-d H:i:s', true],
                 ],
             ],
         ],

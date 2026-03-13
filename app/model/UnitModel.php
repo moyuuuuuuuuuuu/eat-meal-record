@@ -22,5 +22,11 @@ class UnitModel extends BaseModel
      */
     protected $primaryKey = 'id';
 
+    protected $fillable = [
+        'name',
+        'type',
+        'desc'
+    ];
+
 
 }

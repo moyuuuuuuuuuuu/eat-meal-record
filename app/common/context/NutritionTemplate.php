@@ -116,8 +116,8 @@ class NutritionTemplate
     {
         return [
             'calories' => sprintf('%.2f', $nutrition['kcal'] ?? 0.00),
-            'protein'  => sprintf('%.2f', $nutrition['protein'] ?? 0.00),
-            'carbs'    => sprintf('%.2f', $nutrition['carbohydrate'] ?? 0.00),
+            'protein'  => sprintf('%.2f', $nutrition['pro'] ?? 0.00),
+            'carbs'    => sprintf('%.2f', $nutrition['carb'] ?? 0.00),
             'fibers'   => sprintf('%.2f', $nutrition['fiber'] ?? 0.00),
             'fat'      => sprintf('%.2f', $nutrition['fat'] ?? 0.00),
         ];

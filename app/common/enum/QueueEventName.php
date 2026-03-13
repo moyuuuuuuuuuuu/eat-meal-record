@@ -19,4 +19,6 @@ enum QueueEventName: string
      */
     case AfterLogin       = 'afterLogin';
     case FeedViewIncrease = 'feedViewIncrease';
+
+    case SyncLLMResponse = 'syncLLMResponse';
 }

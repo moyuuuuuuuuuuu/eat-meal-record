@@ -52,9 +52,9 @@ class Food extends Base
             'weight'     => 100.00,
             'is_default' => false,
             'kcal'       => $this->nutrition['kcal'] ?? 0,
-            'protein'    => $this->nutrition['protein'] ?? 0,
+            'protein'    => $this->nutrition['pro'] ?? 0,
             'fat'        => $this->nutrition['fat'] ?? 0,
-            'carbs'      => $this->nutrition['carbs'] ?? 0,
+            'carbs'      => $this->nutrition['carb'] ?? 0,
         ];
 
         foreach ($foodUnits as $fu) {
@@ -68,9 +68,9 @@ class Food extends Base
                 'weight'     => (float)$fu->weight,
                 'is_default' => (bool)$fu->is_default,
                 'kcal'       => round(($this->nutrition['kcal'] ?? 0) * $ratio, 2),
-                'protein'    => round(($this->nutrition['protein'] ?? 0) * $ratio, 2),
+                'protein'    => round(($this->nutrition['pro'] ?? 0) * $ratio, 2),
                 'fat'        => round(($this->nutrition['fat'] ?? 0) * $ratio, 2),
-                'carbs'      => round(($this->nutrition['carbs'] ?? 0) * $ratio, 2),
+                'carbs'      => round(($this->nutrition['carb'] ?? 0) * $ratio, 2),
             ];
         }
 

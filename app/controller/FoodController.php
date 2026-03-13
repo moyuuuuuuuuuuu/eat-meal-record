@@ -4,19 +4,13 @@ namespace app\controller;
 
 use app\business\FoodBusiness;
 use app\common\base\BaseController;
-use app\common\context\TokenLimit;
-use app\common\enum\BusinessCode;
 use app\common\enum\NutritionInputType;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ValidationException;
-use app\model\FoodModel;
-use app\model\FoodModel as Food;
-use app\queue\constant\QueueEventName;
+use app\service\FoodService;
 use app\service\Nutrition;
 use app\util\Helper;
-use support\Log;
 use support\Request;
-use Webman\RedisQueue\Client;
 
 class FoodController extends BaseController
 {
@@ -66,8 +60,13 @@ class FoodController extends BaseController
 
 //        if(TokenLimit::instance()->hasQuota())
         try {
-            $nutritionService = new Nutrition();
-            $result           = $nutritionService->request($type, $content, $options);
+            $type = NutritionInputType::tryFrom($type);
+            if ($type == NutritionInputType::IMAGE) {
+                $nutritionService = new Nutrition();
+                $result           = $nutritionService->request($type, $content, $options);
+            } else {
+                $result = FoodService::nutrition($content, $type);
+            }
             if (!isset($result['foods']) || empty($result['foods'])) {
                 throw new DataNotFoundException('识别失败');
             }

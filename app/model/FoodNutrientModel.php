@@ -10,31 +10,9 @@ class FoodNutrientModel extends BaseModel
     const UPDATED_AT = null;
     protected $table    = 'food_nutrients';
     protected $fillable = [
-        'food_id',
-        'water',
-        'sugar',
-        'kcal',
-        'protein',
-        'fat',
-        'carbohydrate',
-        'fiber',
-        'sodium',
-        'cholesterol',
-        'vitamin_a',
-        'calcium',
-        'iron',
-        'kalium',
-        'magnesium',
-        'zinc',
-        'selenium',
-        'cuprum',
-        'manganese',
-        'iodine',
-        'folic',
-        'fatty_acid',
-        'saturated_fatty_acid',
-        'monounsaturated_fatty_acid',
-        'polyunsaturated_fatty_acid',
-        'origin_place'
+        'food_id', 'water', 'kcal', 'pro', 'fat', 'carb', 'sugar', 'fiber', 'chol',
+        'purine', 'gi', 'vit_a', 'vit_c', 'vit_d', 'vit_e', 'folic', 'na', 'cal',
+        'iron', 'kal', 'mag', 'zinc', 'sel', 'cup', 'mang', 'iod', 'fa', 'sfa',
+        'mufa', 'pufa', 'origin'
     ];
 }

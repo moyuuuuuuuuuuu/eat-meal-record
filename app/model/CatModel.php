@@ -19,4 +19,10 @@ class CatModel extends BaseModel
      * @var string
      */
     protected $primaryKey = 'id';
+
+    protected $fillable = [
+        'name',
+        'pid',
+        'sort'
+    ];
 }

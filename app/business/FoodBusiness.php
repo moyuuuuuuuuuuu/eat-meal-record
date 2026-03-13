@@ -122,7 +122,7 @@ class FoodBusiness extends BaseBusiness
 
                 $food = FoodModel::updateOrCreate(
                     ['name' => $item['name']],
-                    ['cat_id' => $catId, 'status' => 1]
+                    ['cat_id' => $catId, 'status' => 1,'']
                 );
 
                 // 5. 【核心补充】维护 food_nutrients 营养表
@@ -143,6 +143,7 @@ class FoodBusiness extends BaseBusiness
             });
             $newFoodList[] = $foodFormat->format($foodInfo);
         }
+        var_dump($newFoodList);
         return $newFoodList;
     }
 }

@@ -7,7 +7,7 @@ use app\common\base\BaseModel;
 
 class TagModel extends BaseModel
 {
-
+    const UPDATED_AT = null;
     /**
      * The table associated with the model.
      *
@@ -27,5 +27,10 @@ class TagModel extends BaseModel
      *
      * @var bool
      */
-    public $timestamps = false;
+    public    $timestamps = false;
+    protected $fillable   = [
+        'name',
+        'type',
+        'meal_type'
+    ];
 }
