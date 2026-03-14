@@ -3,6 +3,7 @@
 namespace app\common\validate;
 
 use app\common\base\BaseValidator;
+use app\common\context\TokenLimit;
 use app\common\enum\NutritionInputType;
 use support\Redis;
 
@@ -25,7 +26,7 @@ class FoodValidator extends BaseValidator
     {
         $request = request();
         $type    = $request ? $request->post('type') : null;
-        $userId  = $request ? $request->user()->id : null; // 假设你有用户系统
+        $userId  = $request->userInfo->id ?? null; // 假设你有用户系统
 
         $rules = [
             'type'           => 'required|in:' . implode(',', NutritionInputType::values()),
@@ -46,53 +47,13 @@ class FoodValidator extends BaseValidator
         if ($userId) {
             $rules['content'][] = function ($attribute, $value, $fail) use ($userId) {
                 // 调用阶梯限制逻辑
-                $check = $this->validateTokenLadder($userId, $value);
-                if (!$check['allowed']) {
-                    $fail($check['msg']);
+                $check = TokenLimit::instance()->hasQuota();
+                if (!$check) {
+                    $fail('抱歉，AI识别次数已经用完，请先手动选择食物吧');
                 }
             };
         }
 
         $this->rules = $rules;
-    }
-
-    /**
-     * 核心逻辑：Token 阶梯计费与次数限制校验
-     */
-    private function validateTokenLadder($userId, $content): array
-    {
-        $date     = date('Ymd');
-        $tokenKey = "daily_token_sum:{$userId}:{$date}";
-        $countKey = "daily_usage_count:{$userId}:{$date}";
-
-        $currentTokens = (int)Redis::get($tokenKey) ?: 0;
-        $currentCounts = (int)Redis::get($countKey) ?: 0;
-
-        // 预估本次请求的 Token (如果是文本)
-        $thisRequestTokens = 0;//TokenCounter::count($content);
-        $projectedTokens   = $currentTokens + $thisRequestTokens;
-
-        // 定义你的阶梯规则
-        // 消耗越高，允许的总次数越少
-        if ($projectedTokens >= 80000) {
-            return ['allowed' => false, 'msg' => '今日Token消耗已达上限（8w），请明天再试'];
-        }
-
-        if ($projectedTokens >= 50000) {
-            $limit = 2;
-        } elseif ($projectedTokens >= 10000) {
-            $limit = 5;
-        } else {
-            $limit = 10;
-        }
-
-        if ($currentCounts >= $limit) {
-            return [
-                'allowed' => false,
-                'msg'     => "当前Token消耗阶段限额{$limit}次，您今日已达上限"
-            ];
-        }
-
-        return ['allowed' => true];
     }
 }

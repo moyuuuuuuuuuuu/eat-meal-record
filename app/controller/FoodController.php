@@ -4,6 +4,7 @@ namespace app\controller;
 
 use app\business\FoodBusiness;
 use app\common\base\BaseController;
+use app\common\context\TokenLimit;
 use app\common\enum\BusinessCode;
 use app\common\enum\NutritionInputType;
 use app\common\exception\DataNotFoundException;
@@ -67,7 +68,9 @@ class FoodController extends BaseController
             return $this->fail('不支持的识别方式');
         }
 
-//        if(TokenLimit::instance()->hasQuota())
+        if (!TokenLimit::instance()->hasQuota()) {
+            return $this->fail('抱歉，AI识别次数已经用完，请先手动选择食物吧');
+        }
         try {
             $type   = NutritionInputType::tryFrom($type);
             $result = match ($type) {

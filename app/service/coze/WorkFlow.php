@@ -2,11 +2,14 @@
 
 namespace app\service\coze;
 
-use GuzzleHttp\Client;
+use app\common\context\TokenLimit;
+use app\service\BaseGuzzleHttpClient;
 use Coze\Auth\OAuthClient;
 use Coze\Workflow\Run;
-use app\service\BaseGuzzleHttpClient;
+use GuzzleHttp\Client;
 use support\Cache;
+use support\Redis;
+use Webman\Context;
 
 class WorkFlow extends BaseGuzzleHttpClient
 {
@@ -19,13 +22,16 @@ class WorkFlow extends BaseGuzzleHttpClient
 
     protected ?OAuthClient $oauth = null;
 
-    protected string $accessToken;
+    protected string $accessTokenCacheKey = 'coze_access_token';
 
     protected function __construct()
     {
+        if (!file_exists(runtime_path() . getenv('COZE_PRIVATE_KEY_PATH'))) {
+            throw new \Exception('Private key file not found');
+        }
         $this->appId      = getenv('COZE_APPID'); // 应用ID
         $this->publicKey  = getenv('COZE_PUBLIC_KEY'); // 公钥指纹
-        $this->privateKey = file_get_contents(runtime_path() . '/' . getenv('COZE_PRIVATE_KEY_PATH')); // 私钥
+        $this->privateKey = file_get_contents(runtime_path() . getenv('COZE_PRIVATE_KEY_PATH')); // 私钥
         $this->client     = new Client([
             'base_uri' => 'https://api.coze.cn',
             'timeout'  => 200,
@@ -34,14 +40,14 @@ class WorkFlow extends BaseGuzzleHttpClient
 
     protected function getAccessToken(): string
     {
-        $accessToken = Cache::get('access_token');
+        $accessToken = Redis::get($this->accessTokenCacheKey);
         if ($accessToken) {
             return $accessToken;
         }
         $this->oauth = new OAuthClient($this->appId, $this->publicKey, $this->privateKey, $this->client);
         $result      = $this->oauth->getAccessToken();
         $accessToken = $result['access_token'];
-        Cache::set('access_token', $accessToken, $result['expires_in'] - 100);
+        Redis::set($this->accessTokenCacheKey, $accessToken, $result['expires_in'] - 100);
         return $accessToken;
     }
 
@@ -54,7 +60,10 @@ class WorkFlow extends BaseGuzzleHttpClient
     {
         $run    = new Run($this->client, $this->getAccessToken(), $workFlowId);
         $result = $run->handle($params);
+        $usage  = $result['usage'];
+        $data   = json_decode($result['data'], true);
         unset($run);
-        return $result;
+        TokenLimit::instance()->consume($usage['token_count']);
+        return [$usage, $data];
     }
 }

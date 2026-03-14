@@ -2,6 +2,7 @@
 
 namespace app\service;
 
+use app\common\context\TokenLimit;
 use app\common\enum\BusinessCode;
 use app\common\enum\NutritionInputType;
 use Moyuuuuuuuu\QianFan\{Contants\RequestMethod, Contants\Role, Payload\Universal, Request};
@@ -101,6 +102,10 @@ class Nutrition
             Log::channel('access')->debug('千帆Api返回结果', [$result]);
             if (isset($result['error'])) {
                 throw new BusinessException($result['error']['message'], BusinessCode::THREE_PART_ERROR->value);
+            }
+            $usage = $result['usage'] ?? [];
+            if ($usage) {
+                TokenLimit::instance()->consume($usage['total_tokens'] ?? 0);
             }
             $result = $result['choices'][0]['message']['content'] ?? null;
             if (!$result) {
