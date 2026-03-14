@@ -3,15 +3,24 @@
 namespace app\business;
 
 use app\common\base\BaseBusiness;
+use app\common\context\TokenLimit;
 use app\common\enum\BusinessCode;
 use app\common\enum\NormalStatus;
+use app\common\enum\NutritionInputType;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ValidationException;
+use app\common\validate\FoodValidator;
 use app\format\FoodFormat;
+use app\service\baidu\Bos;
+use app\service\FoodService;
+use app\service\Nutrition;
 use app\util\Calculate;
+use app\util\Helper;
 use app\model\{CatModel, FoodModel as Food, FoodUnitModel, FoodModel, UnitModel};
 use support\Db;
+use support\exception\BusinessException;
 use support\Request;
+use Webman\Validation\Annotation\Validate;
 
 class FoodBusiness extends BaseBusiness
 {
@@ -122,7 +131,7 @@ class FoodBusiness extends BaseBusiness
 
                 $food = FoodModel::updateOrCreate(
                     ['name' => $item['name']],
-                    ['cat_id' => $catId, 'status' => 1,'']
+                    ['cat_id' => $catId, 'status' => 1, '']
                 );
 
                 // 5. 【核心补充】维护 food_nutrients 营养表
@@ -143,7 +152,49 @@ class FoodBusiness extends BaseBusiness
             });
             $newFoodList[] = $foodFormat->format($foodInfo);
         }
-        var_dump($newFoodList);
         return $newFoodList;
+    }
+
+    #[Validate(validator: FoodValidator::class, scene: 'recognize')]
+    public function recognize(Request $request)
+    {
+
+        /* $response = json_decode(file_get_contents(public_path() . '/qianfan_response.json'), true);
+         return $this->success('ok', FoodBusiness::instance()->syncRemote($response));*/
+        $content = $request->post('content', null);
+        $type    = $request->post('type', null);
+        $options = $request->post('options', []);
+        if (!$type || !$content) {
+            throw new ValidationException('类型', '内容');
+        }
+
+        if (!in_array($type, Helper::cases(NutritionInputType::class))) {
+            throw new BusinessException('不支持的识别方式', BusinessCode::BUSINESS_ERROR->value);
+        }
+
+        if (!TokenLimit::instance()->hasQuota()) {
+            throw new BusinessException('AI识别次数已经用完，请先手动选择食物吧', BusinessCode::BUSINESS_ERROR->value);
+        }
+        try {
+            $type = NutritionInputType::tryFrom($type);
+            if ($type == NutritionInputType::IMAGE) {
+                $result = (new Nutrition())->request($type, $content);
+            } else {
+                if ($type == NutritionInputType::AUDIO) {
+                    $result = Bos::instance()->putObjFromBase($content, $options);
+                    if (!$result) {
+                        throw new BusinessException('录音文件上传失败', BusinessCode::THREE_PART_ERROR->value);
+                    }
+                }
+                $result = FoodService::nutrition($type, $content);
+            }
+
+            if (!isset($result['foods']) || empty($result['foods'])) {
+                throw new DataNotFoundException('识别失败');
+            }
+            return FoodBusiness::instance()->syncRemote($result);
+        } catch (\Exception $exception) {
+            throw new BusinessException($exception->getMessage(), $exception->getCode(), $exception);
+        }
     }
 }

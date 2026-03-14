@@ -1,27 +1,224 @@
 {
-  "kcal": 0.00,
-  "protein": 0.00,
-  "fat": 0.00,
-  "carbohydrate": 0.00,
-  "sugar": 0.00,
-  "fiber": 0.00,
-  "sodium": 0.00,
-  "cholesterol": 0.00,
-  "vitaminA": 0.00,
-  "vitaminB1": 0.00,
-  "vitaminB6": 0.00,
-  "vitaminB12": 0.00,
-  "vitaminC": 0.00,
-  "vitaminD": 0.00,
-  "vitaminE": 0.00,
-  "vitaminK": 0.00,
-  "folate": 0.00,
-  "calcium": 0.00,
-  "iron": 0.00,
-  "potassium": 0.00,
-  "magnesium": 0.00,
-  "iodine": 0.00,
-  "zinc": 0.00,
-  "selenium": 0.00,
-  "omega3": 0.00
+  "foods": [
+    {
+      "name": "黑鸭红烧肉双拼煲",
+      "nutrition": [
+        {
+          "name": "pro",
+          "value": 35.7
+        },
+        {
+          "name": "fat",
+          "value": 42.3
+        },
+        {
+          "name": "carb",
+          "value": 20.5
+        },
+        {
+          "name": "fiber",
+          "value": 1.2
+        },
+        {
+          "name": "vit_c",
+          "value": 5.0
+        },
+        {
+          "name": "kal",
+          "value": 613
+        },
+        {
+          "name": "mag",
+          "value": 40
+        },
+        {
+          "name": "folic",
+          "value": 15.0
+        },
+        {
+          "name": "cal",
+          "value": 80
+        },
+        {
+          "name": "iron",
+          "value": 4.1
+        },
+        {
+          "name": "vit_e",
+          "value": 0.8
+        },
+        {
+          "name": "chol",
+          "value": 123
+        },
+        {
+          "name": "na",
+          "value": 800
+        }
+      ],
+      "unit": "1 份",
+      "weight": "约250g（含肉、配菜）"
+    },
+    {
+      "name": "米饭",
+      "nutrition": [
+        {
+          "name": "pro",
+          "value": 3.9
+        },
+        {
+          "name": "fat",
+          "value": 0.3
+        },
+        {
+          "name": "carb",
+          "value": 35.6
+        },
+        {
+          "name": "fiber",
+          "value": 0.6
+        },
+        {
+          "name": "kal",
+          "value": 168
+        },
+        {
+          "name": "mag",
+          "value": 12
+        },
+        {
+          "name": "folic",
+          "value": 12.0
+        },
+        {
+          "name": "cal",
+          "value": 11
+        },
+        {
+          "name": "iron",
+          "value": 0.4
+        },
+        {
+          "name": "vit_e",
+          "value": 0.03
+        },
+        {
+          "name": "na",
+          "value": 10
+        }
+      ],
+      "unit": "1 盒",
+      "weight": "约200g（熟重）"
+    },
+    {
+      "name": "无糖可乐",
+      "nutrition": [
+        {
+          "name": "pro",
+          "value": 0
+        },
+        {
+          "name": "fat",
+          "value": 0
+        },
+        {
+          "name": "carb",
+          "value": 0
+        },
+        {
+          "name": "kal",
+          "value": 1
+        },
+        {
+          "name": "na",
+          "value": 10
+        }
+      ],
+      "unit": "1 瓶",
+      "weight": "500ml"
+    }
+  ],
+  "tokens": 0.02,
+  "total_nutritions": [
+    {
+      "name": "pro",
+      "value": 39.6
+    },
+    {
+      "name": "fat",
+      "value": 42.6
+    },
+    {
+      "name": "carb",
+      "value": 56.1
+    },
+    {
+      "name": "fiber",
+      "value": 1.8
+    },
+    {
+      "name": "vit_c",
+      "value": 5.0
+    },
+    {
+      "name": "kal",
+      "value": 782
+    },
+    {
+      "name": "mag",
+      "value": 52
+    },
+    {
+      "name": "folic",
+      "value": 27.0
+    },
+    {
+      "name": "cal",
+      "value": 91
+    },
+    {
+      "name": "iron",
+      "value": 4.5
+    },
+    {
+      "name": "vit_e",
+      "value": 0.83
+    },
+    {
+      "name": "chol",
+      "value": 123
+    },
+    {
+      "name": "na",
+      "value": 820
+    },
+    {
+      "name": "pufa",
+      "value": 2.0
+    },
+    {
+      "name": "vit_a",
+      "value": 15
+    },
+    {
+      "name": "vit_d",
+      "value": 0
+    },
+    {
+      "name": "iod",
+      "value": 0
+    },
+    {
+      "name": "sel",
+      "value": 12.5
+    },
+    {
+      "name": "zinc",
+      "value": 2.3
+    },
+    {
+      "name": "vit_b1",
+      "value": 0.21
+    }
+  ]
 }
