@@ -2,6 +2,7 @@
 
 namespace plugin\admin\app\controller;
 
+use plugin\admin\app\model\User;
 use support\Request;
 use support\Response;
 use plugin\admin\app\model\Blog;
@@ -9,11 +10,11 @@ use plugin\admin\app\controller\Crud;
 use support\exception\BusinessException;
 
 /**
- * 动态列表 
+ * 动态列表
  */
 class BlogController extends Crud
 {
-    
+
     /**
      * @var Blog
      */
@@ -27,7 +28,7 @@ class BlogController extends Crud
     {
         $this->model = new Blog;
     }
-    
+
     /**
      * 浏览
      * @return Response
@@ -56,13 +57,22 @@ class BlogController extends Crud
      * @param Request $request
      * @return Response
      * @throws BusinessException
-    */
+     */
     public function update(Request $request): Response
     {
-        if ($request->method() === 'POST') {
-            return parent::update($request);
-        }
         return view('blog/update');
     }
 
+    protected function afterQuery($items)
+    {
+        $userInfoList = User::query()->whereIn('id', array_column($items, 'user_id'))->get(['avatar', 'id', 'nickname', 'username'])->transform(function ($item) {
+            $item->avatar = source($item->avatar);
+            return $item;
+        })->keyBy('id')->toArray();
+        foreach ($items as &$item) {
+            $item['visibility_info'] = Blog::getVisibility($item['visibility']);
+            $item['userInfo']        = $userInfoList[$item['user_id']];
+        }
+        return $items;
+    }
 }

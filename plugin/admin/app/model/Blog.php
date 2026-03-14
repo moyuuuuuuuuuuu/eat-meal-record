@@ -12,7 +12,7 @@ use plugin\admin\app\model\Base;
  * @property integer $views 查看数量
  * @property integer $comments 评论数量
  * @property integer $favs 收藏数量
- * @property string $content 
+ * @property string $content
  * @property integer $visibility 状态 0隐藏 1所有人可见 2仅自己可见 3仅好友可见
  * @property string $created_at 创建时间
  * @property string $updated_at
@@ -32,7 +32,26 @@ class Blog extends Base
      * @var string
      */
     protected $primaryKey = 'id';
-    
-    
-    
+
+    const VisitibilityTextMap  = [
+        '已隐藏',
+        '公开',
+        '秘密',
+        '好友可见'
+    ];
+    const VisitibilityClassMap = [
+        'layui-bg-gray',
+        'layui-bg-green',
+        'layui-bg-blue',
+        'layui-bg-orange'
+    ];
+
+    static function getVisibility($visibility)
+    {
+        return [
+            'text'  => self::VisitibilityTextMap[$visibility],
+            'class' => self::VisitibilityClassMap[$visibility]
+        ];
+    }
+
 }

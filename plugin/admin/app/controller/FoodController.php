@@ -6,6 +6,7 @@ use app\common\enum\NormalStatus;
 use app\model\BlogModel;
 use app\model\FollowModel;
 use plugin\admin\app\model\Cat;
+use plugin\admin\app\model\FoodNutrient;
 use plugin\admin\app\model\FoodTag;
 use plugin\admin\app\model\FoodUnit;
 use plugin\admin\app\model\Tag;
@@ -56,7 +57,20 @@ class FoodController extends Crud
     public function insert(Request $request): Response
     {
         if ($request->method() === 'POST') {
-            return parent::insert($request);
+            return DB::transaction(function () use ($request) {
+                $data      = $request->post();
+                $nutrients = $data['nutrients'];
+                unset($data['nutrients']);
+                $foodId = $this->doInsert($data);
+                if (!$foodId) {
+                    throw new BusinessException('添加食物失败');
+                }
+                FoodNutrient::create([
+                    'food_id' => $foodId,
+                    ...$nutrients,
+                ]);
+                return $this->json(0, 'ok', ['id' => $foodId]);
+            });
         }
         return view('food/insert');
     }
@@ -70,9 +84,39 @@ class FoodController extends Crud
     public function update(Request $request): Response
     {
         if ($request->method() === 'POST') {
-            return parent::update($request);
+            return DB::transaction(function () use ($request) {
+                $id        = $request->post('id');
+                $data      = $this->inputFilter($request->post());
+                $nutrients = $data['nutrients'];
+                unset($data['nutrients']);
+                $model = $this->model->find($id);
+                foreach ($data as $key => $val) {
+                    $model->{$key} = $val;
+                }
+                $model->save();
+                FoodNutrient::query()->where('food_id', $id)->delete();
+                FoodNutrient::create([
+                    'food_id' => $id,
+                    ...$nutrients,
+                ]);
+                return $this->json(0, 'ok', ['id' => $id]);
+
+            });
         }
         return view('food/update');
+    }
+
+    public function delete(Request $request): Response
+    {
+        return DB::transaction(function () use ($request) {
+            $id = $request->post('id');
+            $id = is_array($id) ? $id : [$id];
+            if ($this->model->newQuery()->whereIn('id', $id)->delete() &&
+                FoodNutrient::query()->whereIn('food_id', $id)->delete()) {
+                return $this->json(0, 'ok', ['id' => $id]);
+            }
+            throw new BusinessException('删除失败');
+        });
     }
 
     protected function afterQuery($items)
@@ -98,16 +142,18 @@ class FoodController extends Crud
             ->whereIn($foodTagTable . '.food_id', $foodIdList)
             ->get();
 
-        $catList = Cat::query()->whereIn('id', array_column($items, 'cat_id'))->pluck('name', 'id')->toArray();
+        $catList      = Cat::query()->whereIn('id', array_column($items, 'cat_id'))->pluck('name', 'id')->toArray();
+        $nutrientList = FoodNutrient::query()->whereIn('food_id', array_column($items, 'id'))->get()->keyBy('food_id')->toArray();
 
         $tagList  = $tagCollection->groupBy('food_id')->toArray();
         $userList = User::query()->whereIn('id', array_column($items, 'user_id'))->pluck('nickname', 'id')->toArray();
         foreach ($items as &$item) {
-            $fid              = $item['id'];
-            $item['tags']     = $tagList[$fid] ?? [];
-            $item['units']    = $unitList[$fid] ?? [];
-            $item['cat_name'] = $catList[$item['cat_id'] ?? 0] ?? '未知';
-            $item['username'] = $userList[$item['user_id'] ?? 0] ?? '-';
+            $fid               = $item['id'];
+            $item['tags']      = $tagList[$fid] ?? [];
+            $item['units']     = $unitList[$fid] ?? [];
+            $item['cat_name']  = $catList[$item['cat_id'] ?? 0] ?? '未知';
+            $item['username']  = $userList[$item['user_id'] ?? 0] ?? '-';
+            $item['nutrients'] = $nutrientList[$item['id']] ?? [];
         }
         unset($item); // 销毁引用，防止后续污染
         return $items;

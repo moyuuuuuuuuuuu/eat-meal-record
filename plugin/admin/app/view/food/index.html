@@ -409,7 +409,7 @@
                 toolbar: "#table-bar",
                 align: "center",
                 fixed: "right",
-                width: 120,
+                width: 250,
             }
         ];
 
@@ -551,7 +551,7 @@
                 title: "新增",
                 shade: 0.1,
                 maxmin: true,
-                area: [common.isModile() ? "100%" : "500px", common.isModile() ? "100%" : "450px"],
+                area: [common.isModile() ? "100%" : "1000px", common.isModile() ? "100%" : "800px"],
                 content: INSERT_URL
             });
         }
@@ -564,7 +564,7 @@
                 title: "修改",
                 shade: 0.1,
                 maxmin: true,
-                area: [common.isModile() ? "100%" : "500px", common.isModile() ? "100%" : "450px"],
+                area: [common.isModile() ? "100%" : "1000px", common.isModile() ? "100%" : "800px"],
                 content: UPDATE_URL + "?" + PRIMARY_KEY + "=" + value
             });
         }
@@ -576,7 +576,7 @@
                 title: `添加[${obj.data.name}]的单位食品`,
                 shade: 0.1,
                 maxmin: true,
-                area: [common.isModile() ? "100%" : "500px", common.isModile() ? "100%" : "450px"],
+                area: [common.isModile() ? "100%" : "1000px", common.isModile() ? "100%" : "800px"],
                 content: INSERT_FOOD_UNIT_URL + "?food_id=" + value
             });
         }
