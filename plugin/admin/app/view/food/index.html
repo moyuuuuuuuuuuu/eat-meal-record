@@ -5,6 +5,9 @@
     <title>浏览页面</title>
     <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css"/>
     <link rel="stylesheet" href="/app/admin/admin/css/reset.css"/>
+    <style>
+
+    </style>
 </head>
 <body class="pear-container">
 
@@ -46,6 +49,13 @@
             </div>
 
             <div class="layui-form-item">
+                <label class="layui-form-label">食材</label>
+                <div class="layui-input-block">
+                    <div name="is_ingredient" id="is_ingredient" value=""></div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
                 <label class="layui-form-label">创建时间</label>
                 <div class="layui-input-block">
                     <div class="layui-input-block" id="created_at">
@@ -68,6 +78,13 @@
                         <input type="text" autocomplete="off" name="updated_at[]" id="updated_at-date-end"
                                class="layui-input inline-block" placeholder="结束时间">
                     </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">常见食物 </label>
+                <div class="layui-input-block">
+                    <div name="is_common" id="is_common" value=""></div>
                 </div>
             </div>
 
@@ -108,7 +125,45 @@
 <!-- 表格行工具栏 -->
 <script type="text/html" id="table-bar">
     <button class="pear-btn pear-btn-xs tool-btn" lay-event="edit" permission="app.admin.food.update">编辑</button>
+    <button class="pear-btn pear-btn-xs tool-btn" lay-event="addFoodUnit" permission="app.admin.foodunit.insert">添加单位食品
+    </button>
     <button class="pear-btn pear-btn-xs tool-btn" lay-event="remove" permission="app.admin.food.delete">删除</button>
+</script>
+<script type="text/html" id="foodTagTemplate">
+    {{#
+    var tags = d.tags || [];
+    var colors = ['layui-bg-blue', 'layui-bg-orange', 'layui-bg-purple', 'layui-bg-red', 'layui-bg-cyan'];
+    }}
+    <div class="layui-elip">
+        {{# if(tags.length > 0){ }}
+        {{# layui.each(tags, function(index, item){ }}
+        <span class="layui-badge {{ colors[(index + (d.id || 0)) % colors.length] }}" style="margin: 2px;">
+                    {{ item.name }}
+                </span>
+        {{# }); }}
+        {{# } else { }}
+        <span style="color: #ccc;">-</span>
+        {{# } }}
+    </div>
+</script>
+
+<script type="text/html" id="foodUnitTemplate">
+    {{#
+    var units = d.units || [];
+    var colors = ['layui-bg-green', 'layui-bg-cyan', 'layui-bg-blue'];
+    }}
+    <div class="layui-elip">
+        {{# if(units.length > 0){ }}
+        {{# layui.each(units, function(index, item){ }}
+        <span class="layui-badge-rim {{ colors[(index + (d.id || 0)) % colors.length] }}"
+              style="margin: 2px; border-width: 1px;">
+                    {{ item.name }}
+                </span>
+        {{# }); }}
+        {{# } else { }}
+        <span style="color: #ccc;">-</span>
+        {{# } }}
+    </div>
 </script>
 
 <script src="/app/admin/component/layui/layui.js?v=2.8.12"></script>
@@ -125,11 +180,12 @@
     const DELETE_API = "/app/admin/food/delete";
     const INSERT_URL = "/app/admin/food/insert";
     const UPDATE_URL = "/app/admin/food/update";
+    const INSERT_FOOD_UNIT_URL = "/app/admin/food-unit/insert";
 
     // 字段 食物分类 cat_id
     layui.use(["jquery", "xmSelect", "popup"], function () {
         layui.$.ajax({
-            url: "/app/admin/cat/select?format=select&limit=500",
+            url: "/app/admin/cat/select?format=select",
             dataType: "json",
             success: function (res) {
                 let value = layui.$("#cat_id").attr("value");
@@ -177,19 +233,53 @@
     });
 
     // 字段 状态 status
-    layui.use(["jquery", "xmSelect"], function () {
-        let value = layui.$("#status").attr("value");
-        let initValue = value ? value.split(",") : [];
-        layui.xmSelect.render({
-            el: "#status",
-            name: "status",
-            filterable: true,
-            initValue: initValue,
-            data: [{"value": "1", "name": "是"}, {"value": "0", "name": "否"}],
-            model: {"icon": "hidden", "label": {"type": "text"}},
-            clickClose: true,
-            radio: true,
-        })
+    layui.use(["jquery", "xmSelect", "popup"], function () {
+        layui.$.ajax({
+            url: "/app/admin/dict/get/yes_no",
+            dataType: "json",
+            success: function (res) {
+                let value = layui.$("#status").attr("value");
+                let initValue = value ? value.split(",") : [];
+                layui.xmSelect.render({
+                    el: "#status",
+                    name: "status",
+                    initValue: initValue,
+                    filterable: true,
+                    data: res.data,
+                    model: {"icon": "hidden", "label": {"type": "text"}},
+                    clickClose: true,
+                    radio: true,
+                });
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+            }
+        });
+    });
+
+    // 字段 食材 is_ingredient
+    layui.use(["jquery", "xmSelect", "popup"], function () {
+        layui.$.ajax({
+            url: "/app/admin/dict/get/yes_no",
+            dataType: "json",
+            success: function (res) {
+                let value = layui.$("#is_ingredient").attr("value");
+                let initValue = value ? value.split(",") : [];
+                layui.xmSelect.render({
+                    el: "#is_ingredient",
+                    name: "is_ingredient",
+                    initValue: initValue,
+                    filterable: true,
+                    data: res.data,
+                    model: {"icon": "hidden", "label": {"type": "text"}},
+                    clickClose: true,
+                    radio: true,
+                });
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+            }
+        });
     });
 
     // 字段 创建时间 created_at
@@ -210,6 +300,31 @@
         });
     })
 
+    // 字段 常见食物  is_common
+    layui.use(["jquery", "xmSelect", "popup"], function () {
+        layui.$.ajax({
+            url: "/app/admin/dict/get/yes_no",
+            dataType: "json",
+            success: function (res) {
+                let value = layui.$("#is_common").attr("value");
+                let initValue = value ? value.split(",") : [];
+                layui.xmSelect.render({
+                    el: "#is_common",
+                    name: "is_common",
+                    initValue: initValue,
+                    filterable: true,
+                    data: res.data,
+                    model: {"icon": "hidden", "label": {"type": "text"}},
+                    clickClose: true,
+                    radio: true,
+                });
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+            }
+        });
+    });
+
     // 表格渲染
     layui.use(["table", "form", "common", "popup", "util"], function () {
         let table = layui.table;
@@ -224,63 +339,61 @@
                 type: "checkbox",
                 align: "center"
             }, {
-                title: "食物ID", align: "center",
+                title: "ID", align: "center",
                 field: "id",
             }, {
                 title: "食物名称", align: "center",
                 field: "name",
             }, {
                 title: "食物分类", align: "center",
-                field: "cat_id",
-                templet: function (d) {
-                    let field = "cat_id";
-                    if (typeof d[field] == "undefined") return "";
-                    let items = [];
-                    layui.each((d[field] + "").split(","), function (k, v) {
-                        items.push(apiResults[field][v] || v);
-                    });
-                    return util.escape(items.join(","));
-                }
+                field: "cat_name",
+            }, {
+                title: "食物标签", align: "center",
+                field: "",
+                templet: '#foodTagTemplate'
+            }, {
+                title: "食物可用单位", align: "center",
+                field: "",
+                templet: '#foodUnitTemplate'
             }, {
                 title: "所属用户", align: "center",
-                templet: function (d) {
-                    if (!d['user_id']) return "-";
-                    return d['user']['nickname'] || "-";
-                    let field = "user_id";
-                    if (typeof d[field] == "undefined") return "";
-                    let items = [];
-                    layui.each((d[field] + "").split(","), function (k, v) {
-                        items.push(apiResults[field][v] || v);
-                    });
-                    return util.escape(items.join(","));
-                }
+                field: "username"
             }, {
                 title: "状态", align: "center",
                 field: "status",
                 templet: function (d) {
                     let field = "status";
-                    form.on("switch(" + field + ")", function (data) {
-                        let load = layer.load();
-                        let postData = {};
-                        postData[field] = data.elem.checked ? 1 : 0;
-                        postData[PRIMARY_KEY] = this.value;
-                        $.post(UPDATE_API, postData, function (res) {
-                            layer.close(load);
-                            if (res.code) {
-                                return layui.popup.failure(res.msg, function () {
-                                    data.elem.checked = !data.elem.checked;
-                                    form.render();
-                                });
-                            }
-                            return layui.popup.success("操作成功");
-                        })
+                    if (typeof d[field] == "undefined") return "";
+                    let items = [];
+                    layui.each((d[field] + "").split(","), function (k, v) {
+                        items.push(apiResults[field][v] || v);
                     });
-                    let checked = d[field] === 1 ? "checked" : "";
-                    return '<input type="checkbox" value="' + util.escape(d[PRIMARY_KEY]) + '" lay-filter="' + util.escape(field) + '" lay-skin="switch" lay-text="' + util.escape('') + '" ' + checked + '/>';
+                    return util.escape(items.join(","));
                 }
             }, {
-                title: "营养信息/100g", align: "center",
-                field: "nutrition",
+                title: "食材", align: "center",
+                field: "is_ingredient",
+                templet: function (d) {
+                    let field = "is_ingredient";
+                    if (typeof d[field] == "undefined") return "";
+                    let items = [];
+                    layui.each((d[field] + "").split(","), function (k, v) {
+                        items.push(apiResults[field][v] || v);
+                    });
+                    return util.escape(items.join(","));
+                }
+            }, {
+                title: "常见食物 ", align: "center",
+                field: "is_common",
+                templet: function (d) {
+                    let field = "is_common";
+                    if (typeof d[field] == "undefined") return "";
+                    let items = [];
+                    layui.each((d[field] + "").split(","), function (k, v) {
+                        items.push(apiResults[field][v] || v);
+                    });
+                    return util.escape(items.join(","));
+                }
             }, {
                 title: "创建时间", align: "center",
                 field: "created_at",
@@ -324,11 +437,17 @@
 
         // 获取表格中下拉或树形组件数据
         let apis = [];
-        apis.push(["cat_id", "/app/admin/cat/select?format=select&limit=500"]);
-        apis.push(["user_id", "/app/admin/user/select?format=select&limit=10000"]);
+        apis.push(["cat_id", "/app/admin/cat/select?format=select"]);
+        apis.push(["user_id", "/app/admin/user/select?format=select"]);
+        apis.push(["status", "/app/admin/dict/get/yes_no"]);
+        apis.push(["is_ingredient", "/app/admin/dict/get/yes_no"]);
+        apis.push(["is_common", "/app/admin/dict/get/yes_no"]);
         let apiResults = {};
         apiResults["cat_id"] = [];
         apiResults["user_id"] = [];
+        apiResults["status"] = [];
+        apiResults["is_ingredient"] = [];
+        apiResults["is_common"] = [];
         let count = apis.length;
         layui.each(apis, function (k, item) {
             let [field, url] = item;
@@ -369,6 +488,8 @@
                 remove(obj);
             } else if (obj.event === "edit") {
                 edit(obj);
+            } else if (obj.event === "addFoodUnit") {
+                addFoodUnit(obj);
             }
         });
 
@@ -430,7 +551,7 @@
                 title: "新增",
                 shade: 0.1,
                 maxmin: true,
-                area: [common.isModile() ? "100%" : "1200px", common.isModile() ? "100%" : "650px"],
+                area: [common.isModile() ? "100%" : "500px", common.isModile() ? "100%" : "450px"],
                 content: INSERT_URL
             });
         }
@@ -443,8 +564,20 @@
                 title: "修改",
                 shade: 0.1,
                 maxmin: true,
-                area: [common.isModile() ? "100%" : "1200px", common.isModile() ? "100%" : "650px"],
+                area: [common.isModile() ? "100%" : "500px", common.isModile() ? "100%" : "450px"],
                 content: UPDATE_URL + "?" + PRIMARY_KEY + "=" + value
+            });
+        }
+
+        let addFoodUnit = function (obj) {
+            let value = obj.data[PRIMARY_KEY];
+            layer.open({
+                type: 2,
+                title: `添加[${obj.data.name}]的单位食品`,
+                shade: 0.1,
+                maxmin: true,
+                area: [common.isModile() ? "100%" : "500px", common.isModile() ? "100%" : "450px"],
+                content: INSERT_FOOD_UNIT_URL + "?food_id=" + value
             });
         }
 

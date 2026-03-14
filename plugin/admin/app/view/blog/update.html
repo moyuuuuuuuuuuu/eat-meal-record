@@ -16,44 +16,72 @@
                 <div class="main-container mr-5">
                     
                     <div class="layui-form-item">
-                        <label class="layui-form-label">所属用户</label>
+                        <label class="layui-form-label">用户id</label>
                         <div class="layui-input-block">
-                            <div name="user_id" id="user_id" value="" ></div>
+                            <input type="number" name="user_id" value="" class="layui-input">
+                        </div>
+                    </div>
+                    
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">标题</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="title" value="" class="layui-input">
                         </div>
                     </div>
                     
                     <div class="layui-form-item">
                         <label class="layui-form-label">点赞数量</label>
                         <div class="layui-input-block">
-                            <input type="number" name="like" value="" class="layui-input">
+                            <input type="number" name="likes" value="" class="layui-input">
                         </div>
                     </div>
                     
                     <div class="layui-form-item">
                         <label class="layui-form-label">查看数量</label>
                         <div class="layui-input-block">
-                            <input type="number" name="view" value="" class="layui-input">
+                            <input type="number" name="views" value="" class="layui-input">
                         </div>
                     </div>
                     
                     <div class="layui-form-item">
                         <label class="layui-form-label">评论数量</label>
                         <div class="layui-input-block">
-                            <input type="number" name="comment" value="" class="layui-input">
+                            <input type="number" name="comments" value="" class="layui-input">
                         </div>
                     </div>
                     
                     <div class="layui-form-item">
                         <label class="layui-form-label">收藏数量</label>
                         <div class="layui-input-block">
-                            <input type="number" name="fav" value="" class="layui-input">
+                            <input type="number" name="favs" value="" class="layui-input">
                         </div>
                     </div>
                     
                     <div class="layui-form-item">
-                        <label class="layui-form-label">动态内容</label>
+                        <label class="layui-form-label">content</label>
                         <div class="layui-input-block">
-                            <input type="text" name="content" value="" class="layui-input">
+                            <textarea name="content" class="layui-textarea"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态 0隐藏 1所有人可见 2仅自己可见 3仅好友可见</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="visibility" value="" class="layui-input">
+                        </div>
+                    </div>
+                    
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">创建时间</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="created_at" id="created_at" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">updated_at</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="updated_at" id="updated_at" autocomplete="off" class="layui-input">
                         </div>
                     </div>
                     
@@ -121,30 +149,21 @@
                             }
                         });
                         
-                        // 字段 所属用户 user_id
-                        layui.use(["jquery", "xmSelect", "popup"], function() {
-                            layui.$.ajax({
-                                url: "/app/admin/user/select?format=select",
-                                dataType: "json",
-                                success: function (res) {
-                                    let value = layui.$("#user_id").attr("value");
-                                    let initValue = value ? value.split(",") : [];
-                                    layui.xmSelect.render({
-                                        el: "#user_id",
-                                        name: "user_id",
-                                        initValue: initValue,
-                                        filterable: true,
-                                        data: res.data, 
-                                        model: {"icon":"hidden","label":{"type":"text"}},
-                                        clickClose: true,
-                                        radio: true,
-                                    });
-                                    if (res.code) {
-                                        layui.popup.failure(res.msg);
-                                    }
-                                }
+                        // 字段 创建时间 created_at
+                        layui.use(["laydate"], function() {
+                            layui.laydate.render({
+                                elem: "#created_at",
+                                type: "datetime",
                             });
-                        });
+                        })
+                        
+                        // 字段 updated_at updated_at
+                        layui.use(["laydate"], function() {
+                            layui.laydate.render({
+                                elem: "#updated_at",
+                                type: "datetime",
+                            });
+                        })
                         
                         
                         // ajax返回失败

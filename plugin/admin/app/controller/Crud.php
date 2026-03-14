@@ -42,7 +42,7 @@ class Crud extends Base
     public function insert(Request $request): Response
     {
         $data = $this->insertInput($request);
-        $id = $this->doInsert($data);
+        $id   = $this->doInsert($data);
         return $this->json(0, 'ok', ['id' => $id]);
     }
 
@@ -80,16 +80,16 @@ class Crud extends Base
      */
     protected function selectInput(Request $request): array
     {
-        $field = $request->get('field');
-        $order = $request->get('order', 'asc');
+        $field  = $request->get('field');
+        $order  = $request->get('order', 'asc');
         $format = $request->get('format', 'normal');
-        $limit = (int)$request->get('limit', $format === 'tree' ? 1000 : 10);
-        $limit = $limit <= 0 ? 10 : $limit;
-        $order = $order === 'asc' ? 'asc' : 'desc';
-        $where = $request->get();
-        $page = (int)$request->get('page');
-        $page = $page > 0 ? $page : 1;
-        $table = config('plugin.admin.database.connections.mysql.prefix') . $this->model->getTable();
+        $limit  = (int)$request->get('limit', $format === 'tree' ? 1000 : 10);
+        $limit  = $limit <= 0 ? 10 : $limit;
+        $order  = $order === 'asc' ? 'asc' : 'desc';
+        $where  = $request->get();
+        $page   = (int)$request->get('page');
+        $page   = $page > 0 ? $page : 1;
+        $table  = config('plugin.admin.database.connections.mysql.prefix') . $this->model->getTable();
 
         $allow_column = Util::db()->select("desc `$table`");
         if (!$allow_column) {
@@ -128,7 +128,7 @@ class Crud extends Base
      * @param string $order
      * @return EloquentBuilder|QueryBuilder|Model
      */
-    protected function doSelect(array $where, ?string $field = null, string $order= 'desc')
+    protected function doSelect(array $where, ?string $field = null, string $order = 'desc')
     {
         $model = $this->model;
         foreach ($where as $column => $value) {
@@ -149,7 +149,7 @@ class Crud extends Base
                         $valArr = explode(",", trim($value[1]));
                     }
                     $model = $model->whereNotIn($column, $valArr);
-                }elseif ($value[0] == 'null') {
+                } elseif ($value[0] == 'null') {
                     $model = $model->whereNull($column);
                 } elseif ($value[0] == 'not null') {
                     $model = $model->whereNotNull($column);
@@ -160,6 +160,7 @@ class Crud extends Base
                 $model = $model->where($column, $value);
             }
         }
+
         if ($field) {
             $model = $model->orderBy($field, $order);
         }
@@ -175,15 +176,15 @@ class Crud extends Base
      */
     protected function doFormat($query, $format, $limit): Response
     {
-        $methods = [
-            'select' => 'formatSelect',
-            'tree' => 'formatTree',
+        $methods   = [
+            'select'     => 'formatSelect',
+            'tree'       => 'formatTree',
             'table_tree' => 'formatTableTree',
-            'normal' => 'formatNormal',
+            'normal'     => 'formatNormal',
         ];
         $paginator = $query->paginate($limit);
-        $total = $paginator->total();
-        $items = $paginator->items();
+        $total     = $paginator->total();
+        $items     = $paginator->items();
         if (method_exists($this, "afterQuery")) {
             $items = call_user_func([$this, "afterQuery"], $items);
         }
@@ -199,7 +200,7 @@ class Crud extends Base
      */
     protected function insertInput(Request $request): array
     {
-        $data = $this->inputFilter($request->post());
+        $data           = $this->inputFilter($request->post());
         $password_filed = 'password';
         if (isset($data[$password_filed])) {
             $data[$password_filed] = Util::passwordHash($data[$password_filed]);
@@ -233,7 +234,7 @@ class Crud extends Base
     {
         $primary_key = $this->model->getKeyName();
         $model_class = get_class($this->model);
-        $model = new $model_class;
+        $model       = new $model_class;
         foreach ($data as $key => $val) {
             $model->{$key} = $val;
         }
@@ -250,9 +251,9 @@ class Crud extends Base
     protected function updateInput(Request $request): array
     {
         $primary_key = $this->model->getKeyName();
-        $id = $request->post($primary_key);
-        $data = $this->inputFilter($request->post());
-        $model = $this->model->find($id);
+        $id          = $request->post($primary_key);
+        $data        = $this->inputFilter($request->post());
+        $model       = $this->model->find($id);
         if (!$model) {
             throw new BusinessException('记录不存在', 2);
         }
@@ -264,7 +265,7 @@ class Crud extends Base
                 }
             } elseif ($this->dataLimit == 'auth') {
                 $scopeAdminIds = Auth::getScopeAdminIds(true);
-                $admin_ids = [
+                $admin_ids     = [
                     $data[$this->dataLimitField] ?? false, // 检查要更新的数据admin_id是否是有权限的值
                     $model->{$this->dataLimitField} ?? false // 检查要更新的记录的admin_id是否有权限
                 ];
@@ -311,7 +312,7 @@ class Crud extends Base
      */
     protected function inputFilter(array $data): array
     {
-        $table = config('plugin.admin.database.connections.mysql.prefix') . $this->model->getTable();
+        $table        = config('plugin.admin.database.connections.mysql.prefix') . $this->model->getTable();
         $allow_column = $this->model->getConnection()->select("desc `$table`");
         if (!$allow_column) {
             throw new BusinessException('表不存在', 2);
@@ -352,7 +353,7 @@ class Crud extends Base
             throw new BusinessException('该表无主键，不支持删除');
         }
         $ids = (array)$request->post($primary_key, []);
-        if (!Auth::isSuperAdmin()){
+        if (!Auth::isSuperAdmin()) {
             $admin_ids = [];
             if ($this->dataLimit) {
                 $admin_ids = $this->model->where($primary_key, $ids)->pluck($this->dataLimitField)->toArray();
@@ -394,13 +395,13 @@ class Crud extends Base
     protected function formatTree($items): Response
     {
         $format_items = [];
-        $primary_key = $this->model->getKeyName();
+        $primary_key  = $this->model->getKeyName();
         foreach ($items as $item) {
             $format_items[] = [
-                'name' => $this->guessName($item) ?: $item->$primary_key,
+                'name'  => $this->guessName($item) ?: $item->$primary_key,
                 'value' => (string)$item->$primary_key,
-                'id' => $item->$primary_key,
-                'pid' => $item->pid,
+                'id'    => $item->$primary_key,
+                'pid'   => $item->pid,
             ];
         }
         $tree = new Tree($format_items);
@@ -426,14 +427,14 @@ class Crud extends Base
     protected function formatSelect($items): Response
     {
         $formatted_items = [];
-        $primary_key = $this->model->getKeyName();
+        $primary_key     = $this->model->getKeyName();
         foreach ($items as $item) {
             $formatted_items[] = [
-                'name' => $this->guessName($item) ?: $item->$primary_key,
+                'name'  => $this->guessName($item) ?: $item->$primary_key,
                 'value' => $item->$primary_key
             ];
         }
-        return  $this->json(0, 'ok', $formatted_items);
+        return $this->json(0, 'ok', $formatted_items);
     }
 
     /**
@@ -465,5 +466,10 @@ class Crud extends Base
     protected function guessName($item)
     {
         return $item->title ?? $item->name ?? $item->nickname ?? $item->username ?? $item->id;
+    }
+
+    protected function relation()
+    {
+        return [];
     }
 }

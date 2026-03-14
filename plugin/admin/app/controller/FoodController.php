@@ -2,14 +2,21 @@
 
 namespace plugin\admin\app\controller;
 
-use plugin\admin\app\model\addtional\FoodModelAdditional;
-use plugin\admin\app\model\Dict;
-use plugin\admin\app\model\Food;
-use plugin\admin\app\model\FoodNutrient;
-use support\exception\BusinessException;
+use app\common\enum\NormalStatus;
+use app\model\BlogModel;
+use app\model\FollowModel;
+use plugin\admin\app\model\Cat;
+use plugin\admin\app\model\FoodTag;
+use plugin\admin\app\model\FoodUnit;
+use plugin\admin\app\model\Tag;
+use plugin\admin\app\model\Unit;
+use plugin\admin\app\model\User;
+use support\Db;
 use support\Request;
 use support\Response;
-use support\View;
+use plugin\admin\app\model\Food;
+use plugin\admin\app\controller\Crud;
+use support\exception\BusinessException;
 
 /**
  * 食品列表
@@ -28,7 +35,7 @@ class FoodController extends Crud
      */
     public function __construct()
     {
-        $this->model = new FoodModelAdditional();
+        $this->model = new Food;
     }
 
     /**
@@ -49,19 +56,8 @@ class FoodController extends Crud
     public function insert(Request $request): Response
     {
         if ($request->method() === 'POST') {
-            $data                 = $request->only(['name', 'cat_id', 'user_id', 'status']);
-            if (!$data['user_id']) {
-                $data['user_id'] = 0;
-            }
-            $id                   = $this->doInsert($data);
-            $nutrients            = $request->post('nutrients');
-            $nutrients['food_id'] = $id;
-            FoodNutrient::query()->where('food_id', $id)->delete();
-            FoodNutrient::query()->insert($nutrients);
-            return $this->json(0, 'ok', ['id' => $id]);
+            return parent::insert($request);
         }
-        $nutritionDict = Dict::get('nutrition');
-        View::assign('nutritionDict', (array)$nutritionDict);
         return view('food/insert');
     }
 
@@ -74,25 +70,47 @@ class FoodController extends Crud
     public function update(Request $request): Response
     {
         if ($request->method() === 'POST') {
-            $data = $request->only(['name', 'cat_id', 'user_id', 'status']);
-            $id   = $request->post('id');
-            if (!$this->model->newQuery()->where('id', $id)->exists()) {
-                return $this->fail('食品不存在');
-            }
-            if (!$data['user_id']) {
-                $data['user_id'] = 0;
-            }
-            if (!$this->model::query()->where('id', $id)->update($data)) return $this->fail('编辑失败');
-            $nutrients            = $request->post('nutrients');
-            $nutrients['food_id'] = $id;
-            FoodNutrient::query()->where('food_id', $id)->delete();
-            FoodNutrient::query()->insert($nutrients);
-            return $this->json(0);
+            return parent::update($request);
         }
-
-        $nutritionDict = Dict::get('nutrition');
-        View::assign('nutritionDict', (array)$nutritionDict);
         return view('food/update');
+    }
+
+    protected function afterQuery($items)
+    {
+        $foodIdList    = array_column($items, 'id');
+        $foodUnitTable = (new FoodUnit())->getTable();
+        $unitTable     = (new Unit())->getTable();
+
+        $unitList = Unit::query()
+            ->select([$unitTable . '.id', $unitTable . '.name', $foodUnitTable . '.food_id'])
+            ->leftJoin($foodUnitTable, $foodUnitTable . '.unit_id', '=', $unitTable . '.id')
+            ->whereIn($foodUnitTable . '.food_id', $foodIdList)
+            ->get()
+            ->groupBy('food_id') // 集合会自动识别别名或完整路径名
+            ->toArray();
+
+        $tagTable     = (new Tag())->getTable();
+        $foodTagTable = (new FoodTag())->getTable();
+
+        $tagCollection = Tag::query()
+            ->select([$tagTable . '.id', $tagTable . '.name', $foodTagTable . '.food_id'])
+            ->leftJoin($foodTagTable, $foodTagTable . '.tag_id', '=', $tagTable . '.id')
+            ->whereIn($foodTagTable . '.food_id', $foodIdList)
+            ->get();
+
+        $catList = Cat::query()->whereIn('id', array_column($items, 'cat_id'))->pluck('name', 'id')->toArray();
+
+        $tagList  = $tagCollection->groupBy('food_id')->toArray();
+        $userList = User::query()->whereIn('id', array_column($items, 'user_id'))->pluck('nickname', 'id')->toArray();
+        foreach ($items as &$item) {
+            $fid              = $item['id'];
+            $item['tags']     = $tagList[$fid] ?? [];
+            $item['units']    = $unitList[$fid] ?? [];
+            $item['cat_name'] = $catList[$item['cat_id'] ?? 0] ?? '未知';
+            $item['username'] = $userList[$item['user_id'] ?? 0] ?? '-';
+        }
+        unset($item); // 销毁引用，防止后续污染
+        return $items;
     }
 
 }
