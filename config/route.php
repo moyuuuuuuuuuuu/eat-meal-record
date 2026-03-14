@@ -1,18 +1,7 @@
 <?php
-/**
- * This file is part of webman.
- *
- * Licensed under The MIT License
- * For full copyright and license information, please see the MIT-LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @author    walkor<walkor@workerman.net>
- * @copyright walkor<walkor@workerman.net>
- * @link      http://www.workerman.net/
- * @license   http://www.opensource.org/licenses/mit-license.php MIT License
- */
 
 use Webman\Route;
+use support\Redis;
 use app\controller\{MealRecordController,
     TopicController,
     UserController,
@@ -24,14 +13,50 @@ use app\controller\{MealRecordController,
     DiaryController,
     FeedController,
     SmsController,
-    UploadController};
+    UploadController,
+    IndexController
+};
+
+Route::disableDefaultRoute();
+Route::fallback(function () {
+    $ip  = request()->getRealIp();
+    $key = "attack_count:" . $ip;
+
+    // 建议：增加 try-catch 避免 Redis 挂掉导致整个接口 500
+    try {
+        $count = Redis::incr($key);
+        if ($count === 1) {
+            Redis::expire($key, 86400);
+        }
+    } catch (\Throwable $e) {
+        $count = 0;
+    }
+
+    return json([
+        'code' => 404,
+        'data' => [
+            'ip'          => $ip,
+            'visit_count' => $count,
+            // 修复点：使用 . 进行字符串拼接
+            'notice'      => 'Your IP has been logged for malicious probing.' . ($count > 50 ? ' Are you tired? Should we take a break?' : '')
+        ],
+        'msg'  => '404 Not Found'
+    ]);
+});
 
 Route::group('/api', function () {
-    Route::any('/test',[\app\controller\IndexController::class,'index']);
+
+    // Debug 模式专用路由组
+    if (config('app.debug')) {
+        Route::any('/test', [IndexController::class, 'index']);
+        // 移动至此：关闭 debug 时无法访问此 mock 登录
+        Route::post('/auth/login/mock', [AuthController::class, 'mock']);
+    }
+
     Route::post('/upload', [UploadController::class, 'uploadForBos']);
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/sms/login', [AuthController::class, 'sms']);
-    Route::post('/auth/login/mock', [AuthController::class, 'mock']);
+    // 原本在这里的 mock 路由已移除，防止生产环境泄露
     Route::post('/sms/send', [SmsController::class, 'send']);
 
     #食品相关
@@ -43,7 +68,6 @@ Route::group('/api', function () {
     });
 
     Route::get('/recommendation', [RecommendationController::class, 'today']);
-
 
     #饮食记录 (Diary)
     Route::group('/diary', function () {
@@ -86,14 +110,8 @@ Route::group('/api', function () {
     Route::group('/meal', function () {
         Route::get('/relation', [MealRecordController::class, 'relation']);
     });
+
     Route::group('/location', function () {
-        Route::get('/reverse/geo',[\app\controller\LocationController::class, 'rgeo']);
+        Route::get('/reverse/geo', [\app\controller\LocationController::class, 'rgeo']);
     });
 });
-
-
-
-
-
-
-

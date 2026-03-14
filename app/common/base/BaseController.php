@@ -8,5 +8,5 @@ use app\common\trait\ReturnMessage;
 class BaseController
 {
     use ReturnMessage;
-    protected $noNeedLogin = ['*'];
+    protected $noNeedLogin = [];
 }
