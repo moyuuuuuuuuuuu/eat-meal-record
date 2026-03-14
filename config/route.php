@@ -67,7 +67,8 @@ Route::group('/api', function () {
         Route::get('/categories', [CategoryController::class, 'index']);
     });
 
-    Route::get('/recommendation', [RecommendationController::class, 'today']);
+    Route::get('/recommendation', [FoodController::class, 'recommendation']);
+//    Route::get('/recommendation', [RecommendationController::class,'today']);
 
     #饮食记录 (Diary)
     Route::group('/diary', function () {

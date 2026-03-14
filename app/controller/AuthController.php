@@ -12,6 +12,7 @@ use Webman\Validation\Annotation\Validate;
 
 class AuthController extends BaseController
 {
+    protected $noNeedLogin = ['*'];
     /**
      * 小程序登录
      *

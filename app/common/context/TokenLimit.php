@@ -101,7 +101,7 @@ final class TokenLimit
 
     private function currentUserId(): int
     {
-        return (int)Context::get(\app\common\enum\Context::UserId->value);
+        return (int)Context::get(\app\common\enum\UserInfoContext::UserId->value);
     }
 
     /**

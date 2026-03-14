@@ -22,7 +22,7 @@ use Webman\Validation\Annotation\Validate;
 
 class FoodController extends BaseController
 {
-    protected $noNeedLogin = ['*'];
+    protected $noNeedLogin = ['search','detail','recommendation'];
 
     /**
      * 搜索食物列表
@@ -54,5 +54,15 @@ class FoodController extends BaseController
     public function recognize(Request $request)
     {
         return $this->success('ok', FoodBusiness::instance()->recognize($request));
+    }
+
+    public function recommendation(Request $request): \support\Response
+    {
+        try {
+            $data = FoodBusiness::instance()->recommendation($request);
+            return $this->success('ok', $data);
+        } catch (\Throwable $e) {
+            return $this->fail($e->getMessage());
+        }
     }
 }

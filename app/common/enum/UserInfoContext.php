@@ -2,7 +2,7 @@
 
 namespace app\common\enum;
 
-enum Context: string
+enum UserInfoContext: string
 {
     case UserId = 'userId';
 }

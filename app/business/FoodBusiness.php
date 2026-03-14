@@ -5,6 +5,7 @@ namespace app\business;
 use app\common\base\BaseBusiness;
 use app\common\context\TokenLimit;
 use app\common\enum\BusinessCode;
+use app\common\enum\UserInfoContext;
 use app\common\enum\NormalStatus;
 use app\common\enum\NutritionInputType;
 use app\common\exception\DataNotFoundException;
@@ -16,11 +17,13 @@ use app\service\FoodService;
 use app\service\Nutrition;
 use app\util\Calculate;
 use app\util\Helper;
-use app\model\{CatModel, FoodModel as Food, FoodUnitModel, FoodModel, UnitModel};
+use app\model\{CatModel, FoodModel as Food, FoodUnitModel, FoodModel, MealRecordModel, UnitModel};
+use support\Context;
 use support\Db;
 use support\exception\BusinessException;
 use support\Request;
 use Webman\Validation\Annotation\Validate;
+use app\service\recommendation\Recommendation;
 
 class FoodBusiness extends BaseBusiness
 {
@@ -195,5 +198,30 @@ class FoodBusiness extends BaseBusiness
         } catch (\Exception $exception) {
             throw new BusinessException($exception->getMessage(), $exception->getCode(), $exception);
         }
+    }
+
+    public function recommendation(Request $request)
+    {
+        $userId       = Context::get(UserInfoContext::UserId->value);
+        $sumNutrition = [];
+
+        if ($userId) {
+            //检查数据是否满足推荐
+            //7天内是否有餐食记录
+            $mealRecordList = MealRecordModel::query()
+//                ->whereBetween('meal_date', [date('y-m-d', strtotime("-7 day")), date('y-m-d')])
+                ->pluck('nutrition')
+                ->toArray();
+            foreach ($mealRecordList as $mealRecord) {
+                foreach ($mealRecord as $nut => $num) {
+                    if (!isset($sumNutrition[$nut])) {
+                        $sumNutrition[$nut] = $num;
+                        continue;
+                    }
+                    $sumNutrition[$nut] = Calculate::add($sumNutrition[$nut], $num);
+                }
+            }
+        }
+        return (new Recommendation())->getSuggestions($sumNutrition);
     }
 }
