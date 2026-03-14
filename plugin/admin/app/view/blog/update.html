@@ -1,214 +1,190 @@
 <!DOCTYPE html>
 <html lang="zh-cn">
-    <head>
-        <meta charset="UTF-8">
-        <title>更新页面</title>
-        <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css" />
-        <link rel="stylesheet" href="/app/admin/component/jsoneditor/css/jsoneditor.css" />
-        <link rel="stylesheet" href="/app/admin/admin/css/reset.css" />
-        
-    </head>
-    <body>
+<head>
+    <meta charset="UTF-8">
+    <title>博客详情</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css"/>
+    <style>
+        .blog-content {
+            line-height: 1.8;
+            color: #333;
+            font-size: 15px;
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 4px;
+        }
 
-        <form class="layui-form">
+        .attach-item {
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+            width: 200px;
+            margin-right: 10px;
+            vertical-align: top;
+        }
 
-            <div class="mainBox">
-                <div class="main-container mr-5">
-                    
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">用户id</label>
-                        <div class="layui-input-block">
-                            <input type="number" name="user_id" value="" class="layui-input">
-                        </div>
+        .attach-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+
+        .attach-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .tag-item {
+            margin-right: 5px;
+        }
+
+        .entity-card {
+            background: #f0f2f5;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #5fb878;
+        }
+    </style>
+</head>
+<body class="pear-container">
+<div class="layui-row layui-col-space15">
+    <div class="layui-col-md8">
+        <div class="layui-card">
+            <div class="layui-card-header">正文内容</div>
+            <div class="layui-card-body">
+                <h1 id="title" style="font-size: 24px; font-weight: bold; margin-bottom: 10px;"></h1>
+                <div style="color: #999; margin-bottom: 20px;">
+                    <span>作者ID: <b id="user_id"></b></span> |
+                    <span>发布于: <span id="created_at"></span></span> |
+                    <span>可见性: <span id="visibility"></span></span>
+                </div>
+                <div id="content" class="blog-content"></div>
+            </div>
+        </div>
+
+        <div class="layui-card">
+            <div class="layui-card-header">附件与关联实体</div>
+            <div class="layui-card-body" id="attach_list">
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md4">
+        <div class="layui-card">
+            <div class="layui-card-header">数据统计</div>
+            <div class="layui-card-body">
+                <div class="layui-row layui-col-space10" style="text-align: center;">
+                    <div class="layui-col-xs3">
+                        <div style="font-size: 20px;" id="likes">0</div>
+                        <div style="color: #999;">点赞</div>
                     </div>
-                    
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">标题</label>
-                        <div class="layui-input-block">
-                            <input type="text" name="title" value="" class="layui-input">
-                        </div>
+                    <div class="layui-col-xs3">
+                        <div style="font-size: 20px;" id="views">0</div>
+                        <div style="color: #999;">阅读</div>
                     </div>
-                    
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">点赞数量</label>
-                        <div class="layui-input-block">
-                            <input type="number" name="likes" value="" class="layui-input">
-                        </div>
+                    <div class="layui-col-xs3">
+                        <div style="font-size: 20px;" id="comments">0</div>
+                        <div style="color: #999;">评论</div>
                     </div>
-                    
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">查看数量</label>
-                        <div class="layui-input-block">
-                            <input type="number" name="views" value="" class="layui-input">
-                        </div>
+                    <div class="layui-col-xs3">
+                        <div style="font-size: 20px;" id="favs">0</div>
+                        <div style="color: #999;">收藏</div>
                     </div>
-                    
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">评论数量</label>
-                        <div class="layui-input-block">
-                            <input type="number" name="comments" value="" class="layui-input">
-                        </div>
-                    </div>
-                    
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">收藏数量</label>
-                        <div class="layui-input-block">
-                            <input type="number" name="favs" value="" class="layui-input">
-                        </div>
-                    </div>
-                    
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">content</label>
-                        <div class="layui-input-block">
-                            <textarea name="content" class="layui-textarea"></textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">状态 0隐藏 1所有人可见 2仅自己可见 3仅好友可见</label>
-                        <div class="layui-input-block">
-                            <input type="number" name="visibility" value="" class="layui-input">
-                        </div>
-                    </div>
-                    
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">创建时间</label>
-                        <div class="layui-input-block">
-                            <input type="text" name="created_at" id="created_at" autocomplete="off" class="layui-input">
-                        </div>
-                    </div>
-                    
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">updated_at</label>
-                        <div class="layui-input-block">
-                            <input type="text" name="updated_at" id="updated_at" autocomplete="off" class="layui-input">
-                        </div>
-                    </div>
-                    
                 </div>
             </div>
+        </div>
 
-            <div class="bottom">
-                <div class="button-container">
-                    <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit="" lay-filter="save">
-                        提交
-                    </button>
-                    <button type="reset" class="pear-btn pear-btn-md">
-                        重置
-                    </button>
-                </div>
+        <div class="layui-card">
+            <div class="layui-card-header">话题标签</div>
+            <div class="layui-card-body" id="topic_list"></div>
+        </div>
+
+        <div class="layui-card">
+            <div class="layui-card-header">发布位置</div>
+            <div class="layui-card-body">
+                <p id="loc_name" style="font-weight: bold;"></p>
+                <p id="loc_address" style="color: #666; font-size: 13px;"></p>
             </div>
-            
-        </form>
+        </div>
+    </div>
+</div>
 
-        <script src="/app/admin/component/layui/layui.js?v=2.8.12"></script>
-        <script src="/app/admin/component/pear/pear.js"></script>
-        <script src="/app/admin/component/jsoneditor/jsoneditor.js"></script>
-        <script src="/app/admin/admin/js/permission.js"></script>
-        
-        <script>
+<script src="/app/admin/component/layui/layui.js"></script>
+<script src="/app/admin/component/pear/pear.js"></script>
+<script>
+    layui.use(['jquery', 'form', 'layer'], function () {
+        let $ = layui.$;
+        let id = new URLSearchParams(window.location.search).get('id');
 
-            // 相关接口
-            const PRIMARY_KEY = "id";
-            const SELECT_API = "/app/admin/blog/select" + location.search;
-            const UPDATE_API = "/app/admin/blog/update";
-            // 获取数据库记录
-            layui.use(["form", "util", "popup"], function () {
-                let $ = layui.$;
-                $.ajax({
-                    url: SELECT_API,
-                    dataType: "json",
-                    success: function (res) {
-                        
-                        // 给表单初始化数据
-                        layui.each(res.data[0], function (key, value) {
-                            let obj = $('*[name="'+key+'"]');
-                            if (key === "password") {
-                                obj.attr("placeholder", "不更新密码请留空");
-                                return;
-                            }
-                            if (typeof obj[0] === "undefined" || !obj[0].nodeName) return;
-                            if (obj[0].nodeName.toLowerCase() === "textarea") {
-                                obj.val(value);
-                            } else {
-                                obj.attr("value", value);
-                                obj[0].value = value;
-                            }
-                            
-                            // 多图渲染
-                            if (obj[0].classList.contains('uploader-list')) {
-                                let multiple_images = value.split(",");
-                                $.each(multiple_images, function(index, value) {
-                                    $('#uploader-list-'+ key).append(
-                                        '<div class="file-iteme">' +
-                                        '<div class="handle"><i class="layui-icon layui-icon-delete"></i></div>' +
-                                        '<img src='+value +' alt="'+ value +'" >' +
-                                        '</div>'
-                                    );
-                                });
-                            }
-                        });
-                        
-                        // 字段 创建时间 created_at
-                        layui.use(["laydate"], function() {
-                            layui.laydate.render({
-                                elem: "#created_at",
-                                type: "datetime",
-                            });
-                        })
-                        
-                        // 字段 updated_at updated_at
-                        layui.use(["laydate"], function() {
-                            layui.laydate.render({
-                                elem: "#updated_at",
-                                type: "datetime",
-                            });
-                        })
-                        
-                        
-                        // ajax返回失败
-                        if (res.code) {
-                            layui.popup.failure(res.msg);
-                        }
-                        
-                    }
-                });
-            });
+        // 1. 获取详情数据 (建议后端 JOIN 相关表一次性返回，或通过 Promise.all 请求)
+        $.post('', {id}, function (res) {
+            if (res.code === 0) {
+                let data = res.data;
+                // 基础填充
+                $('#title').text(data.title);
+                $('#content').html(data.content);
+                $('#user_id').text(data.user_id);
+                $('#created_at').text(data.created_at);
+                $('#likes').text(data.likes);
+                $('#views').text(data.views);
+                $('#comments').text(data.comments);
+                $('#favs').text(data.favs);
 
-            //提交事件
-            layui.use(["form", "popup"], function () {
-                // 字段验证允许为空
-                layui.form.verify({
-                    phone: [/(^$)|^1\d{10}$/, "请输入正确的手机号"],
-                    email: [/(^$)|^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/, "邮箱格式不正确"],
-                    url: [/(^$)|(^#)|(^http(s*):\/\/[^\s]+\.[^\s]+)/, "链接格式不正确"],
-                    number: [/(^$)|^\d+$/,'只能填写数字'],
-                    date: [/(^$)|^(\d{4})[-\/](\d{1}|0\d{1}|1[0-2])([-\/](\d{1}|0\d{1}|[1-2][0-9]|3[0-1]))*$/, "日期格式不正确"],
-                    identity: [/(^$)|(^\d{15}$)|(^\d{17}(x|X|\d)$)/, "请输入正确的身份证号"]
-                });
-                layui.form.on("submit(save)", function (data) {
-                    data.field[PRIMARY_KEY] = layui.url().search[PRIMARY_KEY];
-                    layui.$.ajax({
-                        url: UPDATE_API,
-                        type: "POST",
-                        dateType: "json",
-                        data: data.field,
-                        success: function (res) {
-                            if (res.code) {
-                                return layui.popup.failure(res.msg);
-                            }
-                            return layui.popup.success("操作成功", function () {
-                                parent.refreshTable();
-                                parent.layer.close(parent.layer.getFrameIndex(window.name));
-                            });
-                        }
+                // 可见性标签
+                const visMap = {0: '隐藏', 1: '公开', 2: '私密', 3: '好友'};
+                $('#visibility').html(`<span class="layui-badge layui-bg-blue">${visMap[data.visibility]}</span>`);
+
+                // 话题渲染
+                if (data.topics) {
+                    data.topics.forEach(t => {
+                        $('#topic_list').append(`<span class="layui-badge layui-bg-orange tag-item"># ${t.name}</span>`);
                     });
-                    return false;
-                });
-            });
+                }
 
-        </script>
+                // 位置渲染
+                if (data.location) {
+                    $('#loc_name').text(data.location.name);
+                    $('#loc_address').text(data.location.address);
+                }
 
-    </body>
-
+                // 附件处理逻辑 (核心)
+                if (data.attaches) {
+                    data.attaches.forEach(item => {
+                        let html = `<div class="attach-item">`;
+                        switch (item.type) {
+                            case 0: // 图片
+                                html += `<img src="${item.attach}" class="attach-img" onclick="window.open(this.src)">`;
+                                html += `<div class="attach-info">图片附件</div>`;
+                                break;
+                            case 1: // 视频
+                                html += `<video src="${item.attach}" poster="${item.poster}" class="attach-img" controls></video>`;
+                                html += `<div class="attach-info">视频附件</div>`;
+                                break;
+                            case 3: // 食物 (关联 foods 表)
+                                html += `<div class="entity-card">
+                                                <i class="layui-icon layui-icon-template-1"></i> 关联食物:
+                                                <a style="color:#01AAED" href="javascript:;">${item.food_info ? item.food_info.name : '未知食物(ID:' + item.attach + ')'}</a>
+                                             </div>`;
+                                break;
+                            case 5: // 就餐记录 (关联 meal_records 表)
+                                html += `<div class="entity-card" style="border-left-color: #FF5722">
+                                                <i class="layui-icon layui-icon-date"></i> 就餐记录:
+                                                <span>${item.meal_info ? item.meal_info.meal_date + ' 的记录' : '记录ID:' + item.attach}</span>
+                                             </div>`;
+                                break;
+                        }
+                        html += `</div>`;
+                        $('#attach_list').append(html);
+                    });
+                }
+            }
+        });
+    });
+</script>
+</body>
 </html>
