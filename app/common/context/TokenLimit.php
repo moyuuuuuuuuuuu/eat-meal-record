@@ -2,7 +2,9 @@
 
 namespace app\common\context;
 
+use app\common\enum\UserInfoContext;
 use app\model\UserUsageModel;
+use app\util\Helper;
 use support\Redis;
 use Webman\Context;
 
@@ -42,7 +44,6 @@ final class TokenLimit
         $userId    = $this->currentUserId();
         $limit     = $this->getDailyLimit($userId);
         $usedCount = $this->getUsedCount($userId);
-        var_dump('hasQuota', $limit, $usedCount);
         return $usedCount < $limit;
     }
 
@@ -63,7 +64,7 @@ final class TokenLimit
 
         // 首次写入时设置过期（精确到当天结束）
         if ($newCount === 1) {
-            Redis::expireAt($key, $this->todayEndTimestamp());
+            Redis::expireAt($key, Helper::todayEndTimestamp());
             $this->ensureDailyRecord($userId);
         }
 
@@ -91,7 +92,7 @@ final class TokenLimit
             'used'      => $usedCount,
             'limit'     => $limit,
             'remaining' => max(0, $limit - $usedCount),
-            'reset_at'  => $this->todayEndTimestamp(),
+            'reset_at'  => Helper::todayEndTimestamp(),
         ];
     }
 
@@ -127,7 +128,7 @@ final class TokenLimit
      */
     private function getTotalTokensCached(int $userId): int
     {
-        $cacheKey = "user_total_tokens:{$userId}";
+        $cacheKey = UserInfoContext::userInfoTotalTokenCacheKey($userId);
         $cached   = Redis::get($cacheKey);
         if ($cached !== null) {
             return (int)$cached;
@@ -165,7 +166,7 @@ final class TokenLimit
         UserUsageModel::where('user_id', $userId)
             ->whereDate('date', date('Y-m-d'))
             ->increment('token', $tokens);
-        Redis::setEx("user_total_tokens:{$userId}", 3600, $tokens);
+        Redis::setEx(UserInfoContext::userInfoTotalTokenCacheKey($userId), 3600, $tokens);
     }
 
     /**
@@ -173,15 +174,7 @@ final class TokenLimit
      */
     private function quotaKey(int $userId): string
     {
-        return 'user_quota:' . date('Ymd') . ':' . $userId;
+        return UserInfoContext::userInfoQuotaCacheKey($userId);
     }
 
-    /**
-     * 今天结束的 Unix 时间戳（明天 00:00:00）
-     * 用 expireAt 比 expire(TTL) 更精确，不受请求时刻影响
-     */
-    private function todayEndTimestamp(): int
-    {
-        return (int)strtotime('tomorrow 00:00:00');
-    }
 }

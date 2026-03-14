@@ -159,7 +159,7 @@ class UserBusiness extends BaseBusiness
                 ['steps' => $steps]
             );
         }
-        Redis::set(UserInfoContext::UserInfoSteps->value . date('Y-m-d') . ':' . $userId, $todaySteps, Helper::todayEndTimestamp() - time());
+        Redis::set(UserInfoContext::userInfoStepCacheKey($userId),$todaySteps);
         return true;
     }
 

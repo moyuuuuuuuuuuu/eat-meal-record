@@ -21,6 +21,7 @@ use app\model\{CatModel, FoodModel as Food, FoodUnitModel, FoodModel, MealRecord
 use support\Context;
 use support\Db;
 use support\exception\BusinessException;
+use support\Log;
 use support\Request;
 use Webman\Validation\Annotation\Validate;
 use app\service\recommendation\Recommendation;
@@ -123,7 +124,9 @@ class FoodBusiness extends BaseBusiness
                     $val                    = (string)$nut['value'];
                     $localNutrition[$dbKey] = (float)Calculate::mul($val, $ratio, 2);
                 }
-
+                if (!isset($localNutrition['kcal'])) {
+                    $localNutrition['kcal'] = $localNutrition['kal'] ?? 0;
+                }
                 // 3. 处理单位
                 $unit = UnitModel::firstOrCreate(['name' => $unitName], ['type' => 'count']);
                 if ($unit->wasRecentlyCreated) $newItems['units'][] = $unitName;
@@ -196,6 +199,7 @@ class FoodBusiness extends BaseBusiness
             }
             return FoodBusiness::instance()->syncRemote($result);
         } catch (\Exception $exception) {
+            Log::error($exception->getMessage(), [$exception->getCode(), $exception->getFile(), $exception->getLine(), $exception->getTraceAsString()]);
             throw new BusinessException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }

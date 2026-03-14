@@ -19,6 +19,6 @@ class Helper
 
     static function todayEndTimestamp()
     {
-        return strtotime('today 23:59:59');
+        return (int)strtotime('tomorrow 00:00:00');
     }
 }

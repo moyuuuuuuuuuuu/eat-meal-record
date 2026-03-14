@@ -51,10 +51,29 @@ final class UserInfoData implements \JsonSerializable
 
     public function setUserInfo(int|UserModel $userId)
     {
-        if (!Redis::exists(UserInfoContext::UserInfo->value . $userId)) {
-            $userInfo = $this->refreshUserInfo($userId);
+        $userInfoCacheKey = UserInfoContext::userInfoCacheKey($userId);
+        if (!Redis::exists($userInfoCacheKey)) {
+            $this->refreshUserInfo($userId);
         } else {
-            $userInfo = Redis::hGetAll(UserInfoContext::UserInfo->value . $userId);
+            $userInfo = Redis::hGetAll($userInfoCacheKey);
+            $this->refreshUserInfo($userInfo);
+        }
+        return $this;
+    }
+
+    public function refreshUserInfo(int|UserModel|array $userInfo)
+    {
+        if (!is_array($userInfo)) {
+            if (!$userInfo instanceof UserModel) {
+                $userInfoCacheKey = UserInfoContext::userInfoCacheKey($userInfo);
+                $userInfo         = UserModel::query()->where('id', $userInfo)->first();
+            } else {
+                $userInfoCacheKey = UserInfoContext::userInfoCacheKey($userInfo->id);
+            }
+            $userInfo->load('goal');
+            $userInfo = (new UserInformationFormat())->format($userInfo);
+            Redis::hMSet($userInfoCacheKey, $userInfo);
+            Redis::expire($userInfoCacheKey, 3600 + rand(10, 99));
         }
         foreach ($userInfo as $k => $v) {
             if (in_array($k, $this->hidden)) {
@@ -64,19 +83,6 @@ final class UserInfoData implements \JsonSerializable
             }
             $this->data[$k] = $v;
         }
-        return $this;
-    }
-
-    public function refreshUserInfo(int|UserModel $userInfo)
-    {
-        if (!$userInfo instanceof UserModel) {
-            $userInfo = UserModel::query()->where('id', $userInfo)->first();
-        }
-        $userInfo->load('goal');
-        $userId   = $userInfo->id;
-        $userInfo = (new UserInformationFormat())->format($userInfo);
-        Redis::hMSet(UserInfoContext::UserInfo->value . $userId, $userInfo);
-        Redis::expire(UserInfoContext::UserInfo->value . $userId, 3600 + rand(10, 99));
         return $userInfo;
     }
 

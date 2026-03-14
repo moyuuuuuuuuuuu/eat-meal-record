@@ -73,7 +73,7 @@ final class UserInfo
 
     static function getUserSteps(string $date, $userId): ?int
     {
-        $stepCacheKey = UserInfoContext::UserInfoSteps->value . $date . ':' . $userId;
+        $stepCacheKey = UserInfoContext::userInfoStepCacheKey($userId);
         $step         = Redis::get($stepCacheKey);
         if ($step) {
             return $step;
@@ -103,7 +103,7 @@ final class UserInfo
 
     static function clearRemoteUserInfo(int $userId)
     {
-        Redis::del(UserInfoContext::UserInfo->value . $userId);
+        Redis::del(UserInfoContext::userInfoCacheKey($userId));
     }
 
 }
