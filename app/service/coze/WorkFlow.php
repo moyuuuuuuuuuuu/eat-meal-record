@@ -60,10 +60,10 @@ class WorkFlow extends BaseGuzzleHttpClient
     {
         $run    = new Run($this->client, $this->getAccessToken(), $workFlowId);
         $result = $run->handle($params);
-        $usage  = $result['usage'];
+        $usage  = $result['usage'] ?? [];
         $data   = json_decode($result['data'], true);
         unset($run);
-        TokenLimit::instance()->consume($usage['token_count']);
+        TokenLimit::instance()->consume($usage['token_count'] ?? []);
         return $data;
     }
 }
