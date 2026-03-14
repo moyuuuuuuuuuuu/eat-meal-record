@@ -3,6 +3,7 @@
 use Webman\Route;
 use support\Redis;
 use app\controller\{MealRecordController,
+    NutritionStatsController,
     TopicController,
     UserController,
     UserGoalController,
@@ -52,6 +53,8 @@ Route::group('/api', function () {
         // 移动至此：关闭 debug 时无法访问此 mock 登录
         Route::post('/auth/login/mock', [AuthController::class, 'mock']);
     }
+
+    Route::get('/nutrition/stats', [NutritionStatsController::class, 'stats']);
 
     Route::post('/upload', [UploadController::class, 'uploadForBos']);
     Route::post('/auth/login', [AuthController::class, 'login']);

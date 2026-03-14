@@ -63,7 +63,6 @@ class FoodController extends BaseController
             $data = FoodBusiness::instance()->recommendation($request);
             return $this->success('ok', $data);
         } catch (\Throwable $e) {
-            throw $e;
             return $this->fail($e->getMessage());
         }
     }

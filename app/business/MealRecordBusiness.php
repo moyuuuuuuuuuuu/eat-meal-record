@@ -218,7 +218,6 @@ class MealRecordBusiness extends BaseBusiness
                 $mealRecord = MealRecordModel::create([
                     'user_id'   => $request->userInfo->id,
                     'type'      => $type,
-                    //                    'nutrition' => $nutritionTemplateInstance->format($nutrition ?? []),
                     'meal_date' => $today->toDateString(),
                     'latitude'  => $latitude,
                     'longitude' => $longitude,
