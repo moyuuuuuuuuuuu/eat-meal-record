@@ -60,16 +60,16 @@ class Recommendation
     {
         // 1. 营养分析
         $report = $this->analyzer->analyze($nutrition);
-
         // 2. 关键词 → 真实标签
         $tags = $this->tagResolver->resolve($report->keywords);
 
         // 3. 标签 → 单条食物
         $tagIds = array_column($tags, 'id');
         $food   = $this->foodRepo->findOneByTagIds($tagIds);
-
         if ($food === null) {
-            return null;
+            $tags   = $this->tagResolver->resolve([]);
+            $tagIds = array_column($tags, 'id');
+            $food   = $this->foodRepo->findOneByTagIds($tagIds);
         }
 
         // 4. 生成提示语

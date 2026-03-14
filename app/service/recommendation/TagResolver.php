@@ -41,8 +41,6 @@ class TagResolver
         if (!empty($keywords)) {
             $tags = $this->queryByKeywords($keywords);
         }
-
-        // 关键词未命中任何标签 → 时段兜底
         if (empty($tags)) {
             $tags = $this->fallbackByTime();
         }
@@ -88,7 +86,7 @@ class TagResolver
         }
 
         $rows = Db::table('tags')
-            ->where('type', 3)
+            ->where('type', 1)
             ->where('name', 'like', "%{$keyword}%")
             ->get(['id', 'name']);
 
