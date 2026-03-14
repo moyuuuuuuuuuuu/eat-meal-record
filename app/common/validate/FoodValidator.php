@@ -26,8 +26,6 @@ class FoodValidator extends BaseValidator
     {
         $request = request();
         $type    = $request ? $request->post('type') : null;
-        $userId  = $request->userInfo->id ?? null; // 假设你有用户系统
-
         $rules = [
             'type'           => 'required|in:' . implode(',', NutritionInputType::values()),
             'options'        => 'nullable|array',
@@ -42,18 +40,6 @@ class FoodValidator extends BaseValidator
             // 音频/图片 Base64 长度放宽
             $rules['content'][] = 'max:10485760';
         }
-
-        // 2. 注入自定义 Token 阶梯校验 (匿名函数方式)
-        if ($userId) {
-            $rules['content'][] = function ($attribute, $value, $fail) use ($userId) {
-                // 调用阶梯限制逻辑
-                $check = TokenLimit::instance()->hasQuota();
-                if (!$check) {
-                    $fail('抱歉，AI识别次数已经用完，请先手动选择食物吧');
-                }
-            };
-        }
-
         $this->rules = $rules;
     }
 }

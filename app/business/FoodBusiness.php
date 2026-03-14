@@ -158,6 +158,9 @@ class FoodBusiness extends BaseBusiness
     #[Validate(validator: FoodValidator::class, scene: 'recognize')]
     public function recognize(Request $request)
     {
+        if (!TokenLimit::instance()->hasQuota()) {
+            throw new BusinessException('AI识别次数已经用完，请先手动选择食物吧', BusinessCode::BUSINESS_ERROR->value);
+        }
 
         /* $response = json_decode(file_get_contents(public_path() . '/qianfan_response.json'), true);
          return $this->success('ok', FoodBusiness::instance()->syncRemote($response));*/
@@ -170,10 +173,6 @@ class FoodBusiness extends BaseBusiness
 
         if (!in_array($type, Helper::cases(NutritionInputType::class))) {
             throw new BusinessException('不支持的识别方式', BusinessCode::BUSINESS_ERROR->value);
-        }
-
-        if (!TokenLimit::instance()->hasQuota()) {
-            throw new BusinessException('AI识别次数已经用完，请先手动选择食物吧', BusinessCode::BUSINESS_ERROR->value);
         }
         try {
             $type = NutritionInputType::tryFrom($type);

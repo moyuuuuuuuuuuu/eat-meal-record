@@ -15,12 +15,15 @@ final class TokenLimit
      * 按 threshold 从大到小排列，匹配第一个满足条件的规则
      */
     protected array $rules = [
-        600000 => 5,   // 累计 > 60w token，每天限 5 次
-        100000 => 10,  // 累计 > 10w token，每天限 10 次
-        0      => 50,  // 默认每天 50 次
+        100000 => 2,
+        40000  => 3,
+        20000  => 5,
+        0      => 10,
     ];
 
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     public static function instance(): self
     {
@@ -39,7 +42,7 @@ final class TokenLimit
         $userId    = $this->currentUserId();
         $limit     = $this->getDailyLimit($userId);
         $usedCount = $this->getUsedCount($userId);
-
+        var_dump('hasQuota', $limit, $usedCount);
         return $usedCount < $limit;
     }
 
@@ -98,7 +101,7 @@ final class TokenLimit
 
     private function currentUserId(): int
     {
-        return (int) Context::get(\app\common\enum\Context::UserId->value);
+        return (int)Context::get(\app\common\enum\Context::UserId->value);
     }
 
     /**
@@ -115,7 +118,7 @@ final class TokenLimit
             }
         }
 
-        return 50; // fallback，理论上不会走到这里
+        return 10; // fallback，理论上不会走到这里
     }
 
     /**
@@ -126,14 +129,12 @@ final class TokenLimit
     {
         $cacheKey = "user_total_tokens:{$userId}";
         $cached   = Redis::get($cacheKey);
-
         if ($cached !== null) {
-            return (int) $cached;
+            return (int)$cached;
         }
 
-        $total = (int) (UserUsageModel::where('user_id', $userId)->sum('token') ?: 0);
+        $total = (int)(UserUsageModel::where('user_id', $userId)->whereDate('date', date('Y-m-d'))->value('token') ?: 0);
         Redis::setEx($cacheKey, 3600, $total); // 缓存 1 小时
-
         return $total;
     }
 
@@ -142,7 +143,7 @@ final class TokenLimit
      */
     private function getUsedCount(int $userId): int
     {
-        return (int) (Redis::get($this->quotaKey($userId)) ?: 0);
+        return (int)(Redis::get($this->quotaKey($userId)) ?: 0);
     }
 
     /**
@@ -164,9 +165,7 @@ final class TokenLimit
         UserUsageModel::where('user_id', $userId)
             ->whereDate('date', date('Y-m-d'))
             ->increment('token', $tokens);
-
-        // 使累计 token 缓存失效，让下次 getDailyLimit 读到最新值
-        Redis::del("user_total_tokens:{$userId}");
+        Redis::setEx("user_total_tokens:{$userId}", 3600, $tokens);
     }
 
     /**
@@ -183,6 +182,6 @@ final class TokenLimit
      */
     private function todayEndTimestamp(): int
     {
-        return (int) strtotime('tomorrow 00:00:00');
+        return (int)strtotime('tomorrow 00:00:00');
     }
 }
