@@ -3,6 +3,7 @@
 namespace app\business;
 
 use app\common\base\BaseBusiness;
+use app\common\context\UserInfo;
 use app\common\validate\UserGoalValidator;
 use app\model\UserGoalModel;
 use app\model\UserModel;
@@ -27,7 +28,7 @@ class UserGoalBusiness extends BaseBusiness
                 'protein'        => 150,
                 'fat'            => 55,
                 'carbohydrate'   => 225,
-                'weight'    => 60.00
+                'weight'         => 60.00
             ];
         }
         return $goal->toArray();
@@ -51,13 +52,13 @@ class UserGoalBusiness extends BaseBusiness
                 'protein'        => $params['protein'],
                 'fat'            => $params['fat'],
                 'carbohydrate'   => $params['carbohydrate'],
-                'weight'    => $params['weight'],
+                'weight'         => $params['weight'],
             ]
         );
 
         // 同时更新 wa_users 表中的 target (卡路里) 字段以保持兼容
         UserModel::where('id', $userId)->update(['target' => $params['daily_calories']]);
-
+        UserInfo::clearRemoteUserInfo($userId);
         return $goal->toArray();
     }
 }

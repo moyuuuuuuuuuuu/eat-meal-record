@@ -4,10 +4,12 @@ namespace app\business;
 
 use app\common\base\BaseBusiness;
 use app\common\context\UserInfo;
+use app\common\context\UserInfoData;
 use app\common\enum\BusinessCode;
 use app\common\enum\NormalStatus;
 use app\common\enum\user\Sex;
 use app\common\enum\user\Status;
+use app\common\enum\UserInfoContext;
 use app\common\validate\LoginValidator;
 use app\common\validate\UserValidator;
 use app\format\UserInformationFormat;
@@ -17,12 +19,15 @@ use app\model\UserStepsModel;
 use app\queue\constant\QueueEventName;
 use app\service\wechat\WxMini;
 use app\util\Calculate;
+use app\util\Helper;
 use app\util\Jwt;
 use Carbon\Carbon;
+use plugin\admin\app\common\Util;
 use plugin\admin\app\model\User;
 use support\Context;
 use support\Db;
 use support\exception\BusinessException;
+use support\Redis;
 use support\Request;
 use Webman\RedisQueue\Client;
 use Webman\Validation\Annotation\Validate;
@@ -142,19 +147,19 @@ class UserBusiness extends BaseBusiness
         if (empty($stepInfoList)) {
             return false;
         }
-
-        // 我们通常只关心今天的步数，或者同步最近几天的
-        // 这里同步所有返回的步数记录
+        $todaySteps = 0;
         foreach ($stepInfoList as $info) {
             $date  = date('Y-m-d', $info['timestamp']);
             $steps = $info['step'];
-
+            if ($date === date('Y-m-d')) {
+                $todaySteps = $steps;
+            }
             UserStepsModel::updateOrCreate(
                 ['user_id' => $userId, 'record_date' => $date],
                 ['steps' => $steps]
             );
         }
-
+        Redis::set(UserInfoContext::UserInfoSteps->value . date('Y-m-d') . ':' . $userId, $todaySteps, Helper::todayEndTimestamp() - time());
         return true;
     }
 
@@ -193,49 +198,18 @@ class UserBusiness extends BaseBusiness
     public function stats(Request $request): array
     {
         // 获取当前用户，若无登录信息则使用 id=1 作为演示用户
-        $userInfo = $request->userInfo;
-
-        // 已坚持天数
-        try {
-            $joinDays = 0;
-        } catch (\Throwable $e) {
-            $joinDays = 0;
-        }
-
-        // 记录总数：基于 MealRecordModel，若表缺失或字段缺失，则返回 0
-        try {
-            $totalRecords = MealRecordModel::query()->distinct()->where('user_id', $request->userInfo->id)->count('meal_date');
-        } catch (\Throwable $e) {
-            $totalRecords = 0;
-        }
-
-        // 平均摄入热量：若无法统计则给出一个合理占位
-        $avgCalories = 0;
-        try {
-            $allCalories = MealRecordModel::query()->where('user_id', $userInfo->id)->sum(Db::raw("nutrition->>'$.kcal'"));
-            // 如果后续有每日摄入热量表，可在此改为 AVG 统计
-            $avgCalories = Calculate::div((string)$allCalories, (string)$totalRecords); // 合理占位，待接入真实数据
-        } catch (\Throwable $e) {
-            $avgCalories = 0;
-        }
-
-        // 身高/体重/目标体重等信息，当前项目暂无专用表，先给占位
-        $currentWeight = $userInfo->weight;
-        $targetWeight  = 0;
-        $height        = $userInfo->tall;
-        $age           = $userInfo->age;
-        $gender        = Sex::tryFrom($userInfo->sex)->label();
+        $userInfo = $request->userInfo->toArray();
 
         return [
-            'name'          => $user->username ?? '用户',
-            'joinDays'      => $joinDays,
-            'totalRecords'  => $totalRecords,
-            'avgCalories'   => $avgCalories,
-            'currentWeight' => $currentWeight,
-            'targetWeight'  => $targetWeight,
-            'height'        => $height,
-            'age'           => $age,
-            'gender'        => $gender,
+            'name'          => $userInfo['nickname'] ?? '用户',
+            'joinDays'      => $userInfo['joinDays'],
+            'totalRecords'  => $userInfo['totalRecords'],
+            'avgCalories'   => $userInfo['avgCalories'],
+            'currentWeight' => $userInfo['weight'],
+            'targetWeight'  => $userInfo['targetWeight'],
+            'height'        => $userInfo['tall'],
+            'age'           => $userInfo['age'],
+            'gender'        => Sex::tryFrom($userInfo['sex'])->label(),
         ];
     }
 
@@ -246,7 +220,7 @@ class UserBusiness extends BaseBusiness
      */
     public function information(Request $request): array
     {
-        return (new UserInformationFormat($request))->format();
+        return $request->userInfo->toArray();
     }
 
     /**
@@ -275,7 +249,8 @@ class UserBusiness extends BaseBusiness
         if (!$user->save()) {
             throw new BusinessException('保存失败', BusinessCode::BUSINESS_ERROR->value);
         }
-
-        return (new UserInformationFormat($request))->format();
+        $userInfoData = new UserInfoData();
+        $userInfoData->refreshUserInfo($user);
+        return $userInfoData->toArray();
     }
 }

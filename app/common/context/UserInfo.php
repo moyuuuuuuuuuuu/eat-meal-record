@@ -4,64 +4,27 @@ namespace app\common\context;
 
 use app\common\base\BaseModel;
 use app\common\enum\user\Sex;
+use app\common\enum\UserInfoContext;
 use app\model\UserGoalModel;
 use app\model\UserModel;
 use app\model\UserStepsModel;
 use app\service\wechat\WxMini;
 use app\util\Energy;
+use app\util\Helper;
 use app\util\Jwt;
 use support\Log;
+use support\Redis;
 use Webman\Context;
 
 final class UserInfo
 {
     static function setUserInfo(UserModel $userInfo)
     {
-        $userInfo->setAppends(['sex_text', 'avatar_text', 'status_text']);
-        $userInfo = $userInfo->toArray();
-        $goal     = UserGoalModel::query()->where('user_id', $userInfo['id'])->first();
-        if (!$goal) {
-            // 返回默认值，逻辑参考图片
-            $goal = [
-                'daily_calories' => 2000,
-                'protein'        => 150,
-                'fat'            => 55,
-                'carbohydrate'   => 225,
-                'weight'         => 60.00
-            ];
-        }
-        $userInfo['goal'] = $goal;
-        $userInfo         = array_intersect_key($userInfo, array_flip([
-            'id',
-            'username',
-            'nickname',
-            'sex',
-            'avatar',
-            'email',
-            'mobile',
-            'openid',
-            'unionid',
-            'signature',
-            'background',
-            'age',
-            'tall',
-            'weight',
-            'bmi',
-            'bust',
-            'waist',
-            'hip',
-            'target',
-            'level',
-            'birthday',
-            'status',
-            'sex_text',
-            'avatar_text',
-            'status_text',
-            'created_at',
-            'goal'
-        ]));
-
-        $token = Jwt::instance()->encode($userInfo, 86400 * 7); // 7天有效期
+        $userId   = $userInfo->id;
+        $userInfo = (new UserInfoData())->refreshUserInfo($userInfo);
+        $token    = Jwt::instance()->encode([
+            'id' => $userId,
+        ], 86400 * 7); // 7天有效期
         return [
             'token'    => $token,
             'userInfo' => $userInfo
@@ -90,10 +53,17 @@ final class UserInfo
             $token = substr($token, 7);
         }
         $userInfo = Jwt::instance()->decode($token);
-        if ($userInfo) {
-            Context::set(\app\common\enum\UserInfoContext::UserId->value, $userInfo->id);
+        if (!$userInfo) {
+            return null;
         }
+        Context::set(UserInfoContext::UserId->value, $userInfo->id);
+        $request->userInfo = $userInfo;
         return $userInfo;
+    }
+
+    static function information($userInfo)
+    {
+        return [];
     }
 
     static function parseUserEncryptData(string $encryptedData, string $sessionKey, string $iv)
@@ -103,9 +73,16 @@ final class UserInfo
 
     static function getUserSteps(string $date, $userId): ?int
     {
+        $stepCacheKey = UserInfoContext::UserInfoSteps->value . $date . ':' . $userId;
+        $step         = Redis::get($stepCacheKey);
+        if ($step) {
+            return $step;
+        }
         $timestamp = strtotime($date);
         $date      = date('Y-m-d', $timestamp);
-        return UserStepsModel::query()->where('user_id', $userId)->where('record_date', $date)->value('steps') ?? 0;
+        $step      = UserStepsModel::query()->where('user_id', $userId)->where('record_date', $date)->value('steps') ?? 0;
+        Redis::set($stepCacheKey, $step, Helper::todayEndTimestamp());
+        return $step;
     }
 
     static function getUserBurned(string $date, ?UserInfoData $userInfo)
@@ -123,4 +100,10 @@ final class UserInfo
             $step
         );
     }
+
+    static function clearRemoteUserInfo(int $userId)
+    {
+        Redis::del(UserInfoContext::UserInfo->value . $userId);
+    }
+
 }

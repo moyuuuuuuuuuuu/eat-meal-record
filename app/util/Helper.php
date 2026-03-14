@@ -16,4 +16,9 @@ class Helper
         }
         return $return;
     }
+
+    static function todayEndTimestamp()
+    {
+        return strtotime('today 23:59:59');
+    }
 }

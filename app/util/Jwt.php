@@ -117,8 +117,10 @@ class Jwt
         if (isset($jwtPayload['exp'])) {
             $payload['exp'] = $jwtPayload['exp'];
         }
-
-        return new UserInfoData($payload);
+        if (!isset($payload['id'])) {
+            return null;
+        }
+        return (new UserInfoData())->setUserInfo($payload['id']);
     }
 
     /**

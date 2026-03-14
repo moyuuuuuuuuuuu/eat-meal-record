@@ -71,7 +71,7 @@ class UserModel extends BaseModel
     {
         return Attribute::make(
             get: function ($value, $attributes) {
-                return Status::tryFrom($attributes['status']??0)->label() ?? '未知';
+                return Status::tryFrom($attributes['status'] ?? 0)->label() ?? '未知';
             }
         );
     }
@@ -83,6 +83,11 @@ class UserModel extends BaseModel
                 return source($attributes['avatar'] ?? '');
             }
         );
+    }
+
+    public function goal()
+    {
+        return $this->hasOne(UserGoalModel::class, 'user_id', 'id');
     }
 
 }
