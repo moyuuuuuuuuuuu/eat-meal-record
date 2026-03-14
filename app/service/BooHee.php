@@ -114,7 +114,6 @@ class BooHee extends BaseGuzzleHttpClient
         } catch (RequestException $e) {
             $response = $e->getResponse();
             $result   = $this->handleResponse($response);
-            var_dump($result);
             throw new BusinessException($result['error']['message'] ?? '三方未知异常', BusinessCode::THREE_PART_ERROR->value);
         }
     }
@@ -134,7 +133,6 @@ class BooHee extends BaseGuzzleHttpClient
         } catch (RequestException $e) {
             $response = $e->getResponse();
             $result   = $this->handleResponse($response);
-            var_dump($result);
             throw new BusinessException($result['error']['message'] ?? '三方未知异常', BusinessCode::THREE_PART_ERROR->value);
         }
     }

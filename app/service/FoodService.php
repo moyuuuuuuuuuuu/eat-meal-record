@@ -33,7 +33,7 @@ class FoodService
             throw new DataNotFoundException('无数据');
         }
         Log::channel('llm')->info('sync nutrition', [[$type->value => $content], $result]);
-        return $result;
+        return json_decode($result, true);
     }
 
     /**
