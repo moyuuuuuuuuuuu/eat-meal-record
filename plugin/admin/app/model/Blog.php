@@ -2,6 +2,8 @@
 
 namespace plugin\admin\app\model;
 
+use app\model\BlogLocationModel;
+use app\model\BlogTopicModel;
 use plugin\admin\app\model\Base;
 
 /**
@@ -52,6 +54,18 @@ class Blog extends Base
             'text'  => self::VisitibilityTextMap[$visibility],
             'class' => self::VisitibilityClassMap[$visibility]
         ];
+    }
+
+    public function userInfo(){
+        return $this->hasOne(User::class,'id','user_id')->select(['id','nickname','avatar','username']);
+    }
+
+    public function location(){
+        return $this->hasOne(BlogLocationModel::class ,'blog_id','id');
+    }
+
+    public function topics(){
+        return $this->hasManyThrough(Topic::class,BlogTopicModel::class ,'blog_id','id','id','topic_id');
     }
 
 }

@@ -41,10 +41,6 @@ class BlogController extends Crud
         return view('blog/index');
     }
 
-    public function detail(Request $request)
-    {
-    }
-
     /**
      * 插入
      * @param Request $request
@@ -70,28 +66,25 @@ class BlogController extends Crud
         if ($request->method() === 'POST') {
 
             $id   = $request->post('id');
-            $blog = Blog::find($id);
+            $blog = Blog::with(['userInfo', 'location', 'topics'])->find($id);
 
             if (!$blog) return json(['code' => 1, 'msg' => '博客不存在']);
 
             // 加载关联数据
-            $blog->attaches = BlogAttachModel::where('blog_id', $id)->orderBy('sort', 'asc')->get()->map(function ($item) {
+            $blog->attaches         = BlogAttachModel::where('blog_id', $id)->orderBy('sort', 'asc')->get()->map(function ($item) {
                 // 动态加载关联实体详情
                 if ($item->type == 3) {
                     $item->food_info = Food::query()->where('id', $item->attach)->first();
                 } elseif ($item->type == 5) {
                     $item->meal_info = MealRecord::query()->where('id', $item->attach)->first();
+                } else {
+                    $item->attach = source($item->attach);
+                    $item->poster = source($item->poster);
                 }
                 return $item;
             });
-
-            $blog->location = Db::table('blog_locations')->where('blog_id', $id)->first();
-            $blog->topics   = Db::table('blog_topics as bt')
-                ->join('topics as t', 'bt.topic_id', '=', 't.id')
-                ->where('bt.blog_id', $id)
-                ->select('t.name', 't.id')
-                ->get();
-
+            $blog->visibility_info  = Blog::getVisibility($blog->visibility);
+            $blog->userInfo->avatar = source($blog->userInfo->avatar);
             return json(['code' => 0, 'data' => $blog]);
         }
         return view('blog/update');
@@ -108,5 +101,16 @@ class BlogController extends Crud
             $item['userInfo']        = $userInfoList[$item['user_id']];
         }
         return $items;
+    }
+
+    public function delete(Request $request): Response
+    {
+        $res = $this->model->newQuery()->where('id', $request->post('id'))->update([
+            'visibility' => 0
+        ]);
+        if ($res) {
+            return $this->json(0);
+        }
+        throw new BusinessException('操作失败');
     }
 }
