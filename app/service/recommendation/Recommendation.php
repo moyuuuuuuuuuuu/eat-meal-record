@@ -80,10 +80,10 @@ class Recommendation
         return [
             'id'               => $food['id'],
             'name'             => $food['name'],
-            'kcal'             => round((float)$food['kcal'], 2),
-            'pro'              => round((float)$food['pro'], 2),
-            'fat'              => round((float)$food['fat'], 2),
-            'fiber'            => round((float)$food['fiber'], 2),
+            'kcal'             => round((float)$food['kcal'] ?? 0.00, 2),
+            'pro'              => round((float)$food['pro'] ?? 0.00, 2),
+            'fat'              => round((float)$food['fat'] ?? 0.00, 2),
+            'fiber'            => round((float)$food['fiber'] ?? 0.00, 2),
             'tag'              => $tagNames,
             'recommend_reason' => $tip,
         ];

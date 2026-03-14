@@ -17,6 +17,7 @@ use app\service\Nutrition;
 use app\util\Helper;
 use Moyuuuuuuuu\QianFan\Payload\Audio;
 use support\exception\BusinessException;
+use support\Log;
 use support\Request;
 use Webman\Validation\Annotation\Validate;
 
@@ -62,6 +63,7 @@ class FoodController extends BaseController
             $data = FoodBusiness::instance()->recommendation($request);
             return $this->success('ok', $data);
         } catch (\Throwable $e) {
+            throw $e;
             return $this->fail($e->getMessage());
         }
     }

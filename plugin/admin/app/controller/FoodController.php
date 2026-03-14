@@ -61,6 +61,9 @@ class FoodController extends Crud
                 $data      = $request->post();
                 $nutrients = $data['nutrients'];
                 unset($data['nutrients']);
+                if (!$data['user_id']) {
+                    $data['user_id'] = null;
+                }
                 $foodId = $this->doInsert($data);
                 if (!$foodId) {
                     throw new BusinessException('添加食物失败');
@@ -85,10 +88,14 @@ class FoodController extends Crud
     {
         if ($request->method() === 'POST') {
             return DB::transaction(function () use ($request) {
-                $id        = $request->post('id');
-                $data      = $this->inputFilter($request->post());
+                $id             = $request->post('id');
+                $data           = $request->post();
+                $data['cat_id'] = $data['cat_id'] ?? 0;
+                if (!$data['user_id']) {
+                    $data['user_id'] = null;
+                }
                 $nutrients = $data['nutrients'];
-                unset($data['nutrients']);
+                unset($data['nutrients'], $data['id']);
                 $model = $this->model->find($id);
                 foreach ($data as $key => $val) {
                     $model->{$key} = $val;

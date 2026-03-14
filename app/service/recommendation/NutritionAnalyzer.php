@@ -32,7 +32,7 @@ class NutritionAnalyzer
     /**
      * 分析营养数据，返回缺失报告
      *
-     * @param  array $n  营养键值对，键名与 DRI 一致（允许部分字段缺失）
+     * @param array $n 营养键值对，键名与 DRI 一致（允许部分字段缺失）
      */
     public function analyze(array $n): DeficiencyReport
     {
@@ -56,8 +56,8 @@ class NutritionAnalyzer
 
         return new DeficiencyReport(
             keywords: $keywords,
-            reasons:  $reasons,
-            scores:   $scores,
+            reasons: $reasons,
+            scores: $scores,
             balanced: empty($keywords),
         );
     }
@@ -71,6 +71,21 @@ class NutritionAnalyzer
      */
     private function normalize(array $n): array
     {
+        $nTemplate = [
+            'kcal'  => 0.00,
+            'fat'   => 0.00,
+            'carb'  => 0.00,
+            'fiber' => 0.00,
+            'pro'   => 0.00,
+            'sugar' => 0.00,
+            'chol'  => 0.00,
+            'na'    => 0.00,
+            'cal'   => 0.00,
+            'iron'  => 0.00,
+            'vit_c' => 0.00,
+            'vit_a' => 0.00,
+        ];
+        $n         = array_merge($nTemplate, $n);
         return array_map('floatval', $n);
     }
 
@@ -82,9 +97,9 @@ class NutritionAnalyzer
     private function rules(array $n, array $dri): array
     {
         $kcal      = max($n['kcal'] ?? 1, 1);   // 防除零
-        $fatRatio  = ($n['fat']  * 9) / $kcal;
-        $carbRatio = ($n['carb'] * 4) / $kcal;
-        $proRatio  = ($n['pro']  * 4) / $kcal;
+        $fatRatio  = ($n['fat'] ?? 0 * 9) / $kcal;
+        $carbRatio = ($n['carb'] ?? 0 * 4) / $kcal;
+        $proRatio  = ($n['pro'] ?? 0 * 4) / $kcal;
 
         return [
             // ── 热量 ──────────────────────────────────────────────────────────

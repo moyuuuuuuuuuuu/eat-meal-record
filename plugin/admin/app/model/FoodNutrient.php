@@ -4,7 +4,8 @@ namespace plugin\admin\app\model;
 
 class FoodNutrient extends Base
 {
-
+    const CREATED_AT = null;
+    const UPDATED_AT = null;
     /**
      * 该模型可被批量赋值的属性
      *
