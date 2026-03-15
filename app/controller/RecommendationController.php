@@ -6,6 +6,9 @@ use app\common\base\BaseController;
 use support\Request;
 use support\Response;
 
+/**
+ * @deprecated
+ */
 class RecommendationController extends BaseController
 {
     protected $noNeedLogin = ['*'];

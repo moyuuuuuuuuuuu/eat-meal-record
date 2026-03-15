@@ -22,16 +22,16 @@ class TagResolver
      * 覆盖全天 24 小时，确保任何时刻都有兜底
      */
     private const MEAL_SCHEDULE = [
-        ['from' => 5,  'to' => 10, 'keyword' => '早餐'],
+        ['from' => 5, 'to' => 10, 'keyword' => '早餐'],
         ['from' => 11, 'to' => 14, 'keyword' => '午餐'],
         ['from' => 17, 'to' => 21, 'keyword' => '晚餐'],
-        ['from' => 0,  'to' => 24, 'keyword' => '加餐'],   // 兜底兜底
+        ['from' => 0, 'to' => 24, 'keyword' => '加餐'],   // 兜底兜底
     ];
 
     /**
      * 根据关键词从 tags 表解析出匹配的标签列表
      *
-     * @param  string[] $keywords  来自 DeficiencyReport 的关键词
+     * @param string[] $keywords 来自 DeficiencyReport 的关键词
      * @return array               [['id'=>1,'name'=>'低脂餐'], ...]
      */
     public function resolve(array $keywords): array
@@ -41,10 +41,8 @@ class TagResolver
         if (!empty($keywords)) {
             $tags = $this->queryByKeywords($keywords);
         }
-        if (empty($tags)) {
-            $tags = $this->fallbackByTime();
-        }
-
+        $fallbackByTime = $this->fallbackByTime();
+        $tags           = array_merge($tags, $fallbackByTime);
         return $tags;
     }
 
@@ -75,7 +73,7 @@ class TagResolver
      */
     private function fallbackByTime(): array
     {
-        $hour    = (int) date('H');
+        $hour    = (int)date('H');
         $keyword = '加餐';
 
         foreach (self::MEAL_SCHEDULE as $slot) {

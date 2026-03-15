@@ -62,7 +62,6 @@ class Recommendation
         $report = $this->analyzer->analyze($nutrition);
         // 2. 关键词 → 真实标签
         $tags = $this->tagResolver->resolve($report->keywords);
-
         // 3. 标签 → 单条食物
         $tagIds = array_column($tags, 'id');
         $food   = $this->foodRepo->findOneByTagIds($tagIds);

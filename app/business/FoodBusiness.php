@@ -214,7 +214,7 @@ class FoodBusiness extends BaseBusiness
             //检查数据是否满足推荐
             //7天内是否有餐食记录
             $mealRecordList = MealRecordModel::query()
-//                ->whereBetween('meal_date', [date('y-m-d', strtotime("-7 day")), date('y-m-d')])
+                ->whereBetween('meal_date', [date('y-m-d', strtotime("-7 day")), date('y-m-d')])
                 ->pluck('nutrition')
                 ->toArray();
             foreach ($mealRecordList as $mealRecord) {
