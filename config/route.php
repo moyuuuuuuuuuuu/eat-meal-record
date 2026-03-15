@@ -1,22 +1,24 @@
 <?php
 
-use Webman\Route;
-use support\Redis;
-use app\controller\{MealRecordController,
-    NutritionStatsController,
-    TopicController,
-    UserController,
-    UserGoalController,
-    RecommendationController,
+use app\controller\{
     AuthController,
     CategoryController,
-    FoodController,
     DiaryController,
     FeedController,
+    FoodController,
+    IndexController,
+    MealRecordController,
+    NutritionStatsController,
     SmsController,
+    TopicController,
     UploadController,
-    IndexController
+    UserController,
+    UserGoalController,
+    ArticleController,
+    LocationController
 };
+use support\Redis;
+use Webman\Route;
 
 Route::disableDefaultRoute();
 Route::fallback(function () {
@@ -47,19 +49,20 @@ Route::fallback(function () {
 
 Route::group('/api', function () {
 
-    // Debug 模式专用路由组
     if (config('app.debug')) {
         Route::any('/test', [IndexController::class, 'index']);
-        // 移动至此：关闭 debug 时无法访问此 mock 登录
         Route::post('/auth/login/mock', [AuthController::class, 'mock']);
     }
+    #文章
+    Route::get('/article/notice', [ArticleController::class, 'notice']);
+    Route::get('/article/user-agreement', [ArticleController::class, 'userAgreement']);
+    Route::get('/article/info', [ArticleController::class, 'info']);
 
     Route::get('/nutrition/stats', [NutritionStatsController::class, 'stats']);
-
     Route::post('/upload', [UploadController::class, 'uploadForBos']);
+    #登录
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/sms/login', [AuthController::class, 'sms']);
-    // 原本在这里的 mock 路由已移除，防止生产环境泄露
     Route::post('/sms/send', [SmsController::class, 'send']);
 
     #食品相关
@@ -114,8 +117,8 @@ Route::group('/api', function () {
     Route::group('/meal', function () {
         Route::get('/relation', [MealRecordController::class, 'relation']);
     });
-
+    #地址信息
     Route::group('/location', function () {
-        Route::get('/reverse/geo', [\app\controller\LocationController::class, 'rgeo']);
+        Route::get('/reverse/geo', [LocationController::class, 'rgeo']);
     });
 });

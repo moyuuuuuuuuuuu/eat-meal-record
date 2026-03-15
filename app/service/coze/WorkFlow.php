@@ -7,9 +7,7 @@ use app\service\BaseGuzzleHttpClient;
 use Coze\Auth\OAuthClient;
 use Coze\Workflow\Run;
 use GuzzleHttp\Client;
-use support\Cache;
 use support\Redis;
-use Webman\Context;
 
 class WorkFlow extends BaseGuzzleHttpClient
 {

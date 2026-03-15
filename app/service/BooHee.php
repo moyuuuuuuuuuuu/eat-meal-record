@@ -6,7 +6,6 @@ use app\common\enum\BusinessCode;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
-use support\Cache;
 use support\exception\BusinessException;
 use support\Redis;
 

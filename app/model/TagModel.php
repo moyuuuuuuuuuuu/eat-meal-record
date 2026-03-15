@@ -4,9 +4,11 @@ namespace app\model;
 
 
 use app\common\base\BaseModel;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TagModel extends BaseModel
 {
+    use SoftDeletes;
     const UPDATED_AT = null;
     /**
      * The table associated with the model.

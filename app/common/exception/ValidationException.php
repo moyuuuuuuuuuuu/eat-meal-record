@@ -4,7 +4,6 @@ namespace app\common\exception;
 
 use app\common\enum\BusinessCode;
 use support\exception\BusinessException;
-use Webman\Http\Response;
 
 class ValidationException extends BusinessException
 {

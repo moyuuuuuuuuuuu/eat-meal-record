@@ -5,26 +5,26 @@ namespace app\business;
 use app\common\base\BaseBusiness;
 use app\common\context\TokenLimit;
 use app\common\enum\BusinessCode;
-use app\common\enum\UserInfoContext;
 use app\common\enum\NormalStatus;
 use app\common\enum\NutritionInputType;
+use app\common\enum\UserInfoContext;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ValidationException;
 use app\common\validate\FoodValidator;
 use app\format\FoodFormat;
 use app\service\baidu\Bos;
+use app\model\{CatModel, FoodModel, FoodModel as Food, FoodUnitModel, MealRecordModel, UnitModel};
 use app\service\FoodService;
 use app\service\Nutrition;
+use app\service\recommendation\Recommendation;
 use app\util\Calculate;
 use app\util\Helper;
-use app\model\{CatModel, FoodModel as Food, FoodUnitModel, FoodModel, MealRecordModel, UnitModel};
 use support\Context;
 use support\Db;
 use support\exception\BusinessException;
 use support\Log;
 use support\Request;
 use Webman\Validation\Annotation\Validate;
-use app\service\recommendation\Recommendation;
 
 class FoodBusiness extends BaseBusiness
 {
@@ -190,6 +190,7 @@ class FoodBusiness extends BaseBusiness
                     if (!$result) {
                         throw new BusinessException('录音文件上传失败', BusinessCode::THREE_PART_ERROR->value);
                     }
+                    $content = source($result);
                 }
                 $result = FoodService::nutrition($type, $content);
             }

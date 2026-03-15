@@ -3,7 +3,6 @@
 namespace app\model;
 
 
-use app\business\FoodBusiness;
 use app\common\base\BaseModel;
 
 class MealRecordFoodModel extends BaseModel

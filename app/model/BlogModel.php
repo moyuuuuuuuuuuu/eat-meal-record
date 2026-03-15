@@ -4,7 +4,7 @@ namespace app\model;
 
 use app\common\base\BaseModel;
 use app\common\enum\NormalStatus;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $user_id
@@ -19,6 +19,8 @@ use Carbon\Carbon;
  */
 class BlogModel extends BaseModel
 {
+    use SoftDeletes;
+
     protected $table = 'blogs';
 
     protected $fillable = [
@@ -45,7 +47,7 @@ class BlogModel extends BaseModel
 
     public function topics()
     {
-        $topicTable = (new TopicModel())->getTable();
+        $topicTable     = (new TopicModel())->getTable();
         $blogTopicTable = (new BlogTopicModel())->getTable();
         return $this->belongsToMany(TopicModel::class, $blogTopicTable, 'blog_id', 'topic_id')
             ->where('status', NormalStatus::YES->value)

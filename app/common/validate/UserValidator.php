@@ -3,8 +3,6 @@
 namespace app\common\validate;
 
 use app\common\base\BaseValidator;
-use app\common\enum\user\Sex;
-use support\validation\Rule;
 
 class UserValidator extends BaseValidator
 {

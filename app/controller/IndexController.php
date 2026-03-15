@@ -2,18 +2,9 @@
 
 namespace app\controller;
 
-use app\business\FoodBusiness;
 use app\common\base\BaseController;
-use app\common\enum\NutritionInputType;
-use app\common\enum\QueueEventName;
-use app\model\FoodModel;
-use app\service\BooHee;
 use app\service\FoodService;
-use support\Db;
-use support\Log;
-use support\Redis;
 use support\Request;
-use Webman\RedisQueue\Client;
 
 class IndexController extends BaseController
 {

@@ -2,8 +2,8 @@
 
 namespace app\common\base;
 
-use support\Model;
 use DateTimeInterface;
+use support\Model;
 
 class BaseModel extends Model
 {

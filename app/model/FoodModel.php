@@ -4,13 +4,12 @@ namespace app\model;
 
 
 use app\common\base\BaseModel;
-use app\common\context\NutritionTemplate;
 use app\common\enum\foodUnit\IsDefault;
-use plugin\admin\app\model\Tag;
-use support\Log;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FoodModel extends BaseModel
 {
+    use SoftDeletes;
     /**
      * The table associated with the model.
      *

@@ -3,7 +3,6 @@
 namespace app\model;
 
 
-use app\business\FoodBusiness;
 use app\common\base\BaseModel;
 use app\common\enum\MealRecordType;
 use app\util\Calculate;

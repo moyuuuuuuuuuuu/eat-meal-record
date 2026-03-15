@@ -5,7 +5,6 @@ namespace app\business;
 use app\common\base\BaseBusiness;
 use app\common\validate\SmsValidator;
 use support\Cache;
-use app\common\exception\BusinessException;
 use Webman\Validation\Annotation\Validate;
 
 class SmsBusiness extends BaseBusiness

@@ -2,8 +2,6 @@
 
 namespace app\common\enum;
 
-use app\util\Helper;
-
 enum UserInfoContext: string
 {
     case UserId   = 'userId';

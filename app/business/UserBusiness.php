@@ -12,24 +12,12 @@ use app\common\enum\user\Status;
 use app\common\enum\UserInfoContext;
 use app\common\validate\LoginValidator;
 use app\common\validate\UserValidator;
-use app\format\UserInformationFormat;
 use app\model\UserModel;
-use app\model\MealRecordModel;
 use app\model\UserStepsModel;
-use app\queue\constant\QueueEventName;
 use app\service\wechat\WxMini;
-use app\util\Calculate;
-use app\util\Helper;
-use app\util\Jwt;
-use Carbon\Carbon;
-use plugin\admin\app\common\Util;
-use plugin\admin\app\model\User;
-use support\Context;
-use support\Db;
 use support\exception\BusinessException;
 use support\Redis;
 use support\Request;
-use Webman\RedisQueue\Client;
 use Webman\Validation\Annotation\Validate;
 
 class UserBusiness extends BaseBusiness

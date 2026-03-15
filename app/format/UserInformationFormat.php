@@ -4,7 +4,6 @@ namespace app\format;
 
 use app\common\base\BaseFormat;
 use app\common\base\BaseModel;
-use app\common\context\UserInfo;
 use app\model\MealRecordModel;
 use app\model\UserGoalModel;
 use app\model\UserStepsModel;

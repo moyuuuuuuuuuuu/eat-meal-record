@@ -4,13 +4,7 @@ namespace app\queue;
 
 
 use app\common\base\BaseConsumer;
-
-use app\model\CatModel;
-use app\model\FoodModel;
-use app\model\FoodUnitModel;
-use app\model\UnitModel;
 use app\service\MailService;
-use support\Db;
 use support\Log;
 
 /**

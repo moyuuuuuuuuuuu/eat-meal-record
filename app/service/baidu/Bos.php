@@ -2,13 +2,13 @@
 
 namespace app\service\baidu;
 
-use GuzzleHttp\Client;
-use support\Log;
-use Webman\Http\UploadFile;
 use app\common\enum\BusinessCode;
 use app\service\BaseGuzzleHttpClient;
-use support\exception\BusinessException;
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\{GuzzleException, RequestException};
+use support\exception\BusinessException;
+use support\Log;
+use Webman\Http\UploadFile;
 
 class Bos extends BaseGuzzleHttpClient
 {

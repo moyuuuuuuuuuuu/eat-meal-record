@@ -8,9 +8,7 @@ use app\model\FoodNutrientModel;
 use app\model\FoodUnitModel;
 use app\util\Calculate;
 use plugin\admin\app\model\Dict;
-use plugin\admin\app\model\Food;
 use support\Cache;
-use support\Log;
 
 class NutritionTemplate
 {

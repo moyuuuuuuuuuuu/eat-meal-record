@@ -4,10 +4,8 @@ namespace app\controller;
 
 use app\business\SmsBusiness;
 use app\common\base\BaseController;
-use app\common\validate\SmsValidator;
 use support\Request;
 use support\Response;
-use Webman\Validation\Annotation\Validate;
 
 class SmsController extends BaseController
 {

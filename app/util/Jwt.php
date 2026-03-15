@@ -3,7 +3,6 @@
 namespace app\util;
 
 use app\common\context\UserInfoData;
-use support\Log;
 
 class Jwt
 {

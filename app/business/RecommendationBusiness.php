@@ -5,7 +5,6 @@ namespace app\business;
 use app\common\base\BaseBusiness;
 use app\common\enum\BusinessCode;
 use app\common\enum\NormalStatus;
-use app\format\FoodFormat;
 use app\format\RecommendationFormat;
 use app\model\FoodModel;
 use app\model\MealRecordModel;

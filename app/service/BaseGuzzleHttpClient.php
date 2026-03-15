@@ -4,9 +4,9 @@ namespace app\service;
 
 abstract class BaseGuzzleHttpClient
 {
+    protected $client;
 
-    protected        $client;
-    protected static $instance;
+    protected static $instances = [];
 
     abstract protected function __construct();
 
@@ -15,24 +15,31 @@ abstract class BaseGuzzleHttpClient
      */
     public static function instance(): static
     {
-        if (static::$instance == null) {
-            static::$instance = new static();
+        $calledClass = static::class;
+        if (!isset(self::$instances[$calledClass])) {
+            self::$instances[$calledClass] = new static();
         }
-        return static::$instance;
+        return self::$instances[$calledClass];
     }
 
     /**
-     * @param $response
-     * @return array|null
-     * @throws \RuntimeException
+     * 阻止外部克隆和反序列化，确保单例安全性
      */
+    protected function __clone() {}
+    public function __wakeup() { throw new \Exception("Cannot unserialize singleton"); }
+
     protected function handleResponse($response): array
     {
         if ($response->getStatusCode() != 200) {
             throw new \RuntimeException($response->getReasonPhrase());
         }
-        $body = $response->getBody()->getContents();
+        $body = (string)$response->getBody();
         $data = json_decode($body, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \RuntimeException("Invalid JSON response");
+        }
+
         return $data;
     }
 }

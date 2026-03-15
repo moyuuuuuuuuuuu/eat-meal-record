@@ -2,11 +2,9 @@
 
 namespace app\controller;
 
-use support\Request;
 use app\business\FeedBusiness;
 use app\common\base\BaseController;
-use app\common\validate\FeedValidator;
-use Webman\Validation\Annotation\Validate;
+use support\Request;
 
 class FeedController extends BaseController
 {

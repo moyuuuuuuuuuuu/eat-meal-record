@@ -2,10 +2,11 @@
 
 namespace app\middleware;
 
-use Webman\MiddlewareInterface;
-use Webman\Http\Response;
-use Webman\Http\Request;
 use support\Log;
+use Webman\Http\Request;
+use Webman\Http\Response;
+use Webman\MiddlewareInterface;
+
 class AccessLog implements MiddlewareInterface
 {
     public function process(Request $request, callable $handler): Response

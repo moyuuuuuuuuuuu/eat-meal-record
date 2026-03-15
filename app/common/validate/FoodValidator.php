@@ -3,9 +3,7 @@
 namespace app\common\validate;
 
 use app\common\base\BaseValidator;
-use app\common\context\TokenLimit;
 use app\common\enum\NutritionInputType;
-use support\Redis;
 
 class FoodValidator extends BaseValidator
 {

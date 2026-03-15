@@ -2,9 +2,9 @@
 
 namespace app\format;
 
-use Carbon\Carbon;
 use app\common\base\{BaseFormat, BaseModel};
-use app\model\{FavoriteModel, FollowModel, BlogAttachModel, LikeModel};
+use app\model\{BlogAttachModel, FavoriteModel, FollowModel, LikeModel};
+use Carbon\Carbon;
 
 class BlogFormat extends BaseFormat
 {

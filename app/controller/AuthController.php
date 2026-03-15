@@ -4,7 +4,6 @@ namespace app\controller;
 
 use app\business\UserBusiness;
 use app\common\base\BaseController;
-use app\common\exception\ValidationException;
 use app\common\validate\LoginValidator;
 use support\Request;
 use support\Response;

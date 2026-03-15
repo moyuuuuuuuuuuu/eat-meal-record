@@ -3,7 +3,6 @@
 namespace app\util;
 
 use app\common\enum\user\Sex;
-use support\Log;
 
 class Energy
 {

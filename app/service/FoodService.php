@@ -4,12 +4,10 @@ namespace app\service;
 
 use app\common\enum\BusinessCode;
 use app\common\enum\NutritionInputType;
-use app\common\enum\QueueEventName;
 use app\common\exception\DataNotFoundException;
 use app\service\coze\WorkFlow;
 use support\exception\BusinessException;
 use support\Log;
-use Webman\RedisQueue\Client;
 
 class FoodService
 {

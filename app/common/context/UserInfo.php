@@ -2,17 +2,13 @@
 
 namespace app\common\context;
 
-use app\common\base\BaseModel;
-use app\common\enum\user\Sex;
 use app\common\enum\UserInfoContext;
-use app\model\UserGoalModel;
 use app\model\UserModel;
 use app\model\UserStepsModel;
 use app\service\wechat\WxMini;
 use app\util\Energy;
 use app\util\Helper;
 use app\util\Jwt;
-use support\Log;
 use support\Redis;
 use Webman\Context;
 

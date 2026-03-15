@@ -4,9 +4,7 @@ namespace app\business;
 
 use app\common\base\BaseBusiness;
 use app\common\enum\UserInfoContext;
-use app\model\MealRecordModel;
 use support\Db;
-use support\Log;
 use Webman\Context;
 
 /**
