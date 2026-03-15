@@ -46,7 +46,6 @@ class Bos extends BaseGuzzleHttpClient
 
     public function putObj(UploadFile $uploadFile): string
     {
-        Log::debug(sprintf('https://%s.bcebos.com/', getenv('BOS_REGION')));
         $filename    = $this->getFileName($uploadFile);
         $now         = time();
         $iso8601Zulu = gmdate('Y-m-d\TH:i:s\Z', $now);
