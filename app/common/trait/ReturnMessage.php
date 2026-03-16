@@ -3,6 +3,7 @@
 namespace app\common\trait;
 
 use support\Response;
+use app\model\OptionModel;
 
 trait ReturnMessage
 {
@@ -16,7 +17,7 @@ trait ReturnMessage
      */
     protected function json(int $code, string $msg = 'ok', array $data = []): Response
     {
-        return json(['code' => $code, 'data' => $data, 'msg' => $msg]);
+        return json(['code' => $code, 'data' => $data, 'msg' => $msg, 'isAudit' => OptionModel::getConfig('system_config', 'logo.audit')]);
     }
 
     protected function success(string $msg = '成功', array $data = []): Response
