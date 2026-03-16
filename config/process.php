@@ -63,4 +63,8 @@ return [
         'handler' => \app\process\RedisSubscribeProcess::class,
         'count'   => 2
     ],
+    'food-health'     => [
+        'handler' => \app\process\FoodHealthCheck::class,
+        'count'   => 1
+    ]
 ];
