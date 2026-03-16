@@ -16,7 +16,7 @@ class OptionModel extends BaseModel
     static function getConfig(string $name, $field = '*')
     {
         if ($field != '*') {
-            $option = self::query()->where('name', $name)->selectRaw("JSON_EXTRACT(value, '$.{$field}') as value")->first();
+            $option = self::query()->where('name', $name)->selectRaw("`value`->>'$.{$field}' as `value`")->first();
         } else {
             $option = self::query()->where('name', $name)->select('value')->first();
         }

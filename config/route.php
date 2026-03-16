@@ -1,7 +1,6 @@
 <?php
 
-use app\controller\{
-    AuthController,
+use app\controller\{AuthController,
     CategoryController,
     DiaryController,
     FeedController,
@@ -9,14 +8,14 @@ use app\controller\{
     IndexController,
     MealRecordController,
     NutritionStatsController,
+    OptionController,
     SmsController,
     TopicController,
     UploadController,
     UserController,
     UserGoalController,
     ArticleController,
-    LocationController
-};
+    LocationController};
 use support\Redis;
 use Webman\Route;
 
@@ -53,6 +52,7 @@ Route::group('/api', function () {
         Route::any('/test', [IndexController::class, 'index']);
         Route::post('/auth/login/mock', [AuthController::class, 'mock']);
     }
+    Route::get('/option/tabbar',[OptionController::class, 'tabbar']);
     #文章
     Route::get('/article/notice', [ArticleController::class, 'notice']);
     Route::get('/article/user-agreement', [ArticleController::class, 'userAgreement']);

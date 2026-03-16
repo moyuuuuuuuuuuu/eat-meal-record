@@ -17,7 +17,7 @@ trait ReturnMessage
      */
     protected function json(int $code, string $msg = 'ok', array $data = []): Response
     {
-        return json(['code' => $code, 'data' => $data, 'msg' => $msg, 'isAudit' => OptionModel::getConfig('system_config', 'logo.audit')]);
+        return json(['code' => $code, 'data' => $data, 'msg' => $msg]);
     }
 
     protected function success(string $msg = '成功', array $data = []): Response
