@@ -7,7 +7,6 @@ use app\model\FoodModel;
 use app\model\FoodNutrientModel;
 use app\model\FoodTagModel;
 use app\model\FoodUnitModel;
-use plugin\admin\app\model\FoodUnit;
 use support\Log;
 use support\Redis;
 use Workerman\Crontab\Crontab;
@@ -67,7 +66,6 @@ class FoodHealthCheck
 
     private function withoutUnit()
     {
-
         $foodTable                  = (new FoodModel())->getTable();
         $nutrientsTable             = (new FoodUnitModel())->getTable();
         $withoutNutritionFoodIdList = FoodModel::query()->leftJoin($nutrientsTable, "{$nutrientsTable}.food_id", "{$foodTable}.id")
