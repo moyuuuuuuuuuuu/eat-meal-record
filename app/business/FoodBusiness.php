@@ -7,6 +7,7 @@ use app\common\context\TokenLimit;
 use app\common\enum\BusinessCode;
 use app\common\enum\NormalStatus;
 use app\common\enum\NutritionInputType;
+use app\common\enum\RedisSubscribe;
 use app\common\enum\UserInfoContext;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ValidationException;
@@ -23,6 +24,7 @@ use support\Context;
 use support\Db;
 use support\exception\BusinessException;
 use support\Log;
+use support\Redis;
 use support\Request;
 use Webman\Validation\Annotation\Validate;
 
@@ -60,6 +62,17 @@ class FoodBusiness extends BaseBusiness
                 ->from($subTable)
                 ->whereColumn($subTable . '.food_id', $mainTable . '.id');
         });
+        if (!$query->exists()) {
+            $query = $query->clone();
+            Redis::publish(RedisSubscribe::FoodNutritionSync->value, json_encode([$name]));
+            // 最多等 6 秒，每 2 秒检查一次
+            foreach (range(1, 3) as $attempt) {
+                sleep(2);
+                if ($query->exists()) {
+                    break;
+                }
+            }
+        }
         $paginate   = $query->orderByDesc('id')
             ->paginate($pageSize, ['*'], 'page', $page);
         $foodFormat = new FoodFormat($request);
@@ -89,9 +102,8 @@ class FoodBusiness extends BaseBusiness
         return (new FoodFormat($request))->format($food);
     }
 
-    public function syncRemote($data)
+    public function syncRemote(array $foodList)
     {
-        $foodList = $data['foods'] ?? [];
         if (empty($foodList)) return true;
         $newFoodList = [];
         $foodFormat  = new FoodFormat(null);
@@ -110,19 +122,12 @@ class FoodBusiness extends BaseBusiness
                 // 2. 换算 100g 营养成分
                 $ratio          = Calculate::div('100', (string)$totalWeight, 10);
                 $localNutrition = [];
-                // 定义三方字段到数据库字段的映射
-                $fieldMap = [
-                    'potassium'   => 'kalium', // 三方叫 potassium, 数据库叫 kalium
-                    'folate'      => 'folic',    // 三方叫 folate, 数据库叫 folic
-                    'cholesterin' => 'cholesterol',
-                    'vitaminA'    => 'vitamin_a',
-                ];
 
                 foreach ($item['nutrition'] as $nut) {
-                    $key                    = $nut['name'];
-                    $dbKey                  = $fieldMap[$key] ?? $key; // 转换映射，没有映射则用原名
-                    $val                    = (string)$nut['value'];
-                    $localNutrition[$dbKey] = (float)Calculate::mul($val, $ratio, 2);
+                    $key                  = $nut['name'];
+                    $dbKey                = $key; // 转换映射，没有映射则用原名
+                    $val                  = (string)$nut['value'];
+                    $localNutrition[$key] = (float)Calculate::mul($val, $ratio, 2);
                 }
                 if (!isset($localNutrition['kcal'])) {
                     $localNutrition['kcal'] = $localNutrition['kal'] ?? 0;
@@ -132,12 +137,13 @@ class FoodBusiness extends BaseBusiness
                 if ($unit->wasRecentlyCreated) $newItems['units'][] = $unitName;
 
                 // 4. 处理食物基础信息
-                $catId = CatModel::where('name', '其他')->value('id') ?:
-                    CatModel::insertGetId(['name' => '其他', 'pid' => 0, 'sort' => 100]);
+                $catName = $item['cat'] ?? '其他';
+                $catId   = CatModel::where('name', $catName)->value('id') ?:
+                    CatModel::insertGetId(['name' => $catName, 'pid' => 0, 'sort' => 100]);
 
                 $food = FoodModel::updateOrCreate(
                     ['name' => $item['name']],
-                    ['cat_id' => $catId, 'status' => 1, '']
+                    ['cat_id' => $catId, 'status' => 1, 'is_common' => $item['is_common'] ?? 2, 'is_ingredient' => $item['is_ingredient'] ?? 2]
                 );
 
                 // 5. 【核心补充】维护 food_nutrients 营养表
@@ -198,7 +204,7 @@ class FoodBusiness extends BaseBusiness
             if (!isset($result['foods']) || empty($result['foods'])) {
                 throw new DataNotFoundException('识别失败');
             }
-            return FoodBusiness::instance()->syncRemote($result);
+            return FoodBusiness::instance()->syncRemote($result['foods'] ?? []);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage(), [$exception->getCode(), $exception->getFile(), $exception->getLine(), $exception->getTraceAsString()]);
             throw new BusinessException($exception->getMessage(), $exception->getCode(), $exception);
@@ -214,7 +220,7 @@ class FoodBusiness extends BaseBusiness
             //检查数据是否满足推荐
             //7天内是否有餐食记录
             $mealRecordList = MealRecordModel::query()
-                ->whereBetween('meal_date', [date('y-m-d', strtotime("-7 day")), date('y-m-d')])
+                ->whereBetween('meal_date', [date('Y-m-d', strtotime("-7 day")), date('y-m-d')])
                 ->pluck('nutrition')
                 ->toArray();
             foreach ($mealRecordList as $mealRecord) {

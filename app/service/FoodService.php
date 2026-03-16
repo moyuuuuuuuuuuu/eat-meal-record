@@ -72,4 +72,22 @@ class FoodService
         Log::channel('llm')->info('sync unti', [$params, $data]);
         return $data;
     }
+
+    static function nutritionForFood(array $params)
+    {
+        if (count($params) > 35) {
+            throw new BusinessException('单次视频数量不得超过35个', BusinessCode::THREE_PART_ERROR->value);
+        }
+        $params = [
+            'input' => implode(',', $params),
+        ];
+        $result = WorkFlow::instance()->run(getenv('COZE_FOOD_NUTRITION_WORKFLOW_ID'), $params);
+        $result = $result['output'] ?? null;
+        if (!$result) {
+            throw new DataNotFoundException('无数据');
+        }
+        $data = json_decode($result, true);
+        Log::channel('llm')->info('sync nutrition-for-food', [$params, $data]);
+        return $data;
+    }
 }

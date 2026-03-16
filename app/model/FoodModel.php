@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class FoodModel extends BaseModel
 {
     use SoftDeletes;
+
     /**
      * The table associated with the model.
      *
@@ -28,7 +29,9 @@ class FoodModel extends BaseModel
         'name',
         'cat_id',
         'user_id',
-        'status'
+        'status',
+        'is_common',
+        'is_ingredient'
     ];
 
     public function getNutrition()

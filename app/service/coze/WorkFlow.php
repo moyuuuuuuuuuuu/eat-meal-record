@@ -32,7 +32,7 @@ class WorkFlow extends BaseGuzzleHttpClient
         $this->privateKey = file_get_contents(runtime_path() . getenv('COZE_PRIVATE_KEY_PATH')); // 私钥
         $this->client     = new Client([
             'base_uri' => 'https://api.coze.cn',
-            'timeout'  => 200,
+            'timeout'  => 1200,
         ]);
     }
 

@@ -1,224 +1,164 @@
-{
-  "foods": [
-    {
-      "name": "黑鸭红烧肉双拼煲",
-      "nutrition": [
-        {
-          "name": "pro",
-          "value": 35.7
-        },
-        {
-          "name": "fat",
-          "value": 42.3
-        },
-        {
-          "name": "carb",
-          "value": 20.5
-        },
-        {
-          "name": "fiber",
-          "value": 1.2
-        },
-        {
-          "name": "vit_c",
-          "value": 5.0
-        },
-        {
-          "name": "kal",
-          "value": 613
-        },
-        {
-          "name": "mag",
-          "value": 40
-        },
-        {
-          "name": "folic",
-          "value": 15.0
-        },
-        {
-          "name": "cal",
-          "value": 80
-        },
-        {
-          "name": "iron",
-          "value": 4.1
-        },
-        {
-          "name": "vit_e",
-          "value": 0.8
-        },
-        {
-          "name": "chol",
-          "value": 123
-        },
-        {
-          "name": "na",
-          "value": 800
-        }
-      ],
-      "unit": "1 份",
-      "weight": "约250g（含肉、配菜）"
-    },
-    {
-      "name": "米饭",
-      "nutrition": [
-        {
-          "name": "pro",
-          "value": 3.9
-        },
-        {
-          "name": "fat",
-          "value": 0.3
-        },
-        {
-          "name": "carb",
-          "value": 35.6
-        },
-        {
-          "name": "fiber",
-          "value": 0.6
-        },
-        {
-          "name": "kal",
-          "value": 168
-        },
-        {
-          "name": "mag",
-          "value": 12
-        },
-        {
-          "name": "folic",
-          "value": 12.0
-        },
-        {
-          "name": "cal",
-          "value": 11
-        },
-        {
-          "name": "iron",
-          "value": 0.4
-        },
-        {
-          "name": "vit_e",
-          "value": 0.03
-        },
-        {
-          "name": "na",
-          "value": 10
-        }
-      ],
-      "unit": "1 盒",
-      "weight": "约200g（熟重）"
-    },
-    {
-      "name": "无糖可乐",
-      "nutrition": [
-        {
-          "name": "pro",
-          "value": 0
-        },
-        {
-          "name": "fat",
-          "value": 0
-        },
-        {
-          "name": "carb",
-          "value": 0
-        },
-        {
-          "name": "kal",
-          "value": 1
-        },
-        {
-          "name": "na",
-          "value": 10
-        }
-      ],
-      "unit": "1 瓶",
-      "weight": "500ml"
-    }
-  ],
-  "tokens": 0.02,
-  "total_nutritions": [
-    {
-      "name": "pro",
-      "value": 39.6
-    },
-    {
-      "name": "fat",
-      "value": 42.6
-    },
-    {
-      "name": "carb",
-      "value": 56.1
-    },
-    {
-      "name": "fiber",
-      "value": 1.8
-    },
-    {
-      "name": "vit_c",
-      "value": 5.0
-    },
-    {
-      "name": "kal",
-      "value": 782
-    },
-    {
-      "name": "mag",
-      "value": 52
-    },
-    {
-      "name": "folic",
-      "value": 27.0
-    },
-    {
-      "name": "cal",
-      "value": 91
-    },
-    {
-      "name": "iron",
-      "value": 4.5
-    },
-    {
-      "name": "vit_e",
-      "value": 0.83
-    },
-    {
-      "name": "chol",
-      "value": 123
-    },
-    {
-      "name": "na",
-      "value": 820
-    },
-    {
-      "name": "pufa",
-      "value": 2.0
-    },
-    {
-      "name": "vit_a",
-      "value": 15
-    },
-    {
-      "name": "vit_d",
-      "value": 0
-    },
-    {
-      "name": "iod",
-      "value": 0
-    },
-    {
-      "name": "sel",
-      "value": 12.5
-    },
-    {
-      "name": "zinc",
-      "value": 2.3
-    },
-    {
-      "name": "vit_b1",
-      "value": 0.21
-    }
-  ]
-}
+[
+  {
+    "cat": "饮品",
+    "is_common": 1,
+    "is_ingredient": 2,
+    "name": "可乐",
+    "nutrition": [
+      {
+        "name": "pro",
+        "value": 0
+      },
+      {
+        "name": "fat",
+        "value": 0
+      },
+      {
+        "name": "carb",
+        "value": 10.6
+      },
+      {
+        "name": "fiber",
+        "value": 0
+      },
+      {
+        "name": "vit_c",
+        "value": 0
+      },
+      {
+        "name": "kcal",
+        "value": 43
+      },
+      {
+        "name": "mag",
+        "value": 1
+      },
+      {
+        "name": "folic",
+        "value": 0
+      },
+      {
+        "name": "cal",
+        "value": 10
+      },
+      {
+        "name": "iron",
+        "value": 0
+      },
+      {
+        "name": "vit_e",
+        "value": 0
+      }
+    ],
+    "unit": "g",
+    "weight": "100g"
+  },
+  {
+    "cat": "中式主食",
+    "is_common": 1,
+    "is_ingredient": 2,
+    "name": "兰州拉面",
+    "nutrition": [
+      {
+        "name": "pro",
+        "value": 7.3
+      },
+      {
+        "name": "fat",
+        "value": 1.7
+      },
+      {
+        "name": "carb",
+        "value": 21.7
+      },
+      {
+        "name": "fiber",
+        "value": 0.7
+      },
+      {
+        "name": "vit_c",
+        "value": 2
+      },
+      {
+        "name": "kcal",
+        "value": 117
+      },
+      {
+        "name": "mag",
+        "value": 21
+      },
+      {
+        "name": "folic",
+        "value": 5
+      },
+      {
+        "name": "cal",
+        "value": 38
+      },
+      {
+        "name": "iron",
+        "value": 2.7
+      },
+      {
+        "name": "vit_e",
+        "value": 0.4
+      }
+    ],
+    "unit": "g",
+    "weight": "100g"
+  },
+  {
+    "cat": "中式点心/主食",
+    "is_common": 1,
+    "is_ingredient": 2,
+    "name": "牛肉水饺",
+    "nutrition": [
+      {
+        "name": "pro",
+        "value": 10.2
+      },
+      {
+        "name": "fat",
+        "value": 10.4
+      },
+      {
+        "name": "carb",
+        "value": 22.1
+      },
+      {
+        "name": "fiber",
+        "value": 1.5
+      },
+      {
+        "name": "vit_c",
+        "value": 1.8
+      },
+      {
+        "name": "kcal",
+        "value": 207
+      },
+      {
+        "name": "mag",
+        "value": 24
+      },
+      {
+        "name": "folic",
+        "value": 12
+      },
+      {
+        "name": "cal",
+        "value": 39
+      },
+      {
+        "name": "iron",
+        "value": 2.3
+      },
+      {
+        "name": "vit_e",
+        "value": 0.68
+      }
+    ],
+    "unit": "g",
+    "weight": "100g"
+  }
+]
