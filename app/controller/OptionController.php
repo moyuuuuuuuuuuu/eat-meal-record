@@ -18,7 +18,7 @@ class OptionController extends BaseController
             [
                 'name'        => 'home',
                 'title'       => '首页',
-                'icon'        => 'IconHouse',
+                'icon'        => 'home',
                 'activeColor' => '#10b981',
                 'color'       => '#6b7280',
                 'page'        => '/pages/index/index',
@@ -27,7 +27,7 @@ class OptionController extends BaseController
             [
                 'name'        => 'feed',
                 'title'       => '动态',
-                'icon'        => 'IconList',
+                'icon'        => 'layers',
                 'activeColor' => '#10b981',
                 'color'       => '#6b7280',
                 'page'        => '/pages/feed/index',
@@ -35,7 +35,7 @@ class OptionController extends BaseController
             [
                 'name'        => 'profile',
                 'title'       => '我的',
-                'icon'        => 'IconUser',
+                'icon'        => 'user',
                 'activeColor' => '#10b981',
                 'color'       => '#6b7280',
                 'page'        => '/pages/profile/index',
