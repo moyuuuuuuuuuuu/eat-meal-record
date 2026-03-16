@@ -13,6 +13,7 @@ use support\Log;
  * 1、三方返回的单位格式是“数量 单位名称”
  * 2、weight不一定是100g 需要处理成100g
  * 3、nutrition返回的是{name:key,value:value}而食品表存储的是{key:value,key1:value1}
+ * @deprecated
  */
 class RemoteFoodSyncJob extends BaseConsumer
 {

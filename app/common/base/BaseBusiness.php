@@ -3,13 +3,12 @@
 namespace app\common\base;
 
 
-
 abstract class BaseBusiness
 {
     // 1. 显式赋值 null，解决 "must not be accessed before initialization" 报错
-    protected static self|null $instance = null;
+    protected static array $instances = [];
 
-    protected ?BaseModel $model = null;
+    protected ?BaseModel $model       = null;
     protected ?BaseModel $staticModel = null;
 
     // 私有化构造函数，强制通过 instance() 访问
@@ -23,38 +22,65 @@ abstract class BaseBusiness
      */
     public static function instance(BaseModel $model = null): static
     {
-        if (!static::$instance instanceof static) {
-            static::$instance = new static($model);
+        $class = static::class;
+        if (!isset(self::$instances[$class])) {
+            self::$instances[$class] = new static($model);
+        } elseif ($model !== null) {
+            self::$instances[$class]->loadModel($model);
         }
-
-        // 每次返回前重置状态，防止 CLI 环境下的数据污染
-        return static::$instance->reset();
+        return self::$instances[$class];
     }
 
-    public function reset(): static{
+    /**
+     * 重置模型
+     */
+    public function reset(): static
+    {
         $this->model = null;
         return $this;
     }
 
-    private function __clone() {}
-    public function __wakeup() { throw new \Exception("Cannot unserialize singleton"); }
-
-    public function isLoadedModel()
+    private function __clone()
     {
-        return (bool)$this->model || (bool)$this->staticModel;
     }
 
-    protected function loadModel(BaseModel $model)
+    public function __wakeup()
     {
-        $this->model = $model;
-        $this->loadStaticModel($model);
+        throw new \Exception("Cannot unserialize singleton");
     }
 
-    protected function loadStaticModel(BaseModel $model){
-        $this->staticModel = $model;
+    /**
+     * 判断是否已加载模型
+     */
+    public function isLoadedModel(): bool
+    {
+        return $this->model !== null || $this->staticModelClass !== null;
     }
 
-    protected function getModel(){
-        return $this->model ?? new $this->staticModel();
+    /**
+     * 加载模型实例
+     */
+    protected function loadModel(BaseModel $model): void
+    {
+        $this->model            = $model;
+        $this->staticModelClass = get_class($model);
+    }
+
+    /**
+     * 获取模型实例
+     *
+     * @return BaseModel
+     */
+    protected function getModel(): BaseModel
+    {
+        if ($this->model !== null) {
+            return $this->model;
+        }
+
+        if ($this->staticModelClass !== null) {
+            return new $this->staticModelClass();
+        }
+
+        throw new \RuntimeException("No model loaded in " . static::class);
     }
 }
