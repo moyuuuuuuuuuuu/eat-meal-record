@@ -2,8 +2,7 @@
 
 namespace app\service\redisSubscribe;
 
-use app\common\enum\RedisSubscribe;
-use app\format\FoodFormat;
+use app\common\enum\RedisSubscribeEventName;
 use app\model\CatModel;
 use app\model\FoodModel;
 use app\model\FoodNutrientModel;
@@ -15,7 +14,7 @@ use support\Db;
 use support\Log;
 use support\Redis;
 
-final class FoodNutritionSync extends BaseFoodSync
+final class FoodNutritionSync extends BaseRedisSubscribe
 {
     public function run($message)
     {
@@ -44,8 +43,8 @@ final class FoodNutritionSync extends BaseFoodSync
                     // 执行同步入库
                     $foodIdList = $this->syncRemote($remoteFoods);
                     Log::info("[FoodNutritionSync] 同步进度: 批次 " . ($index + 1) . " 成功 +" . count($remoteFoods));
-                    Redis::publish(RedisSubscribe::FoodTagSync->value, json_encode($foodIdList));
-                    Redis::publish(RedisSubscribe::FoodUnitSync->value, json_encode($foodIdList));
+                    Redis::publish(RedisSubscribeEventName::FoodTagSync->value, json_encode($foodIdList));
+                    Redis::publish(RedisSubscribeEventName::FoodUnitSync->value, json_encode($foodIdList));
                 }
             } catch (\Exception $e) {
                 Log::error("[FoodNutritionSync] 批次 " . ($index + 1) . " 发生异常: " . $e->getMessage(), $batchNames);

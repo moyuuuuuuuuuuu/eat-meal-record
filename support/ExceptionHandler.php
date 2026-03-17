@@ -2,22 +2,46 @@
 
 namespace support;
 
+use app\common\enum\BusinessCode;
+use app\common\exception\BusinessException;
+use app\common\exception\DataNotFoundException;
+use app\common\exception\ValidationException;
+use app\service\Alarm;
+use app\service\MailService;
 use Throwable;
 use Webman\Http\Request;
 use Webman\Http\Response;
 
 class ExceptionHandler extends exception\Handler
 {
+    public $dontReport = [
+        DataNotFoundException::class,
+        ValidationException::class,
+    ];
+
+    public function report(Throwable $exception)
+    {
+        parent::report($exception);
+    }
 
     public function render(Request $request, Throwable $exception): Response
     {
-        if (method_exists($exception, 'render') && ($response = $exception->render($request))) {
-            return $response;
+        // 1. 尝试从异常 Code 获取业务枚举
+        $businessCode = BusinessCode::tryFrom($exception->getCode());
+
+        // 2. 关键报警逻辑：如果是严重的业务错误且是生产环境，触发报警
+        if (($businessCode && $businessCode->value >= 500 || $exception->getCode())) {
+            Alarm::notify($exception);
         }
-        $code = $exception->getCode();
-        $json = ['code' => $code ?: 500, 'msg' => $this->debug ? $exception->getMessage() : 'Server internal error'];
-        $this->debug && $json['traces'] = $exception->getTrace();
-        return new Response(200, ['Content-Type' => 'application/json'],
-            json_encode($json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        return parent::render($request, $exception);
+    }
+
+    protected function sendAlert(Request $request, Throwable $exception): void
+    {
+        $content = <<<HTML
+
+HTML;
+
+        MailService::sendText('[系统异常报告]' . $exception->getMessage(), $content);
     }
 }

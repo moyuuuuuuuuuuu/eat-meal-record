@@ -12,7 +12,7 @@
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 return [
-    'default' => [
+    'default'   => [
         'password' => getenv('REDIS_PASSWORD'),
         'host'     => getenv('REDIS_HOST'),
         'port'     => (int)getenv('REDIS_PORT'),
@@ -24,5 +24,11 @@ return [
             'idle_timeout'       => (int)getenv('REDIS_IDLE_TIMEOUT'),
             'heartbeat_interval' => (int)getenv('REDIS_HEART_BEAT_INTERVAL'),
         ],
+    ],
+    'subscribe' => [
+        'password' => getenv('REDIS_PASSWORD'),
+        'host'     => getenv('REDIS_HOST'),
+        'port'     => (int)getenv('REDIS_PORT'),
+        'database' => (int)getenv('REDIS_DATABASE'),
     ]
 ];

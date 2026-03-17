@@ -12,7 +12,7 @@ use app\service\baidu\Ibs;
 use app\util\Calculate;
 use Carbon\Carbon;
 use support\Db;
-use support\exception\BusinessException;
+use app\common\exception\BusinessException;
 use support\Request;
 use Webman\Validation\Annotation\Validate;
 
@@ -294,7 +294,7 @@ class MealRecordBusiness extends BaseBusiness
                     $mealRecordFoodInfo->number    = $newNumber;
                     $mealRecordFoodInfo->nutrition = $newFoodNutrition;
                     if (!$mealRecordFoodInfo->save()) {
-                        throw new BusinessException('更新食物记录失败');
+                        throw new BusinessException('更新食物记录失败', BusinessCode::BUSINESS_ERROR);
                     }
 
                     // 记录增量到总体营养中
@@ -316,7 +316,7 @@ class MealRecordBusiness extends BaseBusiness
                 $batchInsertResult = MealRecordFoodModel::insert($batchInsert);
             }
             if (!$mealRecord->save() || !$batchInsertResult) {
-                throw new BusinessException('餐食记录保存失败', BusinessCode::BUSINESS_ERROR->value);
+                throw new BusinessException('餐食记录保存失败', BusinessCode::BUSINESS_ERROR);
             }
             return $mealRecord->toArray();
         });

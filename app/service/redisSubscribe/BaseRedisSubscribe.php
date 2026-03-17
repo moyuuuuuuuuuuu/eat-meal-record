@@ -2,7 +2,7 @@
 
 namespace app\service\redisSubscribe;
 
-abstract class BaseFoodSync
+abstract class BaseRedisSubscribe
 {
     private static array $instances = [];
 

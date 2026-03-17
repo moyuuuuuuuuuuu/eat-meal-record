@@ -15,7 +15,8 @@ use app\common\validate\UserValidator;
 use app\model\UserModel;
 use app\model\UserStepsModel;
 use app\service\wechat\WxMini;
-use support\exception\BusinessException;
+use app\common\exception\BusinessException;
+use app\util\Helper;
 use support\Redis;
 use support\Request;
 use Webman\Validation\Annotation\Validate;
@@ -41,7 +42,7 @@ class UserBusiness extends BaseBusiness
         $sessionKey = $wxResult['sessionKey'] ?? null;
 
         if (!$openid) {
-            throw new \Exception('获取 openid 失败');
+            throw new BusinessException('获取 openid 失败', BusinessCode::PARAM_ERROR);
         }
 
         // 2. 查找或创建用户
@@ -82,7 +83,7 @@ class UserBusiness extends BaseBusiness
         $mobile = $request->post('mobile');
         $code   = $request->post('code');
         if (!(SmsBusiness::instance()->check($mobile, $code))) {
-            throw new BusinessException('短信验证码错误', BusinessCode::PARAM_ERROR->value);
+            throw new BusinessException('短信验证码错误', BusinessCode::PARAM_ERROR);
         }
         // 2. 查找或创建用户
         $user = UserModel::where('mobile', $mobile)->first();
@@ -118,13 +119,12 @@ class UserBusiness extends BaseBusiness
         $iv            = $request->post('iv');
 
         if (!$encryptedData || !$iv) {
-            throw new \Exception('缺少必要参数');
+            throw new BusinessException('缺少必要参数', BusinessCode::PARAM_ERROR);
         }
 
-        // 从缓存获取 session_key
         $sessionKey = \support\Cache::get('wx_session_key_' . $userId);
         if (!$sessionKey) {
-            throw new \Exception('登录态已失效，请重新登录', 401);
+            throw new BusinessException('登录状态失效，请重新登录', BusinessCode::NO_LOGIN);
         }
 
         // 解密数据
@@ -147,7 +147,8 @@ class UserBusiness extends BaseBusiness
                 ['steps' => $steps]
             );
         }
-        Redis::set(UserInfoContext::userInfoStepCacheKey($userId),$todaySteps);
+        Redis::set(UserInfoContext::userInfoStepCacheKey($userId), $todaySteps);
+        Redis::expire(UserInfoContext::userInfoStepCacheKey($userId), Helper::todayEndTimestamp() - time());
         return true;
     }
 
@@ -222,7 +223,7 @@ class UserBusiness extends BaseBusiness
         $userId = $request->userInfo->id;
         $user   = UserModel::find($userId);
         if (!$user) {
-            throw new BusinessException('用户不存在', BusinessCode::NOT_FOUND->value);
+            throw new BusinessException('用户不存在', BusinessCode::NOT_FOUND);
         }
 
         $params = $request->post();
@@ -235,7 +236,7 @@ class UserBusiness extends BaseBusiness
         }
 
         if (!$user->save()) {
-            throw new BusinessException('保存失败', BusinessCode::BUSINESS_ERROR->value);
+            throw new BusinessException('用户信息保存失败', BusinessCode::BUSINESS_ERROR);
         }
         $userInfoData = new UserInfoData();
         $userInfoData->refreshUserInfo($user);

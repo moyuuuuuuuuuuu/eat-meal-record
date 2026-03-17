@@ -6,7 +6,7 @@ use app\common\enum\BusinessCode;
 use app\service\BaseGuzzleHttpClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\{GuzzleException, RequestException};
-use support\exception\BusinessException;
+use app\common\exception\BusinessException;
 use support\Log;
 use Webman\Http\UploadFile;
 

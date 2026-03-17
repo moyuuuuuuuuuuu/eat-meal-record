@@ -5,7 +5,7 @@ namespace app\controller;
 use app\common\base\BaseController;
 use app\common\enum\BusinessCode;
 use app\service\baidu\Bos;
-use support\exception\BusinessException;
+use app\common\exception\BusinessException;
 use support\Request;
 
 class UploadController extends BaseController
@@ -51,7 +51,7 @@ class UploadController extends BaseController
         $filename = Bos::instance()->putObj($file);
         return $this->success('ok', [
             'path' => $filename,
-            'url'  => getenv('BOS_DOMAIN') . $filename,
+            'url'  => source($filename),
         ]);
     }
 }

@@ -6,8 +6,8 @@ use app\common\enum\BusinessCode;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
-use support\exception\BusinessException;
 use support\Redis;
+use app\common\exception\BusinessException;
 
 class BooHee extends BaseGuzzleHttpClient
 {

@@ -9,7 +9,7 @@ use app\format\BlogFormat;
 use app\model\{BlogAttachModel, BlogLocationModel, BlogModel, BlogTopicModel, FollowModel, LikeModel, TopicModel};
 use app\service\baidu\Ibs;
 use support\{Db, Request};
-use support\exception\BusinessException;
+use app\common\exception\BusinessException;
 use Webman\RedisQueue\Client;
 use Webman\Validation\Annotation\Validate;
 
@@ -96,7 +96,7 @@ class FeedBusiness extends BaseBusiness
         return Db::transaction(function () use ($userId, $blogId) {
             $blog = BlogModel::query()->lockForUpdate()->find($blogId);
             if (!$blog) {
-                throw new BusinessException('动态不存在', BusinessCode::BUSINESS_ERROR->value);
+                throw new DataNotFoundException('动态不存在');
             }
             $blogLikes = $blog->likes;
 
@@ -160,7 +160,7 @@ class FeedBusiness extends BaseBusiness
                 'visibility' => $visibility,
             ]);
             if (!$blogInfo) {
-                throw new BusinessException('动态发布失败', BusinessCode::BUSINESS_ERROR->value);
+                throw new BusinessException('动态发布失败', BusinessCode::BUSINESS_ERROR);
             }
 
             if ($topicIdList) {
@@ -207,7 +207,7 @@ class FeedBusiness extends BaseBusiness
                     'name'      => $location['name'] ?? '',
                 ]);
                 if (!$blogLocationInfo) {
-                    throw new BusinessException('动态位置信息保存失败', BusinessCode::BUSINESS_ERROR->value);
+                    throw new BusinessException('动态位置信息保存失败', BusinessCode::BUSINESS_ERROR);
                 }
             }
 
@@ -233,7 +233,7 @@ class FeedBusiness extends BaseBusiness
                 }
                 $attachInsertResult = BlogAttachModel::insert($attachInsertList);
                 if (!$attachInsertResult) {
-                    throw new BusinessException('动态附件保存失败', BusinessCode::BUSINESS_ERROR->value);
+                    throw new BusinessException('动态附件保存失败', BusinessCode::BUSINESS_ERROR);
                 }
             }
             return (new BlogFormat($request))->format($blogInfo);

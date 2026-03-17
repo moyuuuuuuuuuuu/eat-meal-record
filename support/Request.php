@@ -26,4 +26,33 @@ class Request extends \Webman\Http\Request
      * @var UserInfoData|null
      */
     protected UserInfoData|null $userInfo;
+
+    /**
+     * 全局id
+     * @var string
+     */
+    protected string|null $traceId = null;
+
+
+    protected int|null $startTime = null;
+
+    public function getTraceId(): string|null
+    {
+        return $this->traceId;
+    }
+
+    public function setTraceId(string $traceId): void
+    {
+        $this->traceId = $traceId;
+    }
+
+    public function getStartTime(): int|null
+    {
+        return $this->startTime;
+    }
+
+    public function setStartTime(int $startTime): void
+    {
+        $this->startTime = $startTime;
+    }
 }

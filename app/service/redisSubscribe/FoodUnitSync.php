@@ -9,7 +9,7 @@ use app\service\FoodService;
 use support\Db;
 use support\Log;
 
-final class FoodUnitSync extends BaseFoodSync
+final class FoodUnitSync extends BaseRedisSubscribe
 {
     public function run($message)
     {

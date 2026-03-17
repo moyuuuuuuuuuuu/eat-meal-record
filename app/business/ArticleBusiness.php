@@ -8,8 +8,8 @@ use app\common\enum\ArticleType;
 use app\common\enum\BusinessCode;
 use app\common\exception\DataNotFoundException;
 use app\model\ArticleModel;
-use support\exception\BusinessException;
 use support\Request;
+use app\common\exception\BusinessException;
 
 class ArticleBusiness extends BaseBusiness
 {
@@ -38,11 +38,11 @@ class ArticleBusiness extends BaseBusiness
         }
         $articleType = ArticleType::tryFrom($type);
         if (!$articleType) {
-            throw new BusinessException('错误的文章类型', BusinessCode::BUSINESS_ERROR->value);
+            throw new BusinessException('错误的文章类型', BusinessCode::PARAM_ERROR);
         } else if ($articleType != ArticleType::UserAgreement && !$id) {
-            throw new BusinessException('参数缺失', BusinessCode::BUSINESS_ERROR->value);
+            throw new BusinessException('参数缺失', BusinessCode::PARAM_ERROR);
         }
-        $query = ArticleModel::query()->select(['id', 'title', 'brief', 'content','created_at']);
+        $query = ArticleModel::query()->select(['id', 'title', 'brief', 'content', 'created_at']);
         if ($id) {
             $query->where('id', $id);
         }
@@ -50,7 +50,6 @@ class ArticleBusiness extends BaseBusiness
             $query->where('type', $type);
         }
         $query->where('status', ArticleStatus::Publish->value);
-        echo ArticleModel::printSql($query);
         $info = $query->first();
         if (!$info) {
             throw new DataNotFoundException('文章未找到');

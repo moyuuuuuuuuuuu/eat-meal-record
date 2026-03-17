@@ -16,7 +16,7 @@ use app\model\UserGoalModel;
 use app\util\Calculate;
 use Carbon\Carbon;
 use support\Db;
-use support\exception\BusinessException;
+use app\common\exception\BusinessException;
 use support\Request;
 use Webman\Validation\Annotation\Validate;
 
@@ -64,7 +64,7 @@ class DiaryBusiness extends BaseBusiness
         $target = 2000;
         //每日卡路里目标
         if ($request->userInfo) {
-            $target    = UserGoalModel::query()->where('user_id', $request->userInfo->id)->value('daily_calories') ?? 2000;
+            $target             = UserGoalModel::query()->where('user_id', $request->userInfo->id)->value('daily_calories') ?? 2000;
             $totalNutritionList = MealRecordModel::query()
                 ->where('user_id', $request->userInfo->id)
                 ->where('meal_date', Carbon::today())
@@ -157,12 +157,12 @@ class DiaryBusiness extends BaseBusiness
             // 更新主表营养总和
             $mealRecord->nutrition = $currentNutrition;
             if (!$mealRecord->save()) {
-                throw new BusinessException('更新主记录失败', BusinessCode::BUSINESS_ERROR->value);
+                throw new BusinessException('更新主记录失败', BusinessCode::BUSINESS_ERROR);
             }
 
             // 删除该项
             if (!$mealFood->delete()) {
-                throw new BusinessException('删除失败，请稍后重试', BusinessCode::BUSINESS_ERROR->value);
+                throw new BusinessException('删除失败，请稍后重试', BusinessCode::BUSINESS_ERROR);
             }
 
             return $mealFood;

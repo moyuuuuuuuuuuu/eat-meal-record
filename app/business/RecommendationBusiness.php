@@ -8,7 +8,7 @@ use app\common\enum\NormalStatus;
 use app\format\RecommendationFormat;
 use app\model\FoodModel;
 use app\model\MealRecordModel;
-use support\exception\BusinessException;
+use app\common\exception\BusinessException;
 use support\Request;
 
 class RecommendationBusiness extends BaseBusiness

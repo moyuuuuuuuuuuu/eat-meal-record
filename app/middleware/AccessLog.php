@@ -2,7 +2,9 @@
 
 namespace app\middleware;
 
+use app\common\enum\UserInfoContext;
 use support\Log;
+use Webman\Context;
 use Webman\Http\Request;
 use Webman\Http\Response;
 use Webman\MiddlewareInterface;
@@ -11,26 +13,46 @@ class AccessLog implements MiddlewareInterface
 {
     public function process(Request $request, callable $handler): Response
     {
-        $start_time = microtime(true);
+        // 1. 生成 Trace ID 并注入 Request 对象
+        $request->traceId   = $request->header('x-trace-id', bin2hex(random_bytes(8)));
+        $request->startTime = microtime(true);
+
+        // 2. 执行后续逻辑 (控制器等)
         $response = $handler($request);
-        $end_time = microtime(true);
-        $duration = round(($end_time - $start_time) * 1000, 2); // 转化为毫秒
+
+        // 3. 计算耗时
+        $endTime  = microtime(true);
+        $duration = round(($endTime - $request->startTime) * 1000, 2);
+
+        // 4. 在响应头透传 Trace ID
+        $response->header('X-Trace-Id', $request->traceId);
+
+        // 5. 准备日志数据
         $postData = $request->post();
-        array_walk_recursive($postData, function (&$value) {
-            if (is_string($value) && strlen($value) > 100) {
-                $value = mb_substr($value, 0, 100) . '...';
-            }
-        });
-        Log::channel('access')->info('request', [
-            'time_start' => date('Y-m-d H:i:s', (int)$start_time),
-            'method'     => $request->method(),
-            'uri'        => $request->path(),
-            'query'      => $request->get(),   // GET 参数
-            'post'       => $postData,  // POST 参数
-            'ip'         => $request->getRemoteIp(),
-            'status'     => $response->getStatusCode(),
-            'duration'   => $duration . 'ms',  // 耗时
+        if (!empty($postData)) {
+            array_walk_recursive($postData, function (&$value) {
+                // 敏感字段脱敏（可选）
+//                 if (in_array($key, ['password', 'token'])) $value = '******';
+                if (is_string($value) && mb_strlen($value) > 100) {
+                    $value = mb_substr($value, 0, 100) . '...[truncated]';
+                }
+            });
+        }
+
+        // 6. 记录结构化日志
+        Log::channel('access')->info('', [
+            'trace_id' => $request->traceId,
+            'ip'       => $request->getRealIp(),
+            'method'   => $request->method(),
+            'uri'      => $request->path(),
+            'query'    => $request->get(),
+            'post'     => $postData,
+            'status'   => $response->getStatusCode(),
+            'duration' => $duration . 'ms',
+            'ua'       => $request->header('user-agent'),
+            'user_id'  => Context::get(UserInfoContext::UserId->value), // 关联当前操作用户
         ]);
+
         return $response;
     }
 }

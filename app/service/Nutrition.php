@@ -6,7 +6,7 @@ use app\common\context\TokenLimit;
 use app\common\enum\BusinessCode;
 use app\common\enum\NutritionInputType;
 use Moyuuuuuuuu\QianFan\{Contants\RequestMethod, Contants\Role, Payload\Universal, Request};
-use support\exception\BusinessException;
+use app\common\exception\BusinessException;
 use support\Log;
 
 class Nutrition

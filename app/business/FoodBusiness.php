@@ -7,7 +7,7 @@ use app\common\context\TokenLimit;
 use app\common\enum\BusinessCode;
 use app\common\enum\NormalStatus;
 use app\common\enum\NutritionInputType;
-use app\common\enum\RedisSubscribe;
+use app\common\enum\RedisSubscribeEventName;
 use app\common\enum\UserInfoContext;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ValidationException;
@@ -22,7 +22,7 @@ use app\util\Calculate;
 use app\util\Helper;
 use support\Context;
 use support\Db;
-use support\exception\BusinessException;
+use app\common\exception\BusinessException;
 use support\Log;
 use support\Redis;
 use support\Request;
@@ -64,7 +64,7 @@ class FoodBusiness extends BaseBusiness
         });
         if (!$query->exists()) {
             $query = $query->clone();
-            Redis::publish(RedisSubscribe::FoodNutritionSync->value, json_encode([$name]));
+            Redis::publish(RedisSubscribeEventName::FoodNutritionSync->value, json_encode([$name]));
             // 最多等 6 秒，每 2 秒检查一次
             foreach (range(1, 3) as $attempt) {
                 sleep(2);
@@ -171,7 +171,7 @@ class FoodBusiness extends BaseBusiness
     public function recognize(Request $request)
     {
         if (!TokenLimit::instance()->hasQuota()) {
-            throw new BusinessException('AI识别次数已经用完，请先手动选择食物吧', BusinessCode::BUSINESS_ERROR->value);
+            throw new BusinessException('AI识别次数已经用完，请先手动选择食物吧', BusinessCode::NO_AUTH);
         }
 
         /* $response = json_decode(file_get_contents(public_path() . '/qianfan_response.json'), true);
@@ -184,7 +184,7 @@ class FoodBusiness extends BaseBusiness
         }
 
         if (!in_array($type, Helper::cases(NutritionInputType::class))) {
-            throw new BusinessException('不支持的识别方式', BusinessCode::BUSINESS_ERROR->value);
+            throw new BusinessException('不支持的识别方式', BusinessCode::PARAM_ERROR);
         }
         try {
             $type = NutritionInputType::tryFrom($type);
@@ -194,7 +194,7 @@ class FoodBusiness extends BaseBusiness
                 if ($type == NutritionInputType::AUDIO) {
                     $result = Bos::instance()->putObjFromBase($content, $options);
                     if (!$result) {
-                        throw new BusinessException('录音文件上传失败', BusinessCode::THREE_PART_ERROR->value);
+                        throw new BusinessException('录音文件上传失败', BusinessCode::THREE_PART_ERROR);
                     }
                     $content = source($result);
                 }
