@@ -30,5 +30,9 @@ return [
         'host'     => getenv('REDIS_HOST'),
         'port'     => (int)getenv('REDIS_PORT'),
         'database' => (int)getenv('REDIS_DATABASE'),
+        'options'  => [
+            // 必须：设置永不超时，防止阻塞订阅被断开
+            \Redis::OPT_READ_TIMEOUT => -1,
+        ]
     ]
 ];

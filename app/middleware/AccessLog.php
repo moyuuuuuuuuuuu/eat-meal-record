@@ -14,18 +14,18 @@ class AccessLog implements MiddlewareInterface
     public function process(Request $request, callable $handler): Response
     {
         // 1. 生成 Trace ID 并注入 Request 对象
-        $request->traceId   = $request->header('x-trace-id', bin2hex(random_bytes(8)));
-        $request->startTime = microtime(true);
+        $request->setTraceId($request->header('x-trace-id', bin2hex(random_bytes(8))));
+        $request->setStartTime(microtime(true));
 
         // 2. 执行后续逻辑 (控制器等)
         $response = $handler($request);
 
         // 3. 计算耗时
         $endTime  = microtime(true);
-        $duration = round(($endTime - $request->startTime) * 1000, 2);
+        $duration = round(($endTime - $request->getStartTime()) * 1000, 2);
 
         // 4. 在响应头透传 Trace ID
-        $response->header('X-Trace-Id', $request->traceId);
+        $response->header('X-Trace-Id', $request->getTraceId());
 
         // 5. 准备日志数据
         $postData = $request->post();
@@ -41,7 +41,7 @@ class AccessLog implements MiddlewareInterface
 
         // 6. 记录结构化日志
         Log::channel('access')->info('', [
-            'trace_id' => $request->traceId,
+            'trace_id' => $request->getTraceId(),
             'ip'       => $request->getRealIp(),
             'method'   => $request->method(),
             'uri'      => $request->path(),
