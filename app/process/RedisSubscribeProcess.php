@@ -6,11 +6,14 @@ use app\common\enum\RedisSubscribeEventName;
 use app\service\redisSubscribe\BaseRedisSubscribe;
 use support\Log;
 use support\Redis;
+use Workerman\Redis\Client;
 use Workerman\Timer;
 use Workerman\Worker;
 
 class RedisSubscribeProcess
 {
+    protected ?Client $client = null;
+
     public function onWorkerStart(Worker $worker): void
     {
         $this->subscribe();
@@ -19,10 +22,14 @@ class RedisSubscribeProcess
     private function subscribe(): void
     {
         try {
-            $redis = Redis::connection('subscribe')->client();
-            $redis->setOption(\Redis::OPT_TCP_KEEPALIVE, true);
-            $redis->setOption(\Redis::OPT_READ_TIMEOUT, -1);
-            $redis->subscribe(RedisSubscribeEventName::channels(), fn($message, $channel) => $this->dispatch($message, $channel));
+            $host         = getenv('REDIS_HOST');
+            $port         = getenv('REDIS_PORT');
+            $password     = getenv('REDIS_PASSWORD');
+            $this->client = new Client("redis://{$host}:{$port}");
+            if ($password) {
+                $this->client->auth($password);
+            }
+            $this->client->subscribe(RedisSubscribeEventName::channels(), fn($channel, $message) => $this->dispatch($channel, $message));
         } catch (\Throwable $e) {
             echo "[RedisSubscribe] 连接断开: {$e->getMessage()}, 3秒后重连...\n";
             Timer::add(3, function () {
@@ -31,7 +38,7 @@ class RedisSubscribeProcess
         }
     }
 
-    private function dispatch(string $message, string $channel): void
+    private function dispatch(string $channel, string $message): void
     {
         Log::debug('redisSubscribe:dispatch', [$channel, $message]);
 
