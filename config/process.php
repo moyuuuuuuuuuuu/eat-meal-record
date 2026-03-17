@@ -61,7 +61,7 @@ return [
     ],
     'redis-subscribe' => [
         'handler' => \app\process\RedisSubscribeProcess::class,
-        'count'   => 2
+        'count'   => 1
     ],
     'food-health'     => [
         'handler' => \app\process\FoodHealthCheck::class,

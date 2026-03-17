@@ -14,7 +14,7 @@ enum RedisSubscribeEventName: string
 
     static function channels(): array
     {
-        return array_column(BusinessCode::cases(), 'value');
+        return array_column(static::cases(), 'value');
     }
 
     public function handlerClass(): BaseRedisSubscribe|null
