@@ -45,7 +45,7 @@ class WorkFlow extends BaseGuzzleHttpClient
         $this->oauth = new OAuthClient($this->appId, $this->publicKey, $this->privateKey, $this->client);
         $result      = $this->oauth->getAccessToken();
         $accessToken = $result['access_token'];
-        Redis::set($this->accessTokenCacheKey, $accessToken, $result['expires_in'] - 100);
+        Redis::set($this->accessTokenCacheKey, $accessToken, $result['expires_in'] - time());
         return $accessToken;
     }
 
