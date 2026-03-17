@@ -16,9 +16,9 @@ class Alarm
     public static function notify(Throwable $exception)
     {
         // 1. 频率限制：同一个地方的报错，1分钟内只发一次，防止被刷屏
-       /* if (self::isFrequent($exception)) {
+        if (self::isFrequent($exception)) {
             return;
-        }*/
+        }
 
         $request = request();
         $traceId = $request->getTraceId() ?? 'N/A';

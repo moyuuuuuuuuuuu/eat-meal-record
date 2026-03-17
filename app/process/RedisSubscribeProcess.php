@@ -5,7 +5,6 @@ namespace app\process;
 use app\common\enum\RedisSubscribeEventName;
 use app\service\redisSubscribe\BaseRedisSubscribe;
 use support\Log;
-use support\Redis;
 use Workerman\Redis\Client;
 use Workerman\Timer;
 use Workerman\Worker;
