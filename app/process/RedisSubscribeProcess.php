@@ -5,58 +5,35 @@ namespace app\process;
 use app\common\enum\RedisSubscribeEventName;
 use app\service\redisSubscribe\BaseRedisSubscribe;
 use support\Log;
-use Workerman\Redis\Client;
+use support\Redis;
+use Workerman\Timer;
 use Workerman\Worker;
 
 class RedisSubscribeProcess
 {
-    private ?Client $redis = null;
-
     public function onWorkerStart(Worker $worker): void
     {
-        $this->connect();
+        $this->subscribe();
     }
 
-    private function connect(): void
+    private function subscribe(): void
     {
-        $host     = getenv('REDIS_HOST');
-        $port     = getenv('REDIS_PORT');
-        $password = getenv('REDIS_PASSWORD');
-
-        $dsn = "redis://{$host}:{$port}";
-
-        $this->redis = new Client($dsn, [
-            \Redis::OPT_TCP_KEEPALIVE => 1,
-            \Redis::OPT_READ_TIMEOUT  => 1,
-        ]);
-
-        // 有密码时认证
-        if ($password) {
-            $this->redis->auth($password);
-        }
-
-        // 断线自动重连
-        $this->redis->on('close', function () {
-            Log::warning('[RedisSubscribe] 连接断开，3秒后重连...');
-            \Workerman\Timer::add(3, function () {
-                $this->connect();
+        try {
+            $redis = Redis::connection('subscribe')->client();
+            $redis->setOption(\Redis::OPT_TCP_KEEPALIVE, true);
+            $redis->setOption(\Redis::OPT_READ_TIMEOUT, -1);
+            $redis->subscribe(RedisSubscribeEventName::channels(), fn($message, $channel) => $this->dispatch($message, $channel));
+        } catch (\Throwable $e) {
+            echo "[RedisSubscribe] 连接断开: {$e->getMessage()}, 3秒后重连...\n";
+            Timer::add(3, function () {
+                $this->subscribe();
             }, [], false);
-        });
-
-        $this->redis->on('error', function ($e) {
-            Log::error('[RedisSubscribe] 连接错误: ' . $e);
-        });
-
-        // 异步订阅，不阻塞事件循环
-        $channels = RedisSubscribeEventName::channels();
-        $this->redis->subscribe($channels, function ($channel, $message) {
-            Log::debug('redisSubscribe:dispatch', [$channel, $message]);
-            $this->dispatch($message, $channel);
-        });
+        }
     }
 
     private function dispatch(string $message, string $channel): void
     {
+        Log::debug('redisSubscribe:dispatch', [$channel, $message]);
 
         $channelEnum = RedisSubscribeEventName::tryFrom($channel);
 
