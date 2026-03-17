@@ -34,7 +34,7 @@ class Request extends \Webman\Http\Request
     protected string|null $traceId = null;
 
 
-    protected int|null $startTime = null;
+    protected float|null $startTime = null;
 
     public function getTraceId(): string|null
     {
@@ -46,12 +46,12 @@ class Request extends \Webman\Http\Request
         $this->traceId = $traceId;
     }
 
-    public function getStartTime(): int|null
+    public function getStartTime(): float|null
     {
         return $this->startTime;
     }
 
-    public function setStartTime(int $startTime): void
+    public function setStartTime(float $startTime): void
     {
         $this->startTime = $startTime;
     }

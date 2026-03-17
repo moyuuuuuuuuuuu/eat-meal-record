@@ -25,7 +25,10 @@ class RedisSubscribeProcess
 
         $dsn = "redis://{$host}:{$port}";
 
-        $this->redis = new Client($dsn);
+        $this->redis = new Client($dsn, [
+            \Redis::OPT_TCP_KEEPALIVE => 1,
+            \Redis::OPT_READ_TIMEOUT  => 1,
+        ]);
 
         // 有密码时认证
         if ($password) {
