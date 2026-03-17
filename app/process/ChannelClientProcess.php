@@ -1,23 +1,32 @@
 <?php
-
 namespace app\process;
 
-use app\common\enum\RedisSubscribeEventName;
-use app\service\redisSubscribe\BaseRedisSubscribe;
+use app\common\enum\ChannelEventName;
+use app\service\channelClient\BaseChannelClient;
+use Channel\Client;
 use support\Log;
-use Workerman\Redis\Client;
 use Workerman\Timer;
 use Workerman\Worker;
 
-class RedisSubscribeProcess
+/**
+ * 改为进程间通信不用redis的Sub/Pub了
+ */
+class ChannelClientProcess
 {
-    protected ?Client $client = null;
-
     public function onWorkerStart(Worker $worker): void
     {
-        $this->subscribe();
+        $channelList = ChannelEventName::channels();
+        Client::connect('127.0.0.1',2206);
+        foreach ($channelList as $k=>$v){
+            $channelEnum = ChannelEventName::tryFrom($v);
+            Client::on($channelEnum->value,fn($data)=>$channelEnum->handlerClass()->run($data));
+        }
     }
 
+    /**
+     * @deprecated
+     * @return void
+     */
     private function subscribe(): void
     {
         try {
@@ -28,7 +37,7 @@ class RedisSubscribeProcess
             if ($password) {
                 $this->client->auth($password);
             }
-            $this->client->subscribe(RedisSubscribeEventName::channels(), fn($channel, $message) => $this->dispatch($channel, $message));
+            $this->client->subscribe(ChannelEventName::channels(), fn($channel, $message) => $this->dispatch($channel, $message));
         } catch (\Throwable $e) {
             echo "[RedisSubscribe] 连接断开: {$e->getMessage()}, 3秒后重连...\n";
             Timer::add(3, function () {
@@ -37,11 +46,17 @@ class RedisSubscribeProcess
         }
     }
 
+    /**
+     * @deprecated
+     * @param string $channel
+     * @param string $message
+     * @return void
+     */
     private function dispatch(string $channel, string $message): void
     {
         Log::debug('redisSubscribe:dispatch', [$channel, $message]);
 
-        $channelEnum = RedisSubscribeEventName::tryFrom($channel);
+        $channelEnum = ChannelEventName::tryFrom($channel);
 
         if (!$channelEnum) {
             Log::error("未知的频道[{$channel}]", [$message]);
@@ -49,7 +64,7 @@ class RedisSubscribeProcess
         }
 
         try {
-            /** @var BaseRedisSubscribe $handlerClass */
+            /** @var BaseChannelClient $handlerClass */
             $handlerClass = $channelEnum->handlerClass();
             if ($handlerClass) {
                 $handlerClass->run($message);

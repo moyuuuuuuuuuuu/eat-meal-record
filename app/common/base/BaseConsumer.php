@@ -7,7 +7,6 @@ use Webman\RedisQueue\Consumer;
 
 abstract class BaseConsumer implements Consumer
 {
-    public $queue;
     public $connection = 'default';
     abstract public function consume($data);
 

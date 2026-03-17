@@ -3,10 +3,13 @@
 namespace app\service\coze;
 
 use app\common\context\TokenLimit;
+use app\common\enum\BusinessCode;
+use app\common\exception\BusinessException;
 use app\service\BaseGuzzleHttpClient;
 use Coze\Auth\OAuthClient;
 use Coze\Workflow\Run;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use support\Redis;
 
 class WorkFlow extends BaseGuzzleHttpClient
@@ -20,7 +23,7 @@ class WorkFlow extends BaseGuzzleHttpClient
 
     protected ?OAuthClient $oauth = null;
 
-    protected string $accessTokenCacheKey = 'coze_access_token';
+    protected string $accessTokenCacheKey = 'coze:access_token';
 
     protected function __construct()
     {
@@ -45,23 +48,45 @@ class WorkFlow extends BaseGuzzleHttpClient
         $this->oauth = new OAuthClient($this->appId, $this->publicKey, $this->privateKey, $this->client);
         $result      = $this->oauth->getAccessToken();
         $accessToken = $result['access_token'];
-        Redis::set($this->accessTokenCacheKey, $accessToken, $result['expires_in'] - time());
+        Redis::set($this->accessTokenCacheKey, $accessToken);
+        Redis::expire($this->accessTokenCacheKey, $result['expires_in'] - time());
         return $accessToken;
     }
 
+    protected function clearAccessToken(): void
+    {
+        Redis::del($this->accessTokenCacheKey);
+    }
+
     /**
-     * @param  $params
+     * @param $workFlowId
+     * @param array $params
+     * @param int $retryCount
      * @return array
      * @throws \Exception
      */
-    public function run($workFlowId, array $params)
+    public function run($workFlowId, array $params, int $retryCount = 0)
     {
-        $run    = new Run($this->client, $this->getAccessToken(), $workFlowId);
-        $result = $run->handle($params);
-        $usage  = $result['usage'] ?? [];
-        $data   = json_decode($result['data'], true);
-        unset($run);
-        TokenLimit::instance()->consume($usage['token_count'] ?? []);
-        return $data;
+        if (!$workFlowId) {
+            throw new BusinessException('缺少三方id', BusinessCode::PARAM_ERROR);
+        }
+
+        try {
+            $run    = new Run($this->client, $this->getAccessToken(), $workFlowId);
+            $result = $run->handle($params);
+            $usage  = $result['usage'] ?? [];
+            $data   = json_decode($result['data'], true);
+
+            unset($run);
+            TokenLimit::instance()->consume($usage['token_count'] ?? []);
+            return $data;
+
+        } catch (RequestException $e) {
+            if ($e->getCode() == 401 && $retryCount < 1) {
+                $this->clearAccessToken();
+                return $this->run($workFlowId, $params, $retryCount + 1);
+            }
+            throw $e;
+        }
     }
 }

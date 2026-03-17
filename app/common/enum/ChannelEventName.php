@@ -2,14 +2,14 @@
 
 namespace app\common\enum;
 
-use app\service\redisSubscribe\{BaseRedisSubscribe};
+use app\service\channelClient\{BaseChannelClient};
 
-enum RedisSubscribeEventName: string
+enum ChannelEventName: string
 {
     case FoodTagSync  = 'foodTagSync';
     case FoodUnitSync = 'foodUnitSync';
 
-    case FoodNutritionSync = 'foodNutritionSync';
+//    case FoodNutritionSync = 'foodNutritionSync';
     case SystemErrorNotify = 'systemErrorNotify';
 
     static function channels(): array
@@ -17,13 +17,13 @@ enum RedisSubscribeEventName: string
         return array_column(static::cases(), 'value');
     }
 
-    public function handlerClass(): BaseRedisSubscribe|null
+    public function handlerClass(): BaseChannelClient|null
     {
         $class = ucfirst($this->value);
         $class = "\\app\\service\\redisSubscribe\\" . $class;
         if (!class_exists($class)) return null;
         /**
-         * @var BaseRedisSubscribe $class
+         * @var BaseChannelClient $class
          */
         return $class::instance();
     }

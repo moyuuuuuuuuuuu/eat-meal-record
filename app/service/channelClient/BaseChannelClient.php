@@ -1,8 +1,8 @@
 <?php
 
-namespace app\service\redisSubscribe;
+namespace app\service\channelClient;
 
-abstract class BaseRedisSubscribe
+abstract class BaseChannelClient
 {
     private static array $instances = [];
 

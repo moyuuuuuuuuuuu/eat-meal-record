@@ -1,23 +1,27 @@
 <?php
 
-namespace app\service\redisSubscribe;
+namespace app\service\channelClient;
 
-use app\common\enum\RedisSubscribeEventName;
+use app\common\enum\ChannelEventName;
 use app\model\CatModel;
 use app\model\FoodModel;
 use app\model\FoodNutrientModel;
 use app\model\FoodUnitModel;
 use app\model\UnitModel;
+use app\service\BooHee;
 use app\service\FoodService;
 use app\util\Calculate;
+use Channel\Client;
 use support\Db;
 use support\Log;
-use support\Redis;
 
-final class FoodNutritionSync extends BaseRedisSubscribe
+final class FoodNutritionSync extends BaseChannelClient
 {
     public function run($message)
     {
+        $foodName = $message;
+        $booheeFoodList = BooHee::instance()->search($foodName);
+
         $foodNameList = json_decode($message, true);
         if (empty($foodNameList)) return;
         $chunks = array_chunk($foodNameList, 10);
@@ -43,12 +47,13 @@ final class FoodNutritionSync extends BaseRedisSubscribe
                     // 执行同步入库
                     $foodIdList = $this->syncRemote($remoteFoods);
                     Log::info("[FoodNutritionSync] 同步进度: 批次 " . ($index + 1) . " 成功 +" . count($remoteFoods));
-                    Redis::publish(RedisSubscribeEventName::FoodTagSync->value, json_encode($foodIdList));
-                    Redis::publish(RedisSubscribeEventName::FoodUnitSync->value, json_encode($foodIdList));
+                    Client::connect();
+                    Client::publish(ChannelEventName::FoodTagSync->value, json_encode($foodIdList));
+                    Client::publish(ChannelEventName::FoodUnitSync->value, json_encode($foodIdList));
                 }
             } catch (\Exception $e) {
                 Log::error("[FoodNutritionSync] 批次 " . ($index + 1) . " 发生异常: " . $e->getMessage(), $batchNames);
-                \support\Log::error("[FoodNutritionSync] 异常详情: " . $e);
+                Log::error("[FoodNutritionSync] 异常详情: " . $e);
             }
         }
     }

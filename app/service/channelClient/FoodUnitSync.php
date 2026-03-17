@@ -1,6 +1,6 @@
 <?php
 
-namespace app\service\redisSubscribe;
+namespace app\service\channelClient;
 
 use app\model\FoodModel;
 use app\model\FoodUnitModel;
@@ -9,7 +9,7 @@ use app\service\FoodService;
 use support\Db;
 use support\Log;
 
-final class FoodUnitSync extends BaseRedisSubscribe
+final class FoodUnitSync extends BaseChannelClient
 {
     public function run($message)
     {

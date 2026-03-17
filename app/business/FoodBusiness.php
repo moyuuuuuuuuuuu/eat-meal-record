@@ -7,14 +7,16 @@ use app\common\context\TokenLimit;
 use app\common\enum\BusinessCode;
 use app\common\enum\NormalStatus;
 use app\common\enum\NutritionInputType;
-use app\common\enum\RedisSubscribeEventName;
+use app\common\enum\QueueEventName;
 use app\common\enum\UserInfoContext;
+use app\common\exception\BusinessException;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ValidationException;
 use app\common\validate\FoodValidator;
 use app\format\FoodFormat;
-use app\service\baidu\Bos;
 use app\model\{CatModel, FoodModel, FoodModel as Food, FoodUnitModel, MealRecordModel, UnitModel};
+use app\service\baidu\Bos;
+use app\service\BooHee;
 use app\service\FoodService;
 use app\service\Nutrition;
 use app\service\recommendation\Recommendation;
@@ -22,10 +24,9 @@ use app\util\Calculate;
 use app\util\Helper;
 use support\Context;
 use support\Db;
-use app\common\exception\BusinessException;
 use support\Log;
-use support\Redis;
 use support\Request;
+use Webman\RedisQueue\Client;
 use Webman\Validation\Annotation\Validate;
 
 class FoodBusiness extends BaseBusiness
@@ -62,9 +63,10 @@ class FoodBusiness extends BaseBusiness
                 ->from($subTable)
                 ->whereColumn($subTable . '.food_id', $mainTable . '.id');
         });
-        if (!$query->exists()) {
+        if (!$query->exists() && BooHee::instance()->canUse()) {
             $query = $query->clone();
-            Redis::publish(RedisSubscribeEventName::FoodNutritionSync->value, json_encode([$name]));
+            Client::send(QueueEventName::RemoteFoodSync->value,['foodName'=>$name]);
+            echo '食品'.$name.'未找到已推送至队列查询'.PHP_EOL;
             // 最多等 6 秒，每 2 秒检查一次
             foreach (range(1, 3) as $attempt) {
                 sleep(2);

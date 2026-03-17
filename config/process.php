@@ -59,12 +59,15 @@ return [
             ]
         ]
     ],
-    'redis-subscribe' => [
-        'handler' => \app\process\RedisSubscribeProcess::class,
+    'system-notify' => [
+        'handler' => \app\process\channel\SystemNotifyProcess::class,
         'count'   => 1
     ],
-    'food-health'     => [
+    /*'food-nutrition-sync' => [
+        'handler' => \app\process\channel\SystemNotifyProcess::class,
+        'count'   => 1
+    ],food-health'     => [
         'handler' => \app\process\FoodHealthCheck::class,
         'count'   => 1
-    ]
+    ]*/
 ];

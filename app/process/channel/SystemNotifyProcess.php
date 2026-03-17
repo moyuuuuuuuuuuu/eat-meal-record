@@ -1,26 +1,33 @@
 <?php
 
-namespace app\service\redisSubscribe;
+namespace app\process\channel;
 
+use app\common\enum\ChannelEventName;
 use app\service\MailService;
+use Channel\Client;
 use support\Log;
+use Workerman\Worker;
 
-class SystemErrorNotify extends BaseRedisSubscribe
+class SystemNotifyProcess
 {
-    public function run($message)
+    public function onWorkerStart(Worker $worker): void
+    {
+        Client::connect('127.0.0.1', 2206);
+        Client::on(ChannelEventName::SystemErrorNotify->value, fn($data) => $this->run($data));
+    }
+
+    private function run($data)
     {
         try {
-
-            $data = json_decode($message, true);
             if (!$data) {
                 Log::error('异常告警通知失败,为空的异常参数', []);
                 return false;
             }
             // 3. 构建 HTML 内容
-            $color = '#ff4d4f'; // 异常红色
-            $bgColor = '#fff1f0';
-
-            $markdown = <<<HTML
+            $color       = '#ff4d4f'; // 异常红色
+            $bgColor     = '#fff1f0';
+            $currentDate = date('Y-m-d H:i:s');
+            $markdown    = <<<HTML
 <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; border: 1px solid #ffccc7; border-radius: 8px; background-color: #fffafb; max-width: 800px; color: #333;">
     <h3 style="margin-top: 0; color: {$color}; border-bottom: 2px solid #ffccc7; padding-bottom: 10px;">
         🚨 系统异常告警
@@ -32,6 +39,10 @@ class SystemErrorNotify extends BaseRedisSubscribe
     </div>
 
     <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+     <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 8px 0; color: #888; width: 100px;">发生时间</td>
+            <td style="padding: 8px 0;"><code>{$currentDate}</code></td>
+        </tr>
         <tr style="border-bottom: 1px solid #eee;">
             <td style="padding: 8px 0; color: #888; width: 100px;">追踪 ID</td>
             <td style="padding: 8px 0;"><code>{$data['trace_id']}</code></td>

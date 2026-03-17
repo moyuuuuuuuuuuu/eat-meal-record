@@ -2,11 +2,13 @@
 
 namespace app\service;
 
-use app\common\enum\RedisSubscribeEventName;
-use Throwable;
+use app\common\enum\ChannelEventName;
+use app\common\enum\UserInfoContext;
 use support\Log;
 use support\Redis;
-use GuzzleHttp\Client;
+use Throwable;
+use Channel\Client;
+use Webman\Context;
 
 class Alarm
 {
@@ -32,12 +34,13 @@ class Alarm
             'file'         => $exception->getFile(),
             'line'         => $exception->getLine(),
             'url'          => $request ? "[{$request->method()}] " . $request->fullUrl() : '非 HTTP 环境',
-            'user_id'      => session('user.id') ?? 'Guest',
-            'ip'           => $request ? $request->getRealIp() : '127.0.0.1',
-            'duration'     => $traceId ? round((microtime(true) - $request->getStartTime()) * 1000, 2) . 'ms' : 'N/A',
+            'user_id'      => Context::get(UserInfoContext::UserId->value) ?? 'Guest',
+            'ip'           => $request->getRealIp() ?? '127.0.0.1',
+            'duration'     => $traceId !== 'N/A' ? round((microtime(true) - $request->getStartTime()) * 1000, 2) . 'ms' : 'N/A',
             'clientParams' => self::getCleanParams($request),
         ];
-        Redis::publish(RedisSubscribeEventName::SystemErrorNotify->value, json_encode($data));
+        Client::connect();
+        Client::publish(ChannelEventName::SystemErrorNotify->value, $data);
         Log::info('异常通知已发布');
     }
 
@@ -46,10 +49,10 @@ class Alarm
      */
     private static function isFrequent(Throwable $exception): bool
     {
-        $key = 'alarm_lock:' . md5(request()->getRealIp() . $exception->getFile() . $exception->getLine());
+        $key = 'alarm_lock:' . md5((request()->getRealIp()??0) . $exception->getFile() . $exception->getLine());
         if (Redis::get($key)) return true;
 
-        Redis::setEx($key, 5, 1); // 60秒锁定
+        Redis::setEx($key, 60, 1); // 60秒锁定
         return false;
     }
 

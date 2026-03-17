@@ -39,7 +39,8 @@
     "webman/cors": "^1.0",
     "webman/redis": "^2.1",
     "illuminate/events": "^12.53",
-    "coze/api": "^1.1"
+    "coze/api": "^1.1",
+    "webman/channel": "^2.1"
   },
   "suggest": {
     "ext-event": "For better performance. "

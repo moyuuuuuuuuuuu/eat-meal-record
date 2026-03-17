@@ -26,7 +26,7 @@ class AccessLog implements MiddlewareInterface
 
         // 4. 在响应头透传 Trace ID
         $response->header('X-Trace-Id', $request->getTraceId());
-
+        return $response;
         // 5. 准备日志数据
         $postData = $request->post();
         if (!empty($postData)) {

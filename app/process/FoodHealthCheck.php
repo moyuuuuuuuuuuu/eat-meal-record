@@ -2,13 +2,13 @@
 
 namespace app\process;
 
-use app\common\enum\RedisSubscribeEventName;
+use app\common\enum\ChannelEventName;
 use app\model\FoodModel;
 use app\model\FoodNutrientModel;
 use app\model\FoodTagModel;
 use app\model\FoodUnitModel;
+use Channel\Client;
 use support\Log;
-use support\Redis;
 use Workerman\Crontab\Crontab;
 
 /**
@@ -45,7 +45,8 @@ class FoodHealthCheck
             Log::info('没有不携带营养信息的食品');
             return;
         }
-        Redis::publish(RedisSubscribeEventName::FoodNutritionSync->value, json_encode($withoutNutritionFoodIdList));
+        Client::connect();
+        Client::publish(ChannelEventName::FoodNutritionSync->value, json_encode($withoutNutritionFoodIdList));
     }
 
     private function withoutTag()
@@ -61,7 +62,8 @@ class FoodHealthCheck
             Log::info('没有不携带标签的食品');
             return;
         }
-        Redis::publish(RedisSubscribeEventName::FoodTagSync->value, json_encode($withoutNutritionFoodIdList));
+        Client::connect();
+        Client::publish(ChannelEventName::FoodTagSync->value, json_encode($withoutNutritionFoodIdList));
     }
 
     private function withoutUnit()
@@ -77,6 +79,7 @@ class FoodHealthCheck
             Log::info('没有不携带单位的食品');
             return;
         }
-        Redis::publish(RedisSubscribeEventName::FoodUnitSync->value, json_encode($withoutNutritionFoodIdList));
+        Client::connect();
+        Client::publish(ChannelEventName::FoodUnitSync->value, json_encode($withoutNutritionFoodIdList));
     }
 }

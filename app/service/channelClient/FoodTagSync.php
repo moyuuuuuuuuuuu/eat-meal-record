@@ -1,6 +1,6 @@
 <?php
 
-namespace app\service\redisSubscribe;
+namespace app\service\channelClient;
 
 use app\model\CatModel;
 use app\model\FoodModel;
@@ -10,7 +10,7 @@ use app\service\FoodService;
 use support\Db;
 use support\Log;
 
-class FoodTagSync extends BaseRedisSubscribe
+class FoodTagSync extends BaseChannelClient
 {
 
     public function run($message)
