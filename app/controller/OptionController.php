@@ -48,7 +48,6 @@ class OptionController extends BaseController
             unset($tabbarList[1]);
             $tabbarList = array_values($tabbarList);
         }
-        throw new BusinessException('未知异常', BusinessCode::BUSINESS_ERROR);
         return $this->success('', $tabbarList);
     }
 }
