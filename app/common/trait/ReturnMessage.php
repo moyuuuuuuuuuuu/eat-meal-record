@@ -18,9 +18,7 @@ trait ReturnMessage
     protected function json(int $code, string $msg = 'ok', array $data = []): Response
     {
         return json([
-            'code' => $code, 'data' => $data, 'msg' => $msg, 'options' => [
-                's' => OptionModel::isAudit()
-            ]
+            'code' => $code, 'data' => $data, 'msg' => $msg, 's' => OptionModel::isAudit()
         ]);
     }
 
