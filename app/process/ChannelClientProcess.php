@@ -1,4 +1,5 @@
 <?php
+
 namespace app\process;
 
 use app\common\enum\ChannelEventName;
@@ -10,22 +11,24 @@ use Workerman\Worker;
 
 /**
  * 改为进程间通信不用redis的Sub/Pub了
+ * 仅异常信息收集使用 现已经改为SystmNotifyProcess进程处理
+ * @deprecated
  */
 class ChannelClientProcess
 {
     public function onWorkerStart(Worker $worker): void
     {
         $channelList = ChannelEventName::channels();
-        Client::connect('127.0.0.1',2206);
-        foreach ($channelList as $k=>$v){
+        Client::connect('127.0.0.1', 2206);
+        foreach ($channelList as $k => $v) {
             $channelEnum = ChannelEventName::tryFrom($v);
-            Client::on($channelEnum->value,fn($data)=>$channelEnum->handlerClass()->run($data));
+            Client::on($channelEnum->value, fn($data) => $channelEnum->handlerClass()->run($data));
         }
     }
 
     /**
-     * @deprecated
      * @return void
+     * @deprecated
      */
     private function subscribe(): void
     {
@@ -47,10 +50,10 @@ class ChannelClientProcess
     }
 
     /**
-     * @deprecated
      * @param string $channel
      * @param string $message
      * @return void
+     * @deprecated
      */
     private function dispatch(string $channel, string $message): void
     {
