@@ -4,9 +4,9 @@ namespace app\process;
 
 use app\common\enum\ChannelEventName;
 use app\model\FoodModel;
-use Channel\Client;
 use support\Log;
 use Workerman\Crontab\Crontab;
+use Webman\RedisQueue\Client;
 
 class FoodHealthCheck
 {
@@ -34,7 +34,7 @@ class FoodHealthCheck
             ->select('id', 'name')
             ->chunk(50, function ($foods) use ($event, &$count) {
                 $names = $foods->pluck('name')->toArray();
-                Client::publish($event->value, $names);
+                Client::send($event->value, $names);
                 $count += count($names);
             });
 

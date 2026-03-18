@@ -12,16 +12,15 @@
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
+use app\process\{FoodHealthCheck, SystemNotifyProcess};
 use app\process\Http;
 use support\Log;
 use support\Request;
-use app\process\{FoodHealthChannelProcess, FoodHealthCheck, SystemNotifyProcess};
-use app\common\enum\ChannelEventName;
 
 global $argv;
 
 return [
-    'webman'              => [
+    'webman'            => [
         'handler'     => Http::class,
         'listen'      => 'http://0.0.0.0:8787',
         'count'       => cpu_count() * 4,
@@ -38,7 +37,7 @@ return [
         ]
     ],
     // File update detection and automatic reload
-    'monitor'             => [
+    'monitor'           => [
         'handler'     => app\process\Monitor::class,
         'reloadable'  => false,
         'constructor' => [
@@ -61,15 +60,11 @@ return [
             ]
         ]
     ],
-    'system-notify'       => [
+    'system-notify'     => [
         'handler' => SystemNotifyProcess::class,
         'count'   => 1
     ],
-    'food-nutrition-sync' => [
-        'handler'     => FoodHealthChannelProcess::class,
-        'count'       => 3
-    ],
-    'food-health-check'   => [
+    'food-health-check' => [
         'handler' => FoodHealthCheck::class,
         'count'   => 1
     ]
