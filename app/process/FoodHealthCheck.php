@@ -12,7 +12,6 @@ class FoodHealthCheck
 {
     public function onWorkerStart($worker)
     {
-        Client::connect();
         #每周日 凌晨2、3、4点钟检测食品营养、标签、单位等
         new Crontab('0 2 * * 0', fn() => $this->check('nutrients', ChannelEventName::FoodNutritionSync));
         new Crontab('0 3 * * 0', fn() => $this->check('units', ChannelEventName::FoodUnitSync));
@@ -27,7 +26,6 @@ class FoodHealthCheck
     private function check(string $relation, ChannelEventName $event)
     {
         Log::info("开始检查缺失[{$relation}]的食品");
-
         $count = 0;
         FoodModel::query()
             ->whereDoesntHave($relation)

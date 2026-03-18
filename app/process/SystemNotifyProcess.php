@@ -27,7 +27,6 @@ class SystemNotifyProcess
             $color   = '#ff4d4f';
             $bgColor = '#fff1f0';
 
-            // 对堆栈进行简单处理：转义 HTML 字符防止错乱，并限制显示长度或样式
             $stackTrace = htmlspecialchars($data['stack_trace'] ?? '无堆栈信息');
 
             $markdown = <<<HTML
@@ -64,8 +63,8 @@ class SystemNotifyProcess
         </tr>
     </table>
 
-    <h4 style="margin-bottom: 8px; font-size: 15px; color: #555; display: flex; align-items: center;">📥 请求参数:</h4>
-    <pre style="background-color: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; font-size: 12px; overflow-x: auto; line-height: 1.5; margin-bottom: 20px;">{$data['clientParams']}</pre>
+    <h4 style="margin-bottom: 8px; font-size: 15px; color: #555; display: flex; align-items: center;">📥 请求参数 (Request Params):</h4>
+    <pre style="background-color: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; font-size: 12px; overflow-x: auto; overflow-y: auto; max-height: 400px; line-height: 1.5; margin-bottom: 20px; white-space: pre-wrap; word-break: break-all;">{$data['clientParams']}</pre>
     
     <h4 style="margin-bottom: 8px; font-size: 15px; color: #555;">🔍 堆栈详情 (Stack Trace):</h4>
     <div style="background-color: #f0f0f0; border: 1px solid #d9d9d9; padding: 15px; border-radius: 5px; font-size: 11px; color: #666; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-break: break-all; max-height: 400px; overflow-y: auto; line-height: 1.4;">{$stackTrace}</div>
@@ -75,7 +74,6 @@ class SystemNotifyProcess
     </p>
 </div>
 HTML;
-            // 注意：因为包含 HTML 标签，建议 MailService 使用发送 HTML 的方法
             MailService::sendText('Eat Clear 系统异常告警', $markdown);
         } catch (\Exception $e) {
             Log::error('SystemNotifyProcess:error:' . $e->getMessage(), ['html' => $markdown]);

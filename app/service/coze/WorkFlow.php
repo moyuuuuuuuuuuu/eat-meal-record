@@ -9,7 +9,10 @@ use app\service\BaseGuzzleHttpClient;
 use Coze\Auth\OAuthClient;
 use Coze\Workflow\Run;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\RequestOptions;
+use support\Log;
 use support\Redis;
 
 class WorkFlow extends BaseGuzzleHttpClient
