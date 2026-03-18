@@ -53,7 +53,7 @@ final class FoodUnitSync extends BaseHealthCheck
             if (!$currentFood || empty($unitItems)) continue;
 
             try {
-                $status = Db::transaction(function () use ($unitItems, $currentFood) {
+                $foodId = Db::transaction(function () use ($unitItems, $currentFood) {
                     foreach ($unitItems as $unitItem) {
                         $unitName  = $unitItem['name'] ?? '克';
                         $weight    = (float)($unitItem['weight'] ?? 100);
@@ -66,10 +66,10 @@ final class FoodUnitSync extends BaseHealthCheck
                             ['weight' => $weight, 'is_default' => $isDefault]
                         );
                     }
-                    return true;
+                    return $currentFood->id;
                 }, 3);
 
-                if ($status) $successNames[] = $foodName;
+                $successNames[] = $foodId;
             } catch (\Exception $e) {
                 Log::error("FoodUnitSync [{$foodName}] 写入失败: " . $e->getMessage());
             }

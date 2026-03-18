@@ -44,7 +44,7 @@ class FoodTagSync extends BaseHealthCheck
             if (!$currentFood) continue;
 
             try {
-                $status = Db::transaction(function () use ($foodInfo, $currentFood) {
+                $foodId = Db::transaction(function () use ($foodInfo, $currentFood) {
                     $tags = $foodInfo['tags'] ?? [];
                     foreach ($tags as $tagName => $typeName) {
                         $typeId = $this->typeMapping[$typeName] ?? 3;
@@ -59,10 +59,10 @@ class FoodTagSync extends BaseHealthCheck
                             'tag_id'  => $tagModel->id
                         ]);
                     }
-                    return true;
+                    return $currentFood->id;
                 }, 3);
 
-                if ($status) $successNames[] = $foodName;
+                $successNames[] = $foodId;
             } catch (\Exception $e) {
                 Alarm::notify($e);
             }

@@ -39,7 +39,6 @@ final class FoodNutritionSync extends BaseHealthCheck
          */
         $result = [];
         foreach ($foodNutritionList as $key => $item) {
-            $currentResult = false;
             try {
                 $foodName = $item['name'] ?? null;
                 if (!$foodName) {
@@ -47,7 +46,7 @@ final class FoodNutritionSync extends BaseHealthCheck
                     continue;
                 }
 
-                $currentResult = Db::transaction(function () use ($item, $foodNutritionList, $key) {
+                $foodId   = Db::transaction(function () use ($item, $foodNutritionList, $key) {
                     // 维护数据关系
                     $catId           = FoodSyncByRemote::cats($item['cat'] ?? '其他');
                     $food            = FoodModel::updateOrCreate(
@@ -61,13 +60,12 @@ final class FoodNutritionSync extends BaseHealthCheck
                         unset($foodNutritionList[$key]);
                         return null;
                     }
-                    return $unitResult && $nutritionResult && $tagResult;
+                    return $food->id;
                 });
+                $result[] = $foodId;
             } catch (\Exception $e) {
                 Log::error("食品 [{$foodName}] 同步失败: " . $e->getMessage());
                 continue;
-            } finally {
-                $result[] = $currentResult ? 1 : 0;
             }
         }
         $result = array_filter($result);

@@ -60,12 +60,13 @@ class RemoteFoodSyncJob extends BaseConsumer
                 Log::info("[{$this->queue}]薄荷健康未返回食品信息", $booheeNameList);
                 return null;
             }
-            $foodNameList   = array_column($booheeNameList, 'name');
-            $isBatchSuccess = FoodNutritionSync::instance()->run($foodNameList);
+            $foodNameList = array_column($booheeNameList, 'name');
+            list($isBatchSuccess, $foodIdList) = FoodNutritionSync::instance()->run($foodNameList);
             if (!$isBatchSuccess) {
                 Log::info('食品三方信息同步失败');
                 return null;
             }
+            FoodModel::query()->whereIn('id', $foodIdList)->update(['coze_status' => 1]);
             Log::info('同步食物成功', [$isBatchSuccess]);
             Redis::del($booheeResponseCacheKey);
             return true;

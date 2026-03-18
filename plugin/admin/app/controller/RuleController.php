@@ -263,7 +263,7 @@ class RuleController extends Crud
         $this->doUpdate($id, $data);
         return $this->json(0);
     }
-    
+
     /**
      * 删除
      * @param Request $request
