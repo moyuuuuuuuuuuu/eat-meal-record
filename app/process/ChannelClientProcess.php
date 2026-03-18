@@ -2,7 +2,7 @@
 namespace app\process;
 
 use app\common\enum\ChannelEventName;
-use app\service\channelClient\BaseChannelClient;
+use app\service\foodHealthCheck\BaseHealthCheck;
 use Channel\Client;
 use support\Log;
 use Workerman\Timer;
@@ -64,7 +64,7 @@ class ChannelClientProcess
         }
 
         try {
-            /** @var BaseChannelClient $handlerClass */
+            /** @var BaseHealthCheck $handlerClass */
             $handlerClass = $channelEnum->handlerClass();
             if ($handlerClass) {
                 $handlerClass->run($message);

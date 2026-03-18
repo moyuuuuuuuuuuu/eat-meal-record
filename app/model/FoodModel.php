@@ -64,6 +64,19 @@ class FoodModel extends BaseModel
         return TagModel::query()->whereIn('id', FoodTagModel::query()->select('tag_id')->where('food_id', $this->id))->limit($limit)->get();
     }
 
+    public function tag()
+    {
+        $tagTable = (new TagModel())->getTable();
+        return $this->hasOneThrough(
+            TagModel::class,
+            FoodTagModel::class,
+            'food_id',
+            'id',
+            'id',
+            'tag_id'
+        )->select([$tagTable . '.id', $tagTable . '.name']);
+    }
+
     public function unit()
     {
         $foodUnitTable = (new FoodUnitModel())->getTable();

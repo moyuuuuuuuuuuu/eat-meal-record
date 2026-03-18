@@ -2,14 +2,14 @@
 
 namespace app\common\enum;
 
-use app\service\channelClient\{BaseChannelClient};
+use app\service\foodHealthCheck\{BaseHealthCheck};
 
 enum ChannelEventName: string
 {
     case FoodTagSync  = 'foodTagSync';
     case FoodUnitSync = 'foodUnitSync';
 
-//    case FoodNutritionSync = 'foodNutritionSync';
+    case FoodNutritionSync = 'foodNutritionSync';
     case SystemErrorNotify = 'systemErrorNotify';
 
     static function channels(): array
@@ -17,13 +17,13 @@ enum ChannelEventName: string
         return array_column(static::cases(), 'value');
     }
 
-    public function handlerClass(): BaseChannelClient|null
+    public function handlerClass(): BaseHealthCheck|null
     {
         $class = ucfirst($this->value);
         $class = "\\app\\service\\redisSubscribe\\" . $class;
         if (!class_exists($class)) return null;
         /**
-         * @var BaseChannelClient $class
+         * @var BaseHealthCheck $class
          */
         return $class::instance();
     }

@@ -17,13 +17,16 @@ class Alarm
      */
     public static function notify(Throwable $exception)
     {
-        // 1. 频率限制：同一个地方的报错，1分钟内只发一次，防止被刷屏
+        // 1. 频率限制：同一个地方的报错，1分钟内只发一次
         if (self::isFrequent($exception)) {
             return;
         }
 
-        $request = request();
-        $traceId = $request->getTraceId() ?? 'N/A';
+        // 兼容非 HTTP 环境获取 request 对象
+        $request = class_exists('\support\Request') ? request() : null;
+
+        // 提取 Trace ID，优先从 Context 获取以支持多环境
+        $traceId = Context::get('trace_id') ?: ($request ? $request->getTraceId() : 'N/A');
 
         // 2. 收集统计信息
         $data = [
@@ -33,15 +36,23 @@ class Alarm
             'msg'          => $exception->getMessage(),
             'file'         => $exception->getFile(),
             'line'         => $exception->getLine(),
-            'url'          => $request ? "[{$request->method()}] " . $request->fullUrl() : '非 HTTP 环境',
-            'user_id'      => Context::get(UserInfoContext::UserId->value) ?? 'Guest',
-            'ip'           => $request->getRealIp() ?? '127.0.0.1',
-            'duration'     => $traceId !== 'N/A' ? round((microtime(true) - $request->getStartTime()) * 1000, 2) . 'ms' : 'N/A',
+            // 识别环境：HTTP 还是 命令行/进程
+            'url'          => $request ? "[{$request->method()}] " . $request->fullUrl() : 'CLI / Process / Queue',
+            'user_id'      => Context::get(UserInfoContext::UserId->value) ?? 'System',
+            'ip'           => $request ? ($request->getRealIp() ?? '127.0.0.1') : 'Internal',
+            'duration'     => $request ? (round((microtime(true) - $request->getStartTime()) * 1000, 2) . 'ms') : 'N/A',
             'clientParams' => self::getCleanParams($request),
+            'stack_trace'  => $exception->getTraceAsString(),
         ];
-        Client::connect();
-        Client::publish(ChannelEventName::SystemErrorNotify->value, $data);
-        Log::info('异常通知已发布');
+
+        try {
+            Client::connect();
+            Client::publish(ChannelEventName::SystemErrorNotify->value, $data);
+            Log::info('异常通知已发布', $data);
+        } catch (Throwable $e) {
+            // 防止告警组件本身崩溃导致业务中断
+            Log::error('告警发布失败: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -49,10 +60,15 @@ class Alarm
      */
     private static function isFrequent(Throwable $exception): bool
     {
-        $key = 'alarm_lock:' . md5((request()->getRealIp()??0) . $exception->getFile() . $exception->getLine());
+        // 如果没有 request，则不基于 IP 锁定，仅基于错误位置
+        $request = class_exists('\support\Request') ? request() : null;
+        $ip      = $request ? $request->getRealIp() : 'system';
+
+        $key = 'alarm_lock:' . md5($ip . $exception->getFile() . $exception->getLine());
+
         if (Redis::get($key)) return true;
 
-        Redis::setEx($key, 60, 1); // 60秒锁定
+        Redis::setEx($key, 60, 1);
         return false;
     }
 
@@ -61,18 +77,14 @@ class Alarm
      */
     private static function getCleanParams($request): string
     {
-        if (!$request) return "{}";
+        // 如果是队列或进程，尝试从 Context 获取上下文参数，否则返回空
+        if (!$request) {
+            $contextParams = Context::get('process_params') ?? [];
+            return empty($contextParams) ? "{}" : json_encode($contextParams, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
+
         $params = $request->all();
-        // 简单脱敏
         unset($params['password'], $params['token'], $params['app_secret']);
         return json_encode($params, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    }
-
-    /**
-     * 发送逻辑（异步请求防止阻塞）
-     */
-    private static function send(string $content)
-    {
-        MailService::sendText('Eat Clear系统异常告警', $content);
     }
 }

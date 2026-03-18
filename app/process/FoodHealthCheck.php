@@ -4,82 +4,40 @@ namespace app\process;
 
 use app\common\enum\ChannelEventName;
 use app\model\FoodModel;
-use app\model\FoodNutrientModel;
-use app\model\FoodTagModel;
-use app\model\FoodUnitModel;
 use Channel\Client;
 use support\Log;
 use Workerman\Crontab\Crontab;
 
-/**
- * 每周日凌晨3点执行食物健康检测
- * @desc 获取没有营养信息、没有单位、没有标签的食品
- */
 class FoodHealthCheck
 {
     public function onWorkerStart($worker)
     {
-        new Crontab('0 3 * * 0', function () {
-            $this->withoutNutrition();
-        });
-
-        new Crontab('0 4 * * 0', function () {
-            $this->withoutUnit();
-        });
-        new Crontab('0 5 * * 0', function () {
-            $this->withoutTag();
-        });
+        Client::connect();
+        #每周日 凌晨2、3、4点钟检测食品营养、标签、单位等
+        new Crontab('0 2 * * 0', fn() => $this->check('nutrients', ChannelEventName::FoodNutritionSync));
+        new Crontab('0 3 * * 0', fn() => $this->check('units', ChannelEventName::FoodUnitSync));
+        new Crontab('0 4 * * 0', fn() => $this->check('tags', ChannelEventName::FoodTagSync));
     }
 
-    private function withoutNutrition()
+    /**
+     * 通用检测逻辑
+     * @param string $relation 关联名称 (需在 FoodModel 中定义)
+     * @param ChannelEventName $event 发布的事件枚举
+     */
+    private function check(string $relation, ChannelEventName $event)
     {
-        $foodTable      = (new FoodModel())->getTable();
-        $nutrientsTable = (new FoodNutrientModel())->getTable();
+        Log::info("开始检查缺失[{$relation}]的食品");
 
-        $withoutNutritionFoodIdList = FoodModel::query()->leftJoin($nutrientsTable, "{$nutrientsTable}.food_id", "{$foodTable}.id")
-            ->whereNull("{$nutrientsTable}.id")
-            ->whereNotNull("{$foodTable}.id")
-            ->pluck("{$nutrientsTable}.id")
-            ->toArray();
-        if (empty($withoutNutritionFoodIdList)) {
-            Log::info('没有不携带营养信息的食品');
-            return;
-        }
-        Client::connect();
-        Client::publish(ChannelEventName::FoodNutritionSync->value, json_encode($withoutNutritionFoodIdList));
-    }
+        $count = 0;
+        FoodModel::query()
+            ->whereDoesntHave($relation)
+            ->select('id', 'name')
+            ->chunk(50, function ($foods) use ($event, &$count) {
+                $names = $foods->pluck('name')->toArray();
+                Client::publish($event->value, $names);
+                $count += count($names);
+            });
 
-    private function withoutTag()
-    {
-        $foodTable                  = (new FoodModel())->getTable();
-        $nutrientsTable             = (new FoodTagModel())->getTable();
-        $withoutNutritionFoodIdList = FoodModel::query()->leftJoin($nutrientsTable, "{$nutrientsTable}.food_id", "{$foodTable}.id")
-            ->whereNull("{$nutrientsTable}.id")
-            ->whereNotNull("{$foodTable}.id")
-            ->pluck("{$nutrientsTable}.id")
-            ->toArray();
-        if (empty($withoutNutritionFoodIdList)) {
-            Log::info('没有不携带标签的食品');
-            return;
-        }
-        Client::connect();
-        Client::publish(ChannelEventName::FoodTagSync->value, json_encode($withoutNutritionFoodIdList));
-    }
-
-    private function withoutUnit()
-    {
-        $foodTable                  = (new FoodModel())->getTable();
-        $nutrientsTable             = (new FoodUnitModel())->getTable();
-        $withoutNutritionFoodIdList = FoodModel::query()->leftJoin($nutrientsTable, "{$nutrientsTable}.food_id", "{$foodTable}.id")
-            ->whereNull("{$nutrientsTable}.id")
-            ->whereNotNull("{$foodTable}.id")
-            ->pluck("{$nutrientsTable}.id")
-            ->toArray();
-        if (empty($withoutNutritionFoodIdList)) {
-            Log::info('没有不携带单位的食品');
-            return;
-        }
-        Client::connect();
-        Client::publish(ChannelEventName::FoodUnitSync->value, json_encode($withoutNutritionFoodIdList));
+        Log::info("检查完成，共计推送 {$count} 条记录至 {$event->value}");
     }
 }

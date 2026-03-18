@@ -67,13 +67,6 @@ class FoodBusiness extends BaseBusiness
             $query = $query->clone();
             Client::send(QueueEventName::RemoteFoodSync->value,['foodName'=>$name]);
             echo '食品'.$name.'未找到已推送至队列查询'.PHP_EOL;
-            // 最多等 6 秒，每 2 秒检查一次
-            foreach (range(1, 3) as $attempt) {
-                sleep(2);
-                if ($query->exists()) {
-                    break;
-                }
-            }
         }
         $paginate   = $query->orderByDesc('id')
             ->paginate($pageSize, ['*'], 'page', $page);
