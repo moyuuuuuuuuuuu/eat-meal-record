@@ -5,7 +5,7 @@ namespace app\queue;
 use app\common\base\BaseConsumer;
 use app\service\foodHealthCheck\FoodUnitSync;
 
-class RemoteFoodUnitSyncJob extends BaseConsumer
+class FoodUnitSyncJob extends BaseConsumer
 {
 
     public $queue      = 'foodUnitSync';

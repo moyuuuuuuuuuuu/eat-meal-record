@@ -44,23 +44,25 @@ abstract class BaseHealthCheck
     {
         if (empty($message)) return [false, []];
 
-        $chunks   = array_chunk($message, 10);
-        $parallel = new Parallel();
+        $chunks = array_chunk($message, 10);
+//        $parallel = new Parallel();
+        $results = [];
         foreach ($chunks as $names) {
-            $parallel->add(fn() => $this->syncRemote($names));
+            $resultIdList = $this->syncRemote($names);
+            $results      = array_merge($results, $resultIdList);
         }
 
-        $res              = $parallel->wait();
-        $allSuccessFoodId = array_merge(...($res ?: [[]]));
+//        $res              = $parallel->wait();
+//        $allSuccessFoodId = array_merge(...($res ?: [[]]));
 
-        $exceptions = $parallel->getExceptions();
-        foreach ($exceptions as $exception) {
-            Alarm::notify($exception);
+        /*  $exceptions = $parallel->getExceptions();
+          foreach ($exceptions as $exception) {
+              Alarm::notify($exception);
+          }*/
+        if (count($results) === count($message)) {
+            return [true, $results];
         }
-        if (count($allSuccessFoodId) === count($message)) {
-            return [true, $allSuccessFoodId];
-        }
-        return [false, $allSuccessFoodId];
+        return [false, $results];
     }
 
     abstract protected function syncRemote(array $foodNameItem);

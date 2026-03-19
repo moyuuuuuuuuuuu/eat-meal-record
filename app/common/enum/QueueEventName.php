@@ -7,7 +7,8 @@ enum QueueEventName: string
     /**
      * ai识别结果同步
      */
-    case RemoteFoodSync = 'remoteFoodSync';
+    case FoodSync          = 'FoodSync';
+    case FoodNutritionSync = 'foodNutritionSync';
 
     /**
      * 登陆后操作

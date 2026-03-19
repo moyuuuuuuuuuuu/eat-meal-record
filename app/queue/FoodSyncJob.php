@@ -29,9 +29,9 @@ use Workerman\Coroutine\Parallel;
 /**
  * 当用户查询到不存在的食物时从薄荷健康获取食物名称 然后交给模型去获取食品具体信息并落地到数据库
  */
-class RemoteFoodSyncJob extends BaseConsumer
+class FoodSyncJob extends BaseConsumer
 {
-    public $queue      = 'remoteFoodSync';
+    public $queue      = 'FoodSync';
     public $connection = 'default';
 
     public function consume($data)

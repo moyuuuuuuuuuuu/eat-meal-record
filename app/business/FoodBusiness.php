@@ -65,7 +65,7 @@ class FoodBusiness extends BaseBusiness
         });
         if (!$query->exists() && BooHee::instance()->canUse()) {
             $query = $query->clone();
-            Client::send(QueueEventName::RemoteFoodSync->value, ['foodName' => $name]);
+            Client::send(QueueEventName::FoodSync->value, ['foodName' => $name]);
             echo '食品' . $name . '未找到已推送至队列查询' . PHP_EOL;
         }
         $paginate   = $query->orderByDesc('id')
