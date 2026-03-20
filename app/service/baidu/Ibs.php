@@ -5,6 +5,9 @@ namespace app\service\baidu;
 use app\service\BaseGuzzleHttpClient;
 use GuzzleHttp\Client;
 
+/**
+ * 百度地图
+ */
 class Ibs extends BaseGuzzleHttpClient
 {
     protected string $ak;

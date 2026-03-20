@@ -30,18 +30,9 @@ class ExceptionHandler extends exception\Handler
         $businessCode = BusinessCode::tryFrom($exception->getCode());
 
         // 2. 关键报警逻辑：如果是严重的业务错误且是生产环境，触发报警
-        if (($businessCode && $businessCode->value >= 500 || $exception->getCode())) {
+        if (($businessCode && $businessCode->value >= 500)) {
             Alarm::notify($exception);
         }
         return parent::render($request, $exception);
-    }
-
-    protected function sendAlert(Request $request, Throwable $exception): void
-    {
-        $content = <<<HTML
-
-HTML;
-
-        MailService::sendText('[系统异常报告]' . $exception->getMessage(), $content);
     }
 }

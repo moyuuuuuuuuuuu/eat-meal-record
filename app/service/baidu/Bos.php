@@ -10,6 +10,9 @@ use app\common\exception\BusinessException;
 use support\Log;
 use Webman\Http\UploadFile;
 
+/**
+ * 对象存储
+ */
 class Bos extends BaseGuzzleHttpClient
 {
     protected $needSignHeaderField = [

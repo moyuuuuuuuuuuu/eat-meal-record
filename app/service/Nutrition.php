@@ -9,6 +9,9 @@ use Moyuuuuuuuu\QianFan\{Contants\RequestMethod, Contants\Role, Payload\Universa
 use app\common\exception\BusinessException;
 use support\Log;
 
+/**
+ * @deprecated 请使用Workflow
+ */
 class Nutrition
 {
     protected string $apiKey;

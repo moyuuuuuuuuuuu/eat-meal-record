@@ -2,6 +2,7 @@
 
 namespace app\business;
 
+use app\service\baidu\Solution;
 use app\common\{base\BaseBusiness, exception\DataNotFoundException, validate\FeedValidator};
 use app\common\enum\{blog\AttachType, blog\Visibility, BusinessCode, LikeFavType, NormalStatus};
 use app\common\enum\QueueEventName;
@@ -149,7 +150,19 @@ class FeedBusiness extends BaseBusiness
             $location    = $request->post('location');
             $attach      = $request->post('attach');
             $visibility  = $request->post('visibility', Visibility::EVERYONE->value);
+            $solution    = Solution::instance();
+            $solution->text($content);
 
+            if ($attach) {
+                foreach ($attach as $key => $item) {
+                    $attachType = AttachType::tryFrom($item['type']);
+                    if ($attachType == AttachType::IMG) {
+                        $solution->image($item['attach']);
+                    } else if ($attachType == AttachType::VIDEO) {
+                        $solution->video($item['attach']);
+                    }
+                }
+            }
             $blogInfo = BlogModel::create([
                 'user_id'    => $request->userInfo->id,
                 'content'    => $content,
