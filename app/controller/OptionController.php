@@ -43,7 +43,7 @@ class OptionController extends BaseController
                 'page'        => '/pages/profile/index',
             ],
         ];
-        $isAudit    = OptionModel::getConfig('system_config', 'logo.audit');
+        $isAudit    = OptionModel::isAudit();
         if ($isAudit === 'on') {
             unset($tabbarList[1]);
             $tabbarList = array_values($tabbarList);
