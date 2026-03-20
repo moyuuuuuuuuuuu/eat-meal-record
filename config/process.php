@@ -70,6 +70,6 @@ return [
     ],
     'food-rebuild'      => [
         'handler' => \app\process\FoodRebuildProcess::class,
-        'count'   => 5
+        'count'   => 1
     ]
 ];

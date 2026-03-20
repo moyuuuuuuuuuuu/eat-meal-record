@@ -13,8 +13,7 @@ class FoodNutritionSyncJob extends BaseConsumer
 
     public function consume($data)
     {
-        $foodNameList = $data;
-        list($isBatchSuccess, $foodIdList) = FoodNutritionSync::instance()->run($foodNameList);
+        list($isBatchSuccess, $foodIdList) = FoodNutritionSync::instance()->run($data);
         if (!$isBatchSuccess) {
             Log::info('食品三方信息同步失败');
             return null;

@@ -3,17 +3,13 @@
 namespace app\process;
 
 use app\common\enum\QueueEventName;
-use app\job\FoodNutritionSyncJob;
 use app\model\FoodModel;
-use support\Log;
 use Webman\RedisQueue\Client;
-use Workerman\Coroutine;
-use Workerman\Timer;
 
 class FoodRebuildProcess
 {
     protected $interval  = 1.0;
-    protected $batchSize = 200; // 每次推多少条进队列
+    protected $batchSize = 5; // 每次推多少条进队列
     protected $workerIndex;
 
     public function onWorkerStart($worker)
@@ -44,12 +40,11 @@ class FoodRebuildProcess
         $chunks = $foodList->chunk(5);
         $delay  = 0;
         foreach ($chunks as $chunk) {
-            var_dump($chunk->pluck('name')->toArray());
             Client::send(QueueEventName::FoodNutritionSync->value, $chunk->pluck('name')->toArray(), $delay);
             $delay += 5;
         }
 
-        echo "[" . date('H:i:s') . "][Worker:{$this->workerIndex}] 已推入队列: " . count($ids) . " 条\n";
+        echo "[" . date('H:i:s') . "][Worker:{$this->workerIndex}] 已推入队列: " . count($ids) . "[" . implode(',', $chunk->pluck('name')->toArray()) . "] 条\n";
         $this->dispatch();
     }
 }
