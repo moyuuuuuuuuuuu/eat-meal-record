@@ -65,12 +65,14 @@ class Recommendation
         // 3. 标签 → 单条食物
         $tagIds = array_column($tags, 'id');
         $food   = $this->foodRepo->findOneByTagIds($tagIds);
-        if ($food === null) {
-            $tags   = $this->tagResolver->resolve([]);
-            $tagIds = array_column($tags, 'id');
-            $food   = $this->foodRepo->findOneByTagIds($tagIds);
+        /* if ($food === null) {
+             $tags   = $this->tagResolver->resolve([]);
+             $tagIds = array_column($tags, 'id');
+             $food   = $this->foodRepo->findOneByTagIds($tagIds);
+         }*/
+        if (!$food) {
+            return null;
         }
-
         // 4. 生成提示语
         $tagNames = array_column($tags, 'name');
         $tip      = $this->tipGenerator->generate($tagNames);

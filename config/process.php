@@ -69,9 +69,9 @@ return [
         'handler' => FoodHealthCheck::class,
         'count'   => 1
     ],
-    'food-rebuild'      => [
+    /*'food-rebuild'      => [
         'handler' => FoodRebuildProcess::class,
         'count'   => 1,
         'enable'  => config('app.debug')
-    ]
+    ]*/
 ];

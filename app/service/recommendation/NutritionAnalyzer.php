@@ -51,6 +51,7 @@ class NutritionAnalyzer
                 $reasons[] = $rule['reason'];
             }
         }
+        var_dump($keywords);
 
         $keywords = array_values(array_unique($keywords));
 

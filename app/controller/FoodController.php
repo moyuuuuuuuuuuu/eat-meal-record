@@ -44,11 +44,7 @@ class FoodController extends BaseController
 
     public function recommendation(Request $request): \support\Response
     {
-        try {
-            $data = FoodBusiness::instance()->recommendation($request);
-            return $this->success('ok', $data ?? []);
-        } catch (\Throwable $e) {
-            return $this->fail($e->getMessage());
-        }
+        $data = FoodBusiness::instance()->recommendation($request);
+        return $this->success('ok', $data ?? []);
     }
 }
