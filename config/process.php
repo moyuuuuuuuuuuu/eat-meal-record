@@ -12,10 +12,11 @@
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-use app\process\{FoodHealthCheck, SystemNotifyProcess};
+use app\process\{FoodHealthCheck, SystemNotifyProcess, FoodRebuildProcess};
 use app\process\Http;
 use support\Log;
 use support\Request;
+
 
 global $argv;
 
@@ -69,7 +70,8 @@ return [
         'count'   => 1
     ],
     'food-rebuild'      => [
-        'handler' => \app\process\FoodRebuildProcess::class,
-        'count'   => 1
+        'handler' => FoodRebuildProcess::class,
+        'count'   => 1,
+        'enable'  => config('app.debug')
     ]
 ];

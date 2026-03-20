@@ -12,6 +12,7 @@ use Webman\Validation\Annotation\Validate;
 class AuthController extends BaseController
 {
     protected $noNeedLogin = ['*'];
+
     /**
      * 小程序登录
      *
@@ -38,7 +39,11 @@ class AuthController extends BaseController
             $result = UserBusiness::instance()->mock($userId, $request->getRealIp());
             return $this->success('登录成功', $result);
         } catch (\Exception $e) {
-            return $this->fail('登录失败: ' . $e->getMessage());
+            return $this->fail('登录失败: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'file'  => $e->getFile(),
+                'line'  => $e->getLine()
+            ]);
         }
     }
 

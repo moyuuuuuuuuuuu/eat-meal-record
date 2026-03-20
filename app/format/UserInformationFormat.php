@@ -48,7 +48,7 @@ class UserInformationFormat extends BaseFormat
             'age'    => $model['age'] ?? 25,
             'steps'  => $steps,
             'intake' => MealRecordModel::getTodayIntake($model['id']),
-            'target' => $model['target']
+            'target' => $model['target'] ?? 0.00
         ]);
         $totalRecords = MealRecordModel::query()->distinct()->where('user_id', $model['id'])->count('meal_date');
         try {

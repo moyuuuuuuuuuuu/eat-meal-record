@@ -16,14 +16,15 @@ final class UserInfo
 {
     static function setUserInfo(UserModel $userInfo)
     {
-        $userId   = $userInfo->id;
-        $userInfo = (new UserInfoData())->refreshUserInfo($userInfo);
-        $token    = Jwt::instance()->encode([
+        $userId       = $userInfo->id;
+        $userInfoData = (new UserInfoData());
+        $userInfoData->refreshUserInfo($userInfo);
+        $token        = Jwt::instance()->encode([
             'id' => $userId,
         ], 86400 * 7); // 7天有效期
         return [
             'token'    => $token,
-            'userInfo' => $userInfo
+            'userInfo' => $userInfoData->toArray(),
         ];
     }
 

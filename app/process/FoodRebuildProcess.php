@@ -44,7 +44,7 @@ class FoodRebuildProcess
             $delay += 5;
         }
 
-        echo "[" . date('H:i:s') . "][Worker:{$this->workerIndex}] 已推入队列: " . count($ids) . "[" . implode(',', $chunk->pluck('name')->toArray()) . "] 条\n";
+        echo "[" . date('H:i:s') . "][Worker:{$this->workerIndex}] 已推入队列: " . count($ids) . " 条[" . implode(',', $chunk->pluck('name')->toArray()) . "]\n";
         $this->dispatch();
     }
 }

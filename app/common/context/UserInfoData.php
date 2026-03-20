@@ -2,7 +2,9 @@
 
 namespace app\common\context;
 
+use app\common\enum\BusinessCode;
 use app\common\enum\UserInfoContext;
+use app\common\exception\BusinessException;
 use app\format\UserInformationFormat;
 use app\model\UserModel;
 use support\Redis;
@@ -70,7 +72,12 @@ final class UserInfoData implements \JsonSerializable
             } else {
                 $userInfoCacheKey = UserInfoContext::userInfoCacheKey($userInfo->id);
             }
+
+            if (!$userInfo) {
+                throw new BusinessException('登录已失效，请登陆后重试', BusinessCode::NO_LOGIN);
+            }
             $userInfo->load('goal');
+
             $userInfo = (new UserInformationFormat())->format($userInfo);
             Redis::hMSet($userInfoCacheKey, $userInfo);
             Redis::expire($userInfoCacheKey, 3600 + rand(10, 99));
