@@ -58,18 +58,20 @@ class Recommendation
      */
     public function getSuggestions(array $nutrition): ?array
     {
-        // 1. 营养分析
-        $report = $this->analyzer->analyze($nutrition);
-        // 2. 关键词 → 真实标签
-        $tags = $this->tagResolver->resolve($report->keywords);
-        // 3. 标签 → 单条食物
-        $tagIds = array_column($tags, 'id');
-        $food   = $this->foodRepo->findOneByTagIds($tagIds);
-        /* if ($food === null) {
-             $tags   = $this->tagResolver->resolve([]);
-             $tagIds = array_column($tags, 'id');
-             $food   = $this->foodRepo->findOneByTagIds($tagIds);
-         }*/
+        if (!empty($nutrition)) {
+
+            // 1. 营养分析
+            $report = $this->analyzer->analyze($nutrition);
+            // 2. 关键词 → 真实标签
+            $tags = $this->tagResolver->resolve($report->keywords);
+            // 3. 标签 → 单条食物
+            $tagIds = array_column($tags, 'id');
+            $food   = $this->foodRepo->findOneByTagIds($tagIds);
+        } else {
+            $tags   = $this->tagResolver->resolve([]);
+            $tagIds = array_column($tags, 'id');
+            $food   = $this->foodRepo->findOneByTagIds($tagIds);
+        }
         if (!$food) {
             return null;
         }

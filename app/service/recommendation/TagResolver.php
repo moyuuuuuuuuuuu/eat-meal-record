@@ -2,6 +2,7 @@
 
 namespace app\service\recommendation;
 
+use app\model\TagModel;
 use support\Db;
 
 /**
@@ -56,7 +57,7 @@ class TagResolver
      */
     private function queryByKeywords(array $keywords): array
     {
-        $rows = Db::table('tags')
+        $rows = TagModel::query()
             ->where('type', 3)
             ->where(function ($q) use ($keywords) {
                 foreach ($keywords as $kw) {
@@ -83,7 +84,7 @@ class TagResolver
             }
         }
 
-        $rows = Db::table('tags')
+        $rows = TagModel::query()
             ->where('type', 1)
             ->where('name', 'like', "%{$keyword}%")
             ->get(['id', 'name']);

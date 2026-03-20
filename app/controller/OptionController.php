@@ -3,16 +3,11 @@
 namespace app\controller;
 
 use app\common\base\BaseController;
-use app\common\enum\BusinessCode;
-use app\common\exception\BusinessException;
 use app\model\OptionModel;
-use support\Request;
 
 class OptionController extends BaseController
 {
-    protected $noNeedLogin = [
-        '*'
-    ];
+    protected $noNeedLogin = ['*'];
 
     public function tabbar()
     {
@@ -44,7 +39,7 @@ class OptionController extends BaseController
             ],
         ];
         $isAudit    = OptionModel::isAudit();
-        if ($isAudit === 'on') {
+        if ($isAudit) {
             unset($tabbarList[1]);
             $tabbarList = array_values($tabbarList);
         }

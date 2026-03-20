@@ -5,6 +5,7 @@ namespace plugin\admin\app\controller;
 use plugin\admin\app\common\Util;
 use plugin\admin\app\model\Option;
 use support\exception\BusinessException;
+use support\Redis;
 use support\Request;
 use support\Response;
 use Throwable;
@@ -129,6 +130,7 @@ class ConfigController extends Base
         Option::where('name', $name)->update([
             'value' => json_encode($config)
         ]);
+        Redis::del('system:config:is-audit');
         return $this->json(0);
     }
 
