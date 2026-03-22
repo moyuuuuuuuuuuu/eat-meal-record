@@ -14,6 +14,7 @@ use app\common\exception\DataNotFoundException;
 use app\common\exception\ValidationException;
 use app\common\validate\FoodValidator;
 use app\format\FoodFormat;
+use app\service\Alarm;
 use app\model\{FoodModel, FoodUnitModel, MealRecordModel};
 use app\service\baidu\Bos;
 use app\service\BooHee;
@@ -144,7 +145,7 @@ class FoodBusiness extends BaseBusiness
         try {
             $type = NutritionInputType::tryFrom($type);
             if (in_array($type, [NutritionInputType::AUDIO, NutritionInputType::IMAGE])) {
-                $result = Bos::instance()->putObjFromBase($content, $options ?? 'jpg');
+                $result = Bos::instance()->putObjFromBase($content, $options ?? ['format' => 'jpg']);
                 if (!$result) {
                     throw new BusinessException('录音文件上传失败', BusinessCode::THREE_PART_ERROR);
                 }
@@ -158,6 +159,7 @@ class FoodBusiness extends BaseBusiness
             return FoodBusiness::instance()->syncRemote($result ?? []);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage(), [$exception->getCode(), $exception->getFile(), $exception->getLine(), $exception->getTraceAsString()]);
+            Alarm::notify($exception);
             throw new BusinessException($exception->getMessage(), $exception->getCode());
         }
     }

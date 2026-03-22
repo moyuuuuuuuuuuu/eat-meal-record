@@ -109,7 +109,7 @@ class FoodSyncByRemote
                 ]);
                 $result[]     = $foodTagModel->id;
             } catch (QueryException $e) {
-                Log::info($e->getCode(), $e->getMessage());
+                Log::info($e->getCode(), [$e->getMessage()]);
                 // 3. 限制重试次数，避免无限递归
                 if ($attempt < 3 && in_array($e->errorInfo[1], [1213, 1062])) {
                     usleep(mt_rand(100, 500) * 1000); // 随机等待 100-500ms
@@ -124,7 +124,7 @@ class FoodSyncByRemote
     /**
      * 内部方法：安全获取标签 ID
      */
-    private static function getOrCreateTagId($tagName, $typeId)
+    static function getOrCreateTagId($tagName, $typeId)
     {
         try {
             $maxRetries = 3;
@@ -134,7 +134,7 @@ class FoodSyncByRemote
                 try {
                     // 用 firstOrCreate 代替 insert，天然避免重复插入冲突
                     $tagModel = \app\model\TagModel::firstOrCreate(
-                        ['name' => $tagName, 'type' => 2]
+                        ['name' => $tagName, 'type' => $typeId]
                     );
                     break; // 成功则跳出循环
                 } catch (\Exception $e) {

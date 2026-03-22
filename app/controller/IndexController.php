@@ -13,9 +13,14 @@ use support\Request;
 class IndexController extends BaseController
 {
     protected $noNeedLogin = ['*'];
+
     public function index(Request $request)
     {
-       }
+        $tagModel = \app\model\TagModel::firstOrCreate(
+            ['name' => '香甜']
+        );
+        return $this->success('', $tagModel->toArray());
+    }
 
     public function view(Request $request)
     {

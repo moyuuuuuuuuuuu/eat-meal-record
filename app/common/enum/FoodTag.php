@@ -15,10 +15,7 @@ enum FoodTag: int
     case SEASON       = 9;  // 时令季节
     case SCENE        = 10; // 特殊场景
     case STORAGE      = 11; // 存储方式
-
-    /**
-     * 数字 -> 文字 (获取中文描述)
-     */
+//
     public function label(): string
     {
         return match ($this) {
@@ -39,16 +36,16 @@ enum FoodTag: int
     public static function fromLabel(string $label): ?int
     {
         return match ($label) {
-            '餐次' => self::MEAL_TIME->value,
+            '推荐餐次', '餐次' => self::MEAL_TIME->value,
             '口味' => self::TASTE->value,
-            '营养', '营养特点' => self::NUTRITION->value, // 多个文字对应一个数字
+            '营养', '营养特点' => self::NUTRITION->value,
             '烹饪方式' => self::COOKING->value,
             '适用人群' => self::TARGET_USER->value,
             '食材状态' => self::STATUS->value,
             '过敏原' => self::ALLERGEN->value,
             '品牌产地' => self::BRAND_ORIGIN->value,
             '时令季节' => self::SEASON->value,
-            '特殊场景' => self::SCENE->value,
+            '特性', '特殊场景' => self::SCENE->value,
             '存储方式' => self::STORAGE->value,
             default => null,
         };

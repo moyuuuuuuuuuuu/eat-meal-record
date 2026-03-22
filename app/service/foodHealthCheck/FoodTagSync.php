@@ -7,6 +7,7 @@ use app\model\FoodTagModel;
 use app\model\TagModel;
 use app\service\Alarm;
 use app\service\FoodService;
+use app\util\FoodSyncByRemote;
 use support\Db;
 use support\Log;
 use support\Redis;
@@ -48,15 +49,11 @@ class FoodTagSync extends BaseHealthCheck
                     $tags = $foodInfo['tags'] ?? [];
                     foreach ($tags as $tagName => $typeName) {
                         $typeId = $this->typeMapping[$typeName] ?? 3;
-
-                        $tagModel = TagModel::firstOrCreate(
-                            ['name' => $tagName, 'type' => $typeId],
-                            ['meta_type' => $typeName]
-                        );
+                        $tagId = FoodSyncByRemote::getOrCreateTagId($tagName,$typeId);
 
                         FoodTagModel::firstOrCreate([
                             'food_id' => $currentFood->id,
-                            'tag_id'  => $tagModel->id
+                            'tag_id'  => $tagId
                         ]);
                     }
                     return $currentFood->id;
