@@ -130,7 +130,7 @@ class FoodBusiness extends BaseBusiness
     public function recognize(Request $request)
     {
         if (!TokenLimit::instance()->hasQuota()) {
-            throw new BusinessException('AI识别次数已经用完，请先手动选择食物吧', BusinessCode::NO_AUTH);
+            throw new BusinessException('AI识别次数已经用完，请先手动选择食物吧', BusinessCode::PARAM_ERROR);
         }
         $content = $request->post('content', null);
         $type    = $request->post('type', null);
@@ -159,7 +159,6 @@ class FoodBusiness extends BaseBusiness
             return FoodBusiness::instance()->syncRemote($result ?? []);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage(), [$exception->getCode(), $exception->getFile(), $exception->getLine(), $exception->getTraceAsString()]);
-            Alarm::notify($exception);
             throw new BusinessException($exception->getMessage(), $exception->getCode());
         }
     }

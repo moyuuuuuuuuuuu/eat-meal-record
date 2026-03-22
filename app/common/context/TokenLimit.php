@@ -64,7 +64,7 @@ final class TokenLimit
 
         // 首次写入时设置过期（精确到当天结束）
         if ($newCount === 1) {
-            Redis::expireAt($key, Helper::todayEndTimestamp());
+            Redis::expire($key, Helper::todayEndTimestamp());
             $this->ensureDailyRecord($userId);
         }
 

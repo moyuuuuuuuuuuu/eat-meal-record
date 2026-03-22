@@ -173,7 +173,6 @@ class Bos extends BaseGuzzleHttpClient
     protected function authorization(string $canonicalRequest, string $signedHeader, $now = null)
     {
         $authStringPrefix = $this->authStringPrefix($now);
-        Log::debug('authStringPrefix', [$canonicalRequest, $authStringPrefix]);
         $signedKey = hash_hmac('sha256', $authStringPrefix, getenv('BOS_ACCESS_KEY_SECRET'));
         $signature = hash_hmac('sha256', $canonicalRequest, $signedKey);
         return sprintf('%s/%s/%s', $authStringPrefix, $signedHeader, $signature);

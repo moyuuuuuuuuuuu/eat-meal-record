@@ -125,9 +125,7 @@ class Solution extends BaseGuzzleHttpClient
 
     protected function handleResponse($response): array
     {
-
         $result = json_decode($response->getBody()->getContents(), true);
-        var_dump($result);
         if (isset($result['error_code'])) {
             throw new BusinessException('三方审核失败，请稍后重试', BusinessCode::PARAM_ERROR);
         }
