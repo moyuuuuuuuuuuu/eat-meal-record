@@ -38,11 +38,11 @@ class OptionController extends BaseController
                 'page'        => '/pages/profile/index',
             ],
         ];
-        $isAudit    = OptionModel::isAudit();
+        /*$isAudit    = OptionModel::isAudit();
         if ($isAudit) {
             unset($tabbarList[1]);
             $tabbarList = array_values($tabbarList);
-        }
+        }*/
         return $this->success('', $tabbarList);
     }
 }
