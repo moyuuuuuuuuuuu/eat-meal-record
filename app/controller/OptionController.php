@@ -21,14 +21,14 @@ class OptionController extends BaseController
                 'page'        => '/pages/index/index',
                 'active'      => true
             ],
-            [
+            /*[
                 'name'        => 'feed',
                 'title'       => '动态',
                 'icon'        => 'layers',
                 'activeColor' => '#10b981',
                 'color'       => '#6b7280',
                 'page'        => '/pages/feed/index',
-            ],
+            ],*/
             [
                 'name'        => 'profile',
                 'title'       => '我的',

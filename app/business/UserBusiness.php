@@ -191,13 +191,13 @@ class UserBusiness extends BaseBusiness
 
         return [
             'name'          => $userInfo['nickname'] ?? '用户',
-            'joinDays'      => $userInfo['joinDays'],
-            'totalRecords'  => $userInfo['totalRecords'],
-            'avgCalories'   => $userInfo['avgCalories'],
-            'currentWeight' => $userInfo['weight'],
-            'targetWeight'  => $userInfo['targetWeight'],
-            'height'        => $userInfo['tall'],
-            'age'           => $userInfo['age'],
+            'joinDays'      => $userInfo['joinDays'] ?? 0,
+            'totalRecords'  => $userInfo['totalRecords'] ?? 0,
+            'avgCalories'   => $userInfo['avgCalories'] ?? 0,
+            'currentWeight' => $userInfo['weight'] ?? 65,
+            'targetWeight'  => $userInfo['targetWeight'] ?? 0,
+            'height'        => $userInfo['tall'] ?? 175,
+            'age'           => $userInfo['age'] ?? 0,
             'gender'        => Sex::tryFrom($userInfo['sex'])->label(),
         ];
     }
