@@ -126,11 +126,12 @@ class Solution extends BaseGuzzleHttpClient
     protected function handleResponse($response): array
     {
         $result = json_decode($response->getBody()->getContents(), true);
+        Log::debug('百度审核',$result);
         if (isset($result['error_code'])) {
             throw new BusinessException('三方审核失败，请稍后重试', BusinessCode::PARAM_ERROR);
         }
         $conclusion     = $result['conclusion'] ?? '';
-        $conclusionType = $result['conclusion_type'] ?? null;
+        $conclusionType = $result['conclusionType'] ?? null;
         if (!$conclusionType) {
             throw new BusinessException('文本审核未通过，请更改后再发布', BusinessCode::PARAM_ERROR);
         }

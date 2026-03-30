@@ -28,24 +28,17 @@ class TaskConsumeJob extends BaseConsumer
             throw new BusinessException('任务不存在', BusinessCode::SYSTEM_ERROR);
         }
         $taskInfo->update(['run_status' => TaskRunStatus::Running->value]);
-        $params = $taskInfo->params;
-        $userId = $params['userId'] ?? 0;
+        $userId = $taskInfo->additional['userId'] ?? 0;
         if (!$userId) {
             throw new BusinessException('用户ID不能为空', BusinessCode::SYSTEM_ERROR);
         }
-        $type    = $params['type'] ?? null;
-        $content = $params['content'] ?? null;
-        if (!$type || !$content) {
-            throw new BusinessException('任务参数不完整', BusinessCode::SYSTEM_ERROR);
-        }
         Context::set(UserInfoContext::UserId->value, $userId);
-        $type   = NutritionInputType::tryFrom($type);
         $update = [
             'run_status'   => TaskRunStatus::Finished->value,
             'completed_at' => date('Y-m-d H:i:s'),
         ];
         try {
-            $result = FoodService::nutrition($type, $content);
+            $result = FoodService::nutrition(...$taskInfo->params);
             if (!$result) {
                 throw new DataNotFoundException('识别失败');
             }
@@ -55,13 +48,14 @@ class TaskConsumeJob extends BaseConsumer
             $update['complete_status'] = TaskCompleteStatus::Failed->value;
             $update['error_msg']       = $exception->getMessage();
             Log::error('任务执行失败：' . $exception->getMessage(), [
-                'code'   => $exception->getCode(),
-                'file'   => $exception->getFile(),
-                'line'   => $exception->getLine(),
-                'taskId' => $data,
-                'userId' => $userId,
-                'params' => $params,
-                'trace'  => $exception->getTraceAsString()
+                'code'       => $exception->getCode(),
+                'file'       => $exception->getFile(),
+                'line'       => $exception->getLine(),
+                'taskId'     => $data,
+                'userId'     => $userId,
+                'params'     => $taskInfo->params,
+                'additional' => $taskInfo->additional,
+                'trace'      => $exception->getTraceAsString()
             ]);
         }
         $taskInfo->update($update);

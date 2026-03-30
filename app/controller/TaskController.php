@@ -28,7 +28,13 @@ class TaskController extends BaseController
         if (!$taskResult) {
             return $this->fail('任务状态异常');
         }
+        $result = [
+            'status' => $taskResult->labelCode()
+        ];
+        if ($taskResult == TaskCompleteStatus::Success) {
+            $result['data'] = TaskModel::query()->where('task_id', $taskId)->value('response');
+        }
 
-        return $this->success('ok', ['status' => $taskResult->labelCode()]);
+        return $this->success('ok', $result);
     }
 }

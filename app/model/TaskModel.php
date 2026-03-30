@@ -20,10 +20,12 @@ class TaskModel extends BaseModel
         'worker',
         'error_msg',
         'completed_at',
+        'additional'
     ];
 
     protected $casts = [
         'params'       => 'array',
+        'additional'   => 'array',
         'response'     => 'array',
         'created_at'   => 'datetime',
         'updated_at'   => 'datetime',

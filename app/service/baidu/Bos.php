@@ -103,35 +103,18 @@ class Bos extends BaseGuzzleHttpClient
      * } $option
      * @return string
      */
-    public function putObjFromBase(string $content, array $option = [])
+    public function putObjFromBase(string $content, array $option = [], string $dir = '')
     {
-        if (preg_match('/^(data:(.*?);base64,)/', $content, $result)) {
-            $mimeType = $result[2]; // 例如: audio/mp3, image/jpeg
-            $content  = base64_decode(str_replace($result[1], '', $content));
-
-            // 根据 MIME 得到后缀
-            $extension = explode('/', $mimeType)[1] ?? 'bin';
-            // 特殊处理一些后缀转换（如 audio/mpeg -> mp3）
-            $extension = str_replace('mpeg', 'mp3', $extension);
-        } elseif (isset($option['format'])) {
-            // 如果没有前缀，默认二进制流
-            $mimeType  = $this->mimes[$option['format']] ?? 'application/octet-stream';
-            $content   = base64_decode($content);
-            $extension = $option['format'];
-        } else {
-            $mimeType  = 'application/octet-stream';
-            $content   = base64_decode($content);
-            $extension = 'bin';
+        list($isExits, $filename, $mimeType, $iso8601Zulu, $now, $hash) = $this->doesObjectExistByBase($content, $option, $dir);
+        if ($isExits) {
+            return $filename;
         }
-        $now         = time();
-        $date        = date('Y/md', $now);
-        $iso8601Zulu = gmdate('Y-m-d\TH:i:s\Z', $now);
-        $filename    = sprintf('uploads/%s/%s.%s', $date, uniqid(), $extension);
-        $headers     = [
-            'Host'         => sprintf('%s.%s.bcebos.com', getenv('BOS_BUCKET'), getenv('BOS_REGION')),
-            'Content-Type' => $mimeType,
-            'x-bce-date'   => $iso8601Zulu,
-            'x-bce-acl'    => 'public-read',
+        $headers = [
+            'Host'              => sprintf('%s.%s.bcebos.com', getenv('BOS_BUCKET'), getenv('BOS_REGION')),
+            'Content-Type'      => $mimeType,
+            'x-bce-date'        => $iso8601Zulu,
+            'x-bce-acl'         => 'public-read',
+            'x-bce-meta-sha256' => $hash,
         ];
         list($canonicalRequest, $signedHeaders) = $this->canonicalRequest('PUT', $filename, '', $headers);
         $authorization            = $this->authorization($canonicalRequest, $signedHeaders, $now);
@@ -163,6 +146,66 @@ class Bos extends BaseGuzzleHttpClient
         }
     }
 
+    public function doesObjectExistByBase(string $content, array $option = [], string $dir = '')
+    {
+        if (preg_match('/^(data:(.*?);base64,)/', $content, $result)) {
+            $mimeType = $result[2]; // 例如: audio/mp3, image/jpeg
+            $content  = base64_decode(str_replace($result[1], '', $content));
+
+            // 根据 MIME 得到后缀
+            $extension = explode('/', $mimeType)[1] ?? 'bin';
+            // 特殊处理一些后缀转换（如 audio/mpeg -> mp3）
+            $extension = str_replace('mpeg', 'mp3', $extension);
+        } elseif (isset($option['format'])) {
+            // 如果没有前缀，默认二进制流
+            $mimeType  = $this->mimes[$option['format']] ?? 'application/octet-stream';
+            $content   = base64_decode($content);
+            $extension = $option['format'];
+        } else {
+            $mimeType  = 'application/octet-stream';
+            $content   = base64_decode($content);
+            $extension = 'bin';
+        }
+        $now         = time();
+        $iso8601Zulu = gmdate('Y-m-d\TH:i:s\Z', $now);
+        $hash        = hash('sha256', $content);
+        $filename    = sprintf('uploads/%s%s/%s.%s', rtrim($dir, '/') . '/', substr($hash, 0, 2), $hash, $extension);
+
+        $headers = [
+            'Host'         => sprintf('%s.%s.bcebos.com', getenv('BOS_BUCKET'), getenv('BOS_REGION')),
+            'Content-Type' => $mimeType,
+            'x-bce-date'   => $iso8601Zulu,
+        ];
+        try {
+            $response = $this->client->head($filename, [
+                'headers' => $headers,
+                'body'    => $content, // 传入资源句柄
+                'timeout' => 30.0,    // 建议加上超时设置
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            if((int)$statusCode === 404){
+                return [false, $filename, $mimeType, $iso8601Zulu, $now, $hash];
+            }
+            if ($statusCode != 200) {
+                throw new BusinessException("获取文件信息失败，状态码：" . $statusCode, BusinessCode::BUSINESS_ERROR->value);
+            }
+            return [true, $filename, $mimeType, $iso8601Zulu, $now, $hash];
+        } catch (RequestException $e) {
+            $message = "网络请求错误：" . $e->getMessage();
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $message   = json_decode($errorBody, true);
+                $message   = $message['message'] ?? '网络请求错误：未知错误';
+            }
+            throw new BusinessException($message, BusinessCode::BUSINESS_ERROR->value);
+        } catch (GuzzleException $e) {
+            $message = "Guzzle 通用错误：" . $e->getMessage();
+            throw new BusinessException($message, BusinessCode::BUSINESS_ERROR->value);
+        }
+//        return [false, $filename, $mimeType, $iso8601Zulu, $now, $hash];
+    }
+
     protected function getFileName(UploadFile $uploadFile): string
     {
         $extension = $uploadFile->getUploadExtension();
@@ -173,8 +216,8 @@ class Bos extends BaseGuzzleHttpClient
     protected function authorization(string $canonicalRequest, string $signedHeader, $now = null)
     {
         $authStringPrefix = $this->authStringPrefix($now);
-        $signedKey = hash_hmac('sha256', $authStringPrefix, getenv('BOS_ACCESS_KEY_SECRET'));
-        $signature = hash_hmac('sha256', $canonicalRequest, $signedKey);
+        $signedKey        = hash_hmac('sha256', $authStringPrefix, getenv('BOS_ACCESS_KEY_SECRET'));
+        $signature        = hash_hmac('sha256', $canonicalRequest, $signedKey);
         return sprintf('%s/%s/%s', $authStringPrefix, $signedHeader, $signature);
     }
 

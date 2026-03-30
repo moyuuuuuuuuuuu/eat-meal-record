@@ -1092,7 +1092,7 @@
         },
         {
             "name": "illuminate/bus",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/bus.git",
@@ -1145,7 +1145,7 @@
         },
         {
             "name": "illuminate/collections",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/collections.git",
@@ -1205,7 +1205,7 @@
         },
         {
             "name": "illuminate/conditionable",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/conditionable.git",
@@ -1251,7 +1251,7 @@
         },
         {
             "name": "illuminate/container",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/container.git",
@@ -1313,7 +1313,7 @@
         },
         {
             "name": "illuminate/contracts",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/contracts.git",
@@ -1361,7 +1361,7 @@
         },
         {
             "name": "illuminate/database",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/database.git",
@@ -1433,7 +1433,7 @@
         },
         {
             "name": "illuminate/events",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/events.git",
@@ -1488,7 +1488,7 @@
         },
         {
             "name": "illuminate/filesystem",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/filesystem.git",
@@ -1555,16 +1555,16 @@
         },
         {
             "name": "illuminate/http",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/http.git",
-                "reference": "f57c9c309319a23903f2f67d85dd49446b46c159"
+                "reference": "9e0cf400cb81333520994952a164c737224ce9f0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/http/zipball/f57c9c309319a23903f2f67d85dd49446b46c159",
-                "reference": "f57c9c309319a23903f2f67d85dd49446b46c159",
+                "url": "https://api.github.com/repos/illuminate/http/zipball/9e0cf400cb81333520994952a164c737224ce9f0",
+                "reference": "9e0cf400cb81333520994952a164c737224ce9f0",
                 "shasum": ""
             },
             "require": {
@@ -1613,11 +1613,11 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2026-03-17T13:55:49+00:00"
+            "time": "2026-03-17T18:15:14+00:00"
         },
         {
             "name": "illuminate/macroable",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/macroable.git",
@@ -1663,7 +1663,7 @@
         },
         {
             "name": "illuminate/pagination",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/pagination.git",
@@ -1713,7 +1713,7 @@
         },
         {
             "name": "illuminate/pipeline",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/pipeline.git",
@@ -1765,7 +1765,7 @@
         },
         {
             "name": "illuminate/redis",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/redis.git",
@@ -1819,7 +1819,7 @@
         },
         {
             "name": "illuminate/reflection",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/reflection.git",
@@ -1870,7 +1870,7 @@
         },
         {
             "name": "illuminate/session",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/session.git",
@@ -1927,7 +1927,7 @@
         },
         {
             "name": "illuminate/support",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/support.git",
@@ -2007,16 +2007,16 @@
         },
         {
             "name": "illuminate/translation",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/translation.git",
-                "reference": "b341d8fb9dca956dead8726b247761561e7a1530"
+                "reference": "4b555f3ca37523d1064d08e99774ab32fd0cc228"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/translation/zipball/b341d8fb9dca956dead8726b247761561e7a1530",
-                "reference": "b341d8fb9dca956dead8726b247761561e7a1530",
+                "url": "https://api.github.com/repos/illuminate/translation/zipball/4b555f3ca37523d1064d08e99774ab32fd0cc228",
+                "reference": "4b555f3ca37523d1064d08e99774ab32fd0cc228",
                 "shasum": ""
             },
             "require": {
@@ -2054,20 +2054,20 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2026-03-13T13:36:16+00:00"
+            "time": "2026-03-18T14:19:27+00:00"
         },
         {
             "name": "illuminate/validation",
-            "version": "v12.55.0",
+            "version": "v12.56.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/validation.git",
-                "reference": "a520aea3bc774e9709b2286c63c4212af7cc8309"
+                "reference": "f16b2bd4e22d8253a13e606d402ef9c53be9316a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/validation/zipball/a520aea3bc774e9709b2286c63c4212af7cc8309",
-                "reference": "a520aea3bc774e9709b2286c63c4212af7cc8309",
+                "url": "https://api.github.com/repos/illuminate/validation/zipball/f16b2bd4e22d8253a13e606d402ef9c53be9316a",
+                "reference": "f16b2bd4e22d8253a13e606d402ef9c53be9316a",
                 "shasum": ""
             },
             "require": {
@@ -2117,7 +2117,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2026-03-16T14:11:09+00:00"
+            "time": "2026-03-24T14:09:51+00:00"
         },
         {
             "name": "intervention/image",
@@ -5727,22 +5727,22 @@
         },
         {
             "name": "webman/cache",
-            "version": "v2.1.3",
+            "version": "v2.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webman-php/cache.git",
-                "reference": "8600b7a5172e3848f3f0d707a36d37ee9b8328d8"
+                "reference": "221264c98bc24b3ce93681b4cf22bd5e711327a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webman-php/cache/zipball/8600b7a5172e3848f3f0d707a36d37ee9b8328d8",
-                "reference": "8600b7a5172e3848f3f0d707a36d37ee9b8328d8",
+                "url": "https://api.github.com/repos/webman-php/cache/zipball/221264c98bc24b3ce93681b4cf22bd5e711327a9",
+                "reference": "221264c98bc24b3ce93681b4cf22bd5e711327a9",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.1",
                 "psr/simple-cache": "^3.0",
-                "symfony/cache": "^6.0 || ^7.0",
+                "symfony/cache": "^6.0 || ^7.0 || ^8.0",
                 "workerman/webman-framework": "^2.1 || dev-master"
             },
             "type": "library",
@@ -5758,9 +5758,9 @@
             ],
             "support": {
                 "issues": "https://github.com/webman-php/cache/issues",
-                "source": "https://github.com/webman-php/cache/tree/v2.1.3"
+                "source": "https://github.com/webman-php/cache/tree/v2.1.4"
             },
-            "time": "2025-11-25T12:35:45+00:00"
+            "time": "2026-03-24T00:54:45+00:00"
         },
         {
             "name": "webman/captcha",
@@ -5856,16 +5856,16 @@
         },
         {
             "name": "webman/console",
-            "version": "v2.2.2",
+            "version": "v2.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webman-php/console.git",
-                "reference": "e66e21c3db1685ac76841df3316d488b25e23d81"
+                "reference": "df5fffe07efd61d99dacacde9dd41a899ae923c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webman-php/console/zipball/e66e21c3db1685ac76841df3316d488b25e23d81",
-                "reference": "e66e21c3db1685ac76841df3316d488b25e23d81",
+                "url": "https://api.github.com/repos/webman-php/console/zipball/df5fffe07efd61d99dacacde9dd41a899ae923c4",
+                "reference": "df5fffe07efd61d99dacacde9dd41a899ae923c4",
                 "shasum": ""
             },
             "require": {
@@ -5906,7 +5906,7 @@
                 "source": "https://github.com/webman-php/console",
                 "wiki": "http://www.workerman.net/doc/webman"
             },
-            "time": "2026-02-26T02:45:43+00:00"
+            "time": "2026-03-29T08:32:39+00:00"
         },
         {
             "name": "webman/cors",
@@ -5940,21 +5940,21 @@
         },
         {
             "name": "webman/database",
-            "version": "v2.1.9",
+            "version": "v2.1.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webman-php/database.git",
-                "reference": "5a1463c96c79b35225f1cbd2f3e65830a7b4da0e"
+                "reference": "90abfaae7e9fde5f9a4265ae47396bc5c9ecc61c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webman-php/database/zipball/5a1463c96c79b35225f1cbd2f3e65830a7b4da0e",
-                "reference": "5a1463c96c79b35225f1cbd2f3e65830a7b4da0e",
+                "url": "https://api.github.com/repos/webman-php/database/zipball/90abfaae7e9fde5f9a4265ae47396bc5c9ecc61c",
+                "reference": "90abfaae7e9fde5f9a4265ae47396bc5c9ecc61c",
                 "shasum": ""
             },
             "require": {
-                "illuminate/database": "^10.0 || ^11.0 || ^12.0",
-                "illuminate/http": "^10.0 || ^11.0 || ^12.0",
+                "illuminate/database": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+                "illuminate/http": "^10.0 || ^11.0 || ^12.0 || ^13.0",
                 "laravel/serializable-closure": "^1.0 || ^2.0",
                 "workerman/webman-framework": "^2.1 || dev-master"
             },
@@ -5972,9 +5972,9 @@
             "description": "Webman database",
             "support": {
                 "issues": "https://github.com/webman-php/database/issues",
-                "source": "https://github.com/webman-php/database/tree/v2.1.9"
+                "source": "https://github.com/webman-php/database/tree/v2.1.10"
             },
-            "time": "2026-02-02T10:45:05+00:00"
+            "time": "2026-03-19T07:31:04+00:00"
         },
         {
             "name": "webman/event",
@@ -6009,20 +6009,20 @@
         },
         {
             "name": "webman/redis",
-            "version": "v2.1.3",
+            "version": "v2.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webman-php/redis.git",
-                "reference": "559eb1692d39c6fef5cf526223fff728be6c0fb9"
+                "reference": "aadc69937217494c9acaa6d6b4fe8bcaa64eb6e6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webman-php/redis/zipball/559eb1692d39c6fef5cf526223fff728be6c0fb9",
-                "reference": "559eb1692d39c6fef5cf526223fff728be6c0fb9",
+                "url": "https://api.github.com/repos/webman-php/redis/zipball/aadc69937217494c9acaa6d6b4fe8bcaa64eb6e6",
+                "reference": "aadc69937217494c9acaa6d6b4fe8bcaa64eb6e6",
                 "shasum": ""
             },
             "require": {
-                "illuminate/redis": "^10.0 || ^11.0 || ^12.0",
+                "illuminate/redis": "^10.0 || ^11.0 || ^12.0 || ^13.0",
                 "workerman/webman-framework": "^2.1 || dev-master"
             },
             "type": "library",
@@ -6039,9 +6039,9 @@
             "description": "Webman redis",
             "support": {
                 "issues": "https://github.com/webman-php/redis/issues",
-                "source": "https://github.com/webman-php/redis/tree/v2.1.3"
+                "source": "https://github.com/webman-php/redis/tree/v2.1.5"
             },
-            "time": "2025-03-14T03:52:14+00:00"
+            "time": "2026-03-25T02:00:19+00:00"
         },
         {
             "name": "webman/redis-queue",
@@ -6316,16 +6316,16 @@
         },
         {
             "name": "workerman/webman-framework",
-            "version": "2.2.0",
+            "version": "v2.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/walkor/webman-framework.git",
-                "reference": "2da4e49259d41925f1732f95f6fb052a3f42ceee"
+                "reference": "ce54d8f8f4c1f2c336293dbc37df1ea46ec34c92"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/walkor/webman-framework/zipball/2da4e49259d41925f1732f95f6fb052a3f42ceee",
-                "reference": "2da4e49259d41925f1732f95f6fb052a3f42ceee",
+                "url": "https://api.github.com/repos/walkor/webman-framework/zipball/ce54d8f8f4c1f2c336293dbc37df1ea46ec34c92",
+                "reference": "ce54d8f8f4c1f2c336293dbc37df1ea46ec34c92",
                 "shasum": ""
             },
             "require": {
@@ -6378,20 +6378,20 @@
                 "source": "https://github.com/walkor/webman-framework",
                 "wiki": "https://doc.workerman.net/"
             },
-            "time": "2026-02-20T02:37:25+00:00"
+            "time": "2026-03-26T01:51:42+00:00"
         },
         {
             "name": "workerman/workerman",
-            "version": "v5.1.9",
+            "version": "v5.1.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/walkor/workerman.git",
-                "reference": "fff0954628f8ceeccfe29d3e817f0fad87cfdbf2"
+                "reference": "6ecda94609c40ade0f1e548535d24d8e09e67409"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/walkor/workerman/zipball/fff0954628f8ceeccfe29d3e817f0fad87cfdbf2",
-                "reference": "fff0954628f8ceeccfe29d3e817f0fad87cfdbf2",
+                "url": "https://api.github.com/repos/walkor/workerman/zipball/6ecda94609c40ade0f1e548535d24d8e09e67409",
+                "reference": "6ecda94609c40ade0f1e548535d24d8e09e67409",
                 "shasum": ""
             },
             "require": {
@@ -6403,10 +6403,10 @@
                 "ext-swow": "<v1.0.0"
             },
             "require-dev": {
-                "guzzlehttp/guzzle": "^7.0",
+                "guzzlehttp/guzzle": "^7.10",
                 "mockery/mockery": "^1.6",
                 "pestphp/pest": "^2.36 || ^3 || ^4",
-                "phpstan/phpstan": "2.1.x-dev"
+                "phpstan/phpstan": "^2.1"
             },
             "suggest": {
                 "ext-event": "For better performance. "
@@ -6454,7 +6454,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2026-01-09T03:26:15+00:00"
+            "time": "2026-03-20T09:38:10+00:00"
         }
     ],
     "packages-dev": [],

@@ -20,8 +20,12 @@ class FoodService
      * @return array
      * @throws \Exception
      */
-    static function nutrition(NutritionInputType $type, string $content)
+    static function nutrition(string $type, string $content)
     {
+        $type = NutritionInputType::tryFrom($type);
+        if (!$type) {
+            throw new BusinessException('不支持的输入类型');
+        }
         if (!$content) {
             throw new DataNotFoundException('无数据');
         }

@@ -8,6 +8,7 @@ use app\common\enum\BusinessCode;
 use app\common\enum\NormalStatus;
 use app\common\enum\NutritionInputType;
 use app\common\enum\QueueEventName;
+use app\common\enum\TaskCompleteStatus;
 use app\common\enum\TaskRunStatus;
 use app\common\enum\UserInfoContext;
 use app\common\exception\BusinessException;
@@ -32,6 +33,7 @@ use support\Request;
 use support\Snowflake;
 use Webman\RedisQueue\Client;
 use Webman\Validation\Annotation\Validate;
+use function Illuminate\Support\now;
 
 class FoodBusiness extends BaseBusiness
 {
@@ -151,21 +153,43 @@ class FoodBusiness extends BaseBusiness
 
         try {
             if (in_array($inputType, [NutritionInputType::AUDIO, NutritionInputType::IMAGE])) {
-                $uploadResult = Bos::instance()->putObjFromBase($content, $options ?? ['format' => 'jpg']);
+                $uploadResult = Bos::instance()->putObjFromBase($content, $options ?? ['format' => 'jpg'], strtolower(__FUNCTION__));
                 if (!$uploadResult) {
                     throw new BusinessException($inputType->label() . '上传失败', BusinessCode::THREE_PART_ERROR);
                 }
                 $content = source($uploadResult);
             }
+            $params    = [
+                'type'    => $inputType->value,
+                'content' => $content,
+            ];
+            $taskQuery = TaskModel::query()
+                ->orderByDesc('created_at')
+                ->where('created_at', '>=', now()->subDays(7))
+                ->where('run_status', TaskRunStatus::Finished->value)
+                ->where('complete_status', TaskCompleteStatus::Success->value);
+
+            foreach($params as $key => $value) {
+                if (is_array($value)) {
+                    $taskQuery->whereJsonContains("params->$key", $value);
+                } else {
+                    $taskQuery->where("params->$key", $value);
+                }
+            }
+            echo TaskModel::printSql($taskQuery);
+            $taskId = $taskQuery->value('task_id');
+            if ($taskId) {
+                return ['taskId' => (string)$taskId];
+            }
 
             $taskId     = Snowflake::instance()->id();
             $createData = [
-                'params'  => [
+                'params'     => [
                     'type'    => $inputType->value,
                     'content' => $content,
-                    'userId'  => $request->userInfo->id,
                 ],
-                'task_id' => $taskId,
+                'additional' => ['userId' => $request->userInfo->id],
+                'task_id'    => $taskId,
                 'run_status' => TaskRunStatus::Running->value,
             ];
 
