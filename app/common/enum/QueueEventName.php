@@ -15,4 +15,9 @@ enum QueueEventName: string
      */
     case AfterLogin       = 'afterLogin';
     case FeedViewIncrease = 'feedViewIncrease';
+
+    /**
+     * 任务消费
+     */
+    case TaskConsume = 'taskConsume';
 }

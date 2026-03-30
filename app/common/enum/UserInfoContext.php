@@ -12,6 +12,7 @@ enum UserInfoContext: string
     case UserInfoQuota = 'userinfo:%d:quota:%s';
 
     case UserInfoTotalToken = 'userinfo:%d:total-token:%s';
+    case UserInfoTask       = 'userinfo:%d:task:%s';
 
     static function userInfoStepCacheKey(int $userId, string $date = null)
     {
@@ -31,5 +32,10 @@ enum UserInfoContext: string
     static function userInfoTotalTokenCacheKey(int $userId, string $date = null)
     {
         return sprintf(self::UserInfoTotalToken->value, $userId, $date ?? date('Ymd'));
+    }
+
+    static function userInfoTaskCacheKey(int $userId, int|string $taskId = null)
+    {
+        return sprintf(self::UserInfoTask->value, $userId, $taskId);
     }
 }

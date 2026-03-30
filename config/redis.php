@@ -11,9 +11,14 @@
  * @link      http://www.workerman.net/
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
+
+$redisPassword = getenv('REDIS_PASSWORD');
+$redisPassword = is_string($redisPassword) ? trim($redisPassword) : $redisPassword;
+$redisPassword = $redisPassword === '' ? null : $redisPassword;
+
 return [
     'default'   => [
-        'password' => getenv('REDIS_PASSWORD'),
+        'password' => $redisPassword,
         'host'     => getenv('REDIS_HOST'),
         'port'     => (int)getenv('REDIS_PORT'),
         'database' => (int)getenv('REDIS_DATABASE'),
@@ -26,7 +31,7 @@ return [
         ],
     ],
     'subscribe' => [
-        'password' => getenv('REDIS_PASSWORD'),
+        'password' => $redisPassword,
         'host'     => getenv('REDIS_HOST'),
         'port'     => (int)getenv('REDIS_PORT'),
         'database' => (int)getenv('REDIS_DATABASE'),

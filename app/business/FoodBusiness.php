@@ -8,6 +8,7 @@ use app\common\enum\BusinessCode;
 use app\common\enum\NormalStatus;
 use app\common\enum\NutritionInputType;
 use app\common\enum\QueueEventName;
+use app\common\enum\TaskRunStatus;
 use app\common\enum\UserInfoContext;
 use app\common\exception\BusinessException;
 use app\common\exception\DataNotFoundException;
@@ -15,7 +16,7 @@ use app\common\exception\ValidationException;
 use app\common\validate\FoodValidator;
 use app\format\FoodFormat;
 use app\service\Alarm;
-use app\model\{FoodModel, FoodUnitModel, MealRecordModel};
+use app\model\{FoodModel, FoodUnitModel, MealRecordModel, TaskModel};
 use app\service\baidu\Bos;
 use app\service\BooHee;
 use app\service\FoodService;
@@ -26,7 +27,9 @@ use app\util\Helper;
 use support\Context;
 use support\Db;
 use support\Log;
+use support\Redis;
 use support\Request;
+use support\Snowflake;
 use Webman\RedisQueue\Client;
 use Webman\Validation\Annotation\Validate;
 
@@ -147,16 +150,29 @@ class FoodBusiness extends BaseBusiness
             if (in_array($type, [NutritionInputType::AUDIO, NutritionInputType::IMAGE])) {
                 $result = Bos::instance()->putObjFromBase($content, $options ?? ['format' => 'jpg']);
                 if (!$result) {
-                    throw new BusinessException('录音文件上传失败', BusinessCode::THREE_PART_ERROR);
+                    throw new BusinessException($type->label() . '上传失败', BusinessCode::THREE_PART_ERROR);
                 }
                 $content = source($result);
             }
-            $result = FoodService::nutrition($type, $content);
+            $taskId     = Snowflake::instance()->id();
+            $createData = [
+                'params'  => [
+                    'type'    => $type->value,
+                    'content' => $content,
+                    'userId'  => $request->userInfo->id,
+                ],
+                'task_id' => $taskId,
+            ];
+            TaskModel::create($createData);
+            Redis::setEx(UserInfoContext::userInfoTaskCacheKey($request->userInfo->id, $taskId), 3600, TaskRunStatus::Running->value);
+            Client::send(QueueEventName::TaskConsume, $taskId);
+            return ['taskId' => (string)$taskId];
+            /* $result = FoodService::nutrition($type, $content);
 
-            if (!$result) {
-                throw new DataNotFoundException('识别失败');
-            }
-            return FoodBusiness::instance()->syncRemote($result ?? []);
+             if (!$result) {
+                 throw new DataNotFoundException('识别失败');
+             }
+             return FoodBusiness::instance()->syncRemote($result ?? []);*/
         } catch (\Exception $exception) {
             Log::error($exception->getMessage(), [$exception->getCode(), $exception->getFile(), $exception->getLine(), $exception->getTraceAsString()]);
             throw new BusinessException($exception->getMessage(), $exception->getCode());

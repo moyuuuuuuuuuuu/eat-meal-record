@@ -15,7 +15,9 @@ use app\controller\{AuthController,
     UserController,
     UserGoalController,
     ArticleController,
-    LocationController};
+    LocationController,
+    TaskController
+};
 use support\Redis;
 use Webman\Route;
 
@@ -52,7 +54,7 @@ Route::group('/api', function () {
         Route::any('/test', [IndexController::class, 'index']);
         Route::post('/auth/login/mock', [AuthController::class, 'mock']);
     }
-    Route::get('/option/tabbar',[OptionController::class, 'tabbar']);
+    Route::get('/option/tabbar', [OptionController::class, 'tabbar']);
     #文章
     Route::get('/article/notice', [ArticleController::class, 'notice']);
     Route::get('/article/user-agreement', [ArticleController::class, 'userAgreement']);
@@ -64,7 +66,8 @@ Route::group('/api', function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/sms/login', [AuthController::class, 'sms']);
     Route::post('/sms/send', [SmsController::class, 'send']);
-
+    #任务
+    Route::get('/task/enquire', [TaskController::class, 'enquire']);
     #食品相关
     Route::group('/food', function () {
         Route::get('/search', [FoodController::class, 'search']);

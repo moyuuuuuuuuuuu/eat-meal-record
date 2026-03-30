@@ -3,6 +3,7 @@
 namespace app\model;
 
 use app\common\base\BaseModel;
+use Throwable;
 use support\Redis;
 
 class OptionModel extends BaseModel
@@ -31,11 +32,29 @@ class OptionModel extends BaseModel
 
     static function isAudit()
     {
-        if (Redis::exists('system:config:is-audit')) {
-            return Redis::get('system:config:is-audit') == 'on';
+        try {
+            if (Redis::exists('system:config:is-audit')) {
+                return Redis::get('system:config:is-audit') == 'on';
+            }
+        } catch (Throwable) {
+            return self::queryAuditFlag() == 'on';
         }
-        $isAudit = self::query()->where('name', 'system_config')->selectRaw("`value`->>'$.logo.audit' as `value`")->value('value');
-        Redis::set('system:config:is-audit', $isAudit);
+
+        $isAudit = self::queryAuditFlag();
+
+        try {
+            Redis::set('system:config:is-audit', $isAudit);
+        } catch (Throwable) {
+        }
+
         return $isAudit == 'on';
+    }
+
+    protected static function queryAuditFlag(): ?string
+    {
+        return self::query()
+            ->where('name', 'system_config')
+            ->selectRaw("`value`->>'$.logo.audit' as `value`")
+            ->value('value');
     }
 }
