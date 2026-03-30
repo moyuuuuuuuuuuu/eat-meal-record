@@ -130,52 +130,67 @@ class FoodBusiness extends BaseBusiness
     }
 
     #[Validate(validator: FoodValidator::class, scene: 'recognize')]
-    public function recognize(Request $request)
+    public function recognize(Request $request): array
     {
         if (!TokenLimit::instance()->hasQuota()) {
             throw new BusinessException('AI识别次数已经用完，请先手动选择食物吧', BusinessCode::PARAM_ERROR);
         }
-        $content = $request->post('content', null);
-        $type    = $request->post('type', null);
+
+        $content = $request->post('content');
+        $type    = $request->post('type');
         $options = $request->post('options', []);
+
         if (!$type || !$content) {
             throw new ValidationException('类型', '内容');
         }
 
-        if (!in_array($type, Helper::cases(NutritionInputType::class))) {
+        $inputType = NutritionInputType::tryFrom($type);
+        if (!$inputType) {
             throw new BusinessException('不支持的识别方式', BusinessCode::PARAM_ERROR);
         }
+
         try {
-            $type = NutritionInputType::tryFrom($type);
-            if (in_array($type, [NutritionInputType::AUDIO, NutritionInputType::IMAGE])) {
-                $result = Bos::instance()->putObjFromBase($content, $options ?? ['format' => 'jpg']);
-                if (!$result) {
-                    throw new BusinessException($type->label() . '上传失败', BusinessCode::THREE_PART_ERROR);
+            if (in_array($inputType, [NutritionInputType::AUDIO, NutritionInputType::IMAGE])) {
+                $uploadResult = Bos::instance()->putObjFromBase($content, $options ?? ['format' => 'jpg']);
+                if (!$uploadResult) {
+                    throw new BusinessException($inputType->label() . '上传失败', BusinessCode::THREE_PART_ERROR);
                 }
-                $content = source($result);
+                $content = source($uploadResult);
             }
+
             $taskId     = Snowflake::instance()->id();
             $createData = [
                 'params'  => [
-                    'type'    => $type->value,
+                    'type'    => $inputType->value,
                     'content' => $content,
                     'userId'  => $request->userInfo->id,
                 ],
                 'task_id' => $taskId,
+                'run_status' => TaskRunStatus::Running->value,
             ];
-            TaskModel::create($createData);
-            Redis::setEx(UserInfoContext::userInfoTaskCacheKey($request->userInfo->id, $taskId), 3600, TaskRunStatus::Running->value);
-            Client::send(QueueEventName::TaskConsume, $taskId);
-            return ['taskId' => (string)$taskId];
-            /* $result = FoodService::nutrition($type, $content);
 
-             if (!$result) {
-                 throw new DataNotFoundException('识别失败');
-             }
-             return FoodBusiness::instance()->syncRemote($result ?? []);*/
+            TaskModel::create($createData);
+
+            // 预设 Redis 状态为正在执行
+            Redis::setEx(
+                UserInfoContext::userInfoTaskCacheKey($request->userInfo->id, $taskId),
+                3600,
+                TaskRunStatus::Running->value
+            );
+
+            Client::send(QueueEventName::TaskConsume->value, $taskId);
+
+            return ['taskId' => (string)$taskId];
+        } catch (BusinessException $exception) {
+            throw $exception;
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage(), [$exception->getCode(), $exception->getFile(), $exception->getLine(), $exception->getTraceAsString()]);
-            throw new BusinessException($exception->getMessage(), $exception->getCode());
+            Log::error('AI识别请求异常：' . $exception->getMessage(), [
+                'code'  => $exception->getCode(),
+                'file'  => $exception->getFile(),
+                'line'  => $exception->getLine(),
+                'trace' => $exception->getTraceAsString()
+            ]);
+            throw new BusinessException('服务异常，请稍后再试', BusinessCode::SYSTEM_ERROR);
         }
     }
 
