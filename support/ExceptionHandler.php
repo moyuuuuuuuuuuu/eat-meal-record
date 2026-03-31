@@ -27,7 +27,7 @@ class ExceptionHandler extends exception\Handler
     public function render(Request $request, Throwable $exception): Response
     {
         // 1. 尝试从异常 Code 获取业务枚举
-        $businessCode = BusinessCode::tryFrom($exception->getCode());
+        $businessCode = BusinessCode::tryFrom((int)$exception->getCode());
 
         // 2. 关键报警逻辑：如果是严重的业务错误且是生产环境，触发报警
         if (($businessCode && $businessCode->value >= 500)) {

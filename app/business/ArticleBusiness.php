@@ -8,6 +8,7 @@ use app\common\enum\ArticleType;
 use app\common\enum\BusinessCode;
 use app\common\exception\DataNotFoundException;
 use app\model\ArticleModel;
+use support\Log;
 use support\Request;
 use app\common\exception\BusinessException;
 
@@ -15,13 +16,19 @@ class ArticleBusiness extends BaseBusiness
 {
     public function notice(Request $request): array
     {
-        return ArticleModel::query()
-            ->where('type', ArticleType::Notice->value)
-            ->where('status', ArticleStatus::Publish->value)
-            ->inShowTime()
-            ->orderByRaw('is_top = 1 DESC')
-            ->orderBy('sort', 'desc')
-            ->pluck('brief')->toArray();
+        try {
+
+            return ArticleModel::query()
+                ->where('type', ArticleType::Notice->value)
+                ->where('status', ArticleStatus::Publish->value)
+                ->inShowTime()
+                ->orderByRaw('is_top = 1 DESC')
+                ->orderBy('sort', 'desc')
+                ->pluck('brief')->toArray();
+        } catch (\Exception $e) {
+            Log::error('获取公告列表异常', ['exception' => $e->getMessage()]);
+            return [];
+        }
     }
 
     public function userAgreement()
