@@ -7,6 +7,7 @@ use app\service\BaseGuzzleHttpClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\{GuzzleException, RequestException};
 use app\common\exception\BusinessException;
+use GuzzleHttp\RequestOptions;
 use support\Log;
 use Webman\Http\UploadFile;
 
@@ -103,7 +104,7 @@ class Bos extends BaseGuzzleHttpClient
      * } $option
      * @return string
      */
-    public function putObjFromBase(string $content, array $option = [], string $dir = '')
+    public function putObjectByBase(string $content, array $option = [], string $dir = ''): string|\Exception
     {
         list($isExits, $filename, $mimeType, $iso8601Zulu, $now, $hash) = $this->doesObjectExistByBase($content, $option, $dir);
         if ($isExits) {
@@ -115,17 +116,17 @@ class Bos extends BaseGuzzleHttpClient
             'x-bce-date'        => $iso8601Zulu,
             'x-bce-acl'         => 'public-read',
             'x-bce-meta-sha256' => $hash,
+            'Content-Length'    => strlen($content),
         ];
         list($canonicalRequest, $signedHeaders) = $this->canonicalRequest('PUT', $filename, '', $headers);
         $authorization            = $this->authorization($canonicalRequest, $signedHeaders, $now);
         $headers['Authorization'] = $authorization;
         try {
-            $response = $this->client->put($filename, [
-                'headers' => $headers,
-                'body'    => $content, // 传入资源句柄
-                'timeout' => 30.0,    // 建议加上超时设置
+            $response   = $this->client->put($filename, [
+                RequestOptions::HEADERS => $headers,
+                RequestOptions::BODY    => $content,
+                RequestOptions::TIMEOUT => 30.0,    // 建议加上超时设置
             ]);
-
             $statusCode = $response->getStatusCode();
             $result     = $response->getBody()->getContents();
             if ($statusCode != 200) {
@@ -146,7 +147,7 @@ class Bos extends BaseGuzzleHttpClient
         }
     }
 
-    public function doesObjectExistByBase(string $content, array $option = [], string $dir = '')
+    public function doesObjectExistByBase(string &$content, array $option = [], string $dir = '')
     {
         if (preg_match('/^(data:(.*?);base64,)/', $content, $result)) {
             $mimeType = $result[2]; // 例如: audio/mp3, image/jpeg
@@ -177,14 +178,12 @@ class Bos extends BaseGuzzleHttpClient
             'x-bce-date'   => $iso8601Zulu,
         ];
         try {
-            $response = $this->client->head($filename, [
+            $response   = $this->client->head($filename, [
                 'headers' => $headers,
-                'body'    => $content, // 传入资源句柄
                 'timeout' => 30.0,    // 建议加上超时设置
             ]);
-
             $statusCode = $response->getStatusCode();
-            if((int)$statusCode === 404){
+            if ((int)$statusCode === 404) {
                 return [false, $filename, $mimeType, $iso8601Zulu, $now, $hash];
             }
             if ($statusCode != 200) {
@@ -194,6 +193,12 @@ class Bos extends BaseGuzzleHttpClient
         } catch (RequestException $e) {
             $message = "网络请求错误：" . $e->getMessage();
             if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if ((int)$statusCode === 404) {
+                    return [false, $filename, $mimeType, $iso8601Zulu, $now, $hash];
+                } else if ((int)$statusCode === 200) {
+                    return [true, $filename, $mimeType, $iso8601Zulu, $now, $hash];
+                }
                 $errorBody = $e->getResponse()->getBody()->getContents();
                 $message   = json_decode($errorBody, true);
                 $message   = $message['message'] ?? '网络请求错误：未知错误';

@@ -153,7 +153,10 @@ class FoodBusiness extends BaseBusiness
 
         try {
             if (in_array($inputType, [NutritionInputType::AUDIO, NutritionInputType::IMAGE])) {
-                $uploadResult = Bos::instance()->putObjFromBase($content, $options ?? ['format' => 'jpg'], strtolower(__FUNCTION__));
+                if($inputType === NutritionInputType::IMAGE){
+                    $options = ['format'=>'jpg'];
+                }
+                $uploadResult = Bos::instance()->putObjectByBase($content, $options ?? ['format' => 'jpg'], strtolower(__FUNCTION__));
                 if (!$uploadResult) {
                     throw new BusinessException($inputType->label() . '上传失败', BusinessCode::THREE_PART_ERROR);
                 }
