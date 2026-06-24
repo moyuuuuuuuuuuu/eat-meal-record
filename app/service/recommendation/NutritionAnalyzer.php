@@ -96,9 +96,9 @@ class NutritionAnalyzer
     private function rules(array $n, array $dri): array
     {
         $kcal      = max($n['kcal'] ?? 1, 1);   // 防除零
-        $fatRatio  = ($n['fat'] ?? 0 * 9) / $kcal;
-        $carbRatio = ($n['carb'] ?? 0 * 4) / $kcal;
-        $proRatio  = ($n['pro'] ?? 0 * 4) / $kcal;
+        $fatRatio  = (($n['fat'] ?? 0) * 9) / $kcal;
+        $carbRatio = (($n['carb'] ?? 0) * 4) / $kcal;
+        $proRatio  = (($n['pro'] ?? 0) * 4) / $kcal;
 
         return [
             // ── 热量 ──────────────────────────────────────────────────────────

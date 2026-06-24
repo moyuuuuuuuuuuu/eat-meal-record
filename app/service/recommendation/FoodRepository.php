@@ -76,6 +76,21 @@ class FoodRepository
     }
 
     /**
+     * 最终兜底：标签无命中时返回一条上架食物，避免推荐接口空响应。
+     */
+    public function findOneAvailable(): ?array
+    {
+        $row = Db::table('foods as f')
+            ->join('food_nutrients as fn', 'f.id', '=', 'fn.food_id')
+            ->where('f.status', 1)
+            ->inRandomOrder()
+            ->select('f.id', 'f.name', 'fn.kcal', 'fn.pro', 'fn.fat', 'fn.carb', 'fn.fiber')
+            ->first();
+
+        return $row ? (array) $row : null;
+    }
+
+    /**
      * 扩展点：按热量范围过滤（供未来个性化推荐使用）
      *
      * @param  int[] $tagIds

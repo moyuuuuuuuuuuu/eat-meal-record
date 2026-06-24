@@ -20,8 +20,8 @@ use app\model\{FoodModel, FoodUnitModel, MealRecordModel, TaskModel};
 use app\service\baidu\Bos;
 use app\service\BooHee;
 use app\service\FoodService;
+use app\service\recommendation\NutritionContextBuilder;
 use app\service\recommendation\Recommendation;
-use app\util\Calculate;
 use app\util\FoodSyncByRemote;
 use app\util\Helper;
 use support\Context;
@@ -220,26 +220,47 @@ class FoodBusiness extends BaseBusiness
 
     public function recommendation(Request $request)
     {
-        $userId       = Context::get(UserInfoContext::UserId->value);
-        $sumNutrition = [];
+        $userId  = Context::get(UserInfoContext::UserId->value);
+        $context = [
+            'mode'          => NutritionContextBuilder::MODE_FALLBACK,
+            'nutrition'     => [],
+            'analysis_days' => 0,
+        ];
+        $totalRecordDays = 0;
 
         if ($userId) {
-            //检查数据是否满足推荐
-            //7天内是否有餐食记录
+            $totalRecordDays = $this->countUserRecordDays($userId);
+
             $mealRecordList = MealRecordModel::query()
-                ->whereBetween('meal_date', [date('Y-m-d', strtotime("-7 day")), date('y-m-d')])
-                ->pluck('nutrition')
+                ->where('user_id', $userId)
+                ->whereBetween('meal_date', [date('Y-m-d', strtotime("-6 day")), date('Y-m-d')])
+                ->get(['meal_date', 'nutrition'])
                 ->toArray();
-            foreach ($mealRecordList as $mealRecord) {
-                foreach ($mealRecord as $nut => $num) {
-                    if (!isset($sumNutrition[$nut])) {
-                        $sumNutrition[$nut] = $num;
-                        continue;
-                    }
-                    $sumNutrition[$nut] = Calculate::add($sumNutrition[$nut], $num);
-                }
-            }
+
+            $context = (new NutritionContextBuilder())->build($mealRecordList, date('Y-m-d'));
         }
-        return (new Recommendation())->getSuggestions($sumNutrition);
+
+        $recommendation = (new Recommendation())->getSuggestions($context['nutrition']);
+        if (!$recommendation) {
+            return null;
+        }
+
+        return array_merge($recommendation, [
+            'recommendation_mode' => $context['mode'],
+            'record_days'         => $totalRecordDays,
+            'analysis_days'       => $context['analysis_days'],
+        ]);
+    }
+
+    private function countUserRecordDays(int|string $userId): int
+    {
+        if (!$userId) {
+            return 0;
+        }
+
+        return (int)MealRecordModel::query()
+            ->where('user_id', $userId)
+            ->whereNotNull('meal_date')
+            ->distinct()->count('meal_date');
     }
 }

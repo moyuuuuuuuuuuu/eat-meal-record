@@ -73,6 +73,11 @@ class Recommendation
             $food   = $this->foodRepo->findOneByTagIds($tagIds);
         }
         if (!$food) {
+            $tags = [];
+            $food = $this->foodRepo->findOneAvailable();
+        }
+
+        if (!$food) {
             return null;
         }
         // 4. 生成提示语
