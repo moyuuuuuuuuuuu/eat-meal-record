@@ -28,33 +28,7 @@ class FeedBusiness extends BaseBusiness
         $page     = (int)$request->get('page', 1);
         $pageSize = (int)$request->get('pageSize', 10);
 
-        $query = BlogModel::query();
-        if (!$currentUserId) {
-            $query->where('visibility', Visibility::EVERYONE->value);
-        } else {
-            $query->where(function ($q) use ($currentUserId) {
-                // 公开
-                $q->where('visibility', Visibility::EVERYONE->value);
-                // 仅自己
-                $q->orWhere(function ($sq) use ($currentUserId) {
-                    $sq->where('visibility', Visibility::SELF->value)
-                        ->where('user_id', $currentUserId);
-                });
-                // 仅好友（互相关注）
-                $q->orWhere(function ($sq) use ($currentUserId) {
-                    $sq->where('visibility', Visibility::FRIEND->value)
-                        ->whereExists(function ($sub) use ($currentUserId) {
-                            $followTable = (new FollowModel())->getTable();
-                            $blogTable   = (new BlogModel())->getTable();
-                            $sub->select(Db::raw(1))
-                                ->from($followTable)
-                                ->whereColumn($followTable . '.follow_id', $blogTable . '.user_id')
-                                ->where($followTable . '.user_id', $currentUserId)
-                                ->where($followTable . '.is_attention', NormalStatus::YES);
-                        });
-                });
-            });
-        }
+        $query = $this->visibleBlogQuery($currentUserId);
         // 排序优先级：最新 > 点赞 > 浏览 > 收藏
         $query->orderByDesc('id')
             ->orderByDesc('likes')
@@ -75,7 +49,7 @@ class FeedBusiness extends BaseBusiness
     public function detail(Request $request): array
     {
         $blogId = $request->get('id');
-        $blog   = BlogModel::find($blogId);
+        $blog   = $this->visibleBlogQuery($request->userInfo->id ?? null)->where('id', $blogId)->first();
         if (empty($blog)) {
             throw new DataNotFoundException();
         }
@@ -95,7 +69,7 @@ class FeedBusiness extends BaseBusiness
         $blogId = $request->post('id');
 
         return Db::transaction(function () use ($userId, $blogId) {
-            $blog = BlogModel::query()->lockForUpdate()->find($blogId);
+            $blog = $this->visibleBlogQuery($userId)->lockForUpdate()->find($blogId);
             if (!$blog) {
                 throw new DataNotFoundException('动态不存在');
             }
@@ -250,6 +224,37 @@ class FeedBusiness extends BaseBusiness
                 }
             }
             return (new BlogFormat($request))->format($blogInfo);
+        });
+    }
+
+    private function visibleBlogQuery(?int $currentUserId)
+    {
+        $query = BlogModel::query();
+        if (!$currentUserId) {
+            return $query->where('visibility', Visibility::EVERYONE->value);
+        }
+
+        return $query->where(function ($q) use ($currentUserId) {
+            // 公开
+            $q->where('visibility', Visibility::EVERYONE->value);
+            // 仅自己
+            $q->orWhere(function ($sq) use ($currentUserId) {
+                $sq->where('visibility', Visibility::SELF->value)
+                    ->where('user_id', $currentUserId);
+            });
+            // 仅好友（互相关注）
+            $q->orWhere(function ($sq) use ($currentUserId) {
+                $sq->where('visibility', Visibility::FRIEND->value)
+                    ->whereExists(function ($sub) use ($currentUserId) {
+                        $followTable = (new FollowModel())->getTable();
+                        $blogTable   = (new BlogModel())->getTable();
+                        $sub->select(Db::raw(1))
+                            ->from($followTable)
+                            ->whereColumn($followTable . '.follow_id', $blogTable . '.user_id')
+                            ->where($followTable . '.user_id', $currentUserId)
+                            ->where($followTable . '.is_attention', NormalStatus::YES->value);
+                    });
+            });
         });
     }
 }

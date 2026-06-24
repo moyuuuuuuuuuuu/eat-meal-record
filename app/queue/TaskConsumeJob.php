@@ -4,6 +4,7 @@ namespace app\queue;
 
 use app\business\FoodBusiness;
 use app\common\base\BaseConsumer;
+use app\common\context\TokenLimit;
 use app\common\enum\BusinessCode;
 use app\common\enum\NutritionInputType;
 use app\common\enum\TaskCompleteStatus;
@@ -38,6 +39,9 @@ class TaskConsumeJob extends BaseConsumer
             'completed_at' => date('Y-m-d H:i:s'),
         ];
         try {
+            if (!TokenLimit::instance()->hasQuota() || !TokenLimit::instance()->consumeQuota()) {
+                throw new BusinessException('AI识别次数已经用完，请先手动选择食物吧', BusinessCode::PARAM_ERROR);
+            }
             $result = FoodService::nutrition(...$taskInfo->params);
             if (!$result) {
                 throw new DataNotFoundException('识别失败');

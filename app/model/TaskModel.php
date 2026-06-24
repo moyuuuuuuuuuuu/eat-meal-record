@@ -11,6 +11,7 @@ class TaskModel extends BaseModel
     protected $fillable = [
         'id',
         'task_id',
+        'user_id',
         'type',
         'params',
         'response',

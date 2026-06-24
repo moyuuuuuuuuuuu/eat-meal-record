@@ -21,7 +21,10 @@ class TaskController extends BaseController
         if (Redis::exists($userTaskCacheKey)) {
             $taskResult = Redis::get($userTaskCacheKey);
         } else {
-            $taskResult = TaskModel::query()->where('task_id', $taskId)->value('complete_status');
+            $taskResult = TaskModel::query()
+                ->where('task_id', $taskId)
+                ->where('user_id', $request->userInfo->id)
+                ->value('complete_status');
         }
         $taskResult = TaskCompleteStatus::tryFrom($taskResult);
 
@@ -32,7 +35,10 @@ class TaskController extends BaseController
             'status' => $taskResult->labelCode()
         ];
         if ($taskResult == TaskCompleteStatus::Success) {
-            $result['data'] = TaskModel::query()->where('task_id', $taskId)->value('response');
+            $result['data'] = TaskModel::query()
+                ->where('task_id', $taskId)
+                ->where('user_id', $request->userInfo->id)
+                ->value('response');
         }
 
         return $this->success('ok', $result);

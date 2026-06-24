@@ -48,13 +48,10 @@ final class TokenLimit
     }
 
     /**
-     * 原子性地消耗一次次数，并异步累积 token 到数据库
-     * 返回 false 表示已超限，本次不记录
+     * 原子性地消耗一次 AI 识别次数。
      */
-    public function consume(int $tokens): bool
+    public function consumeQuota(): bool
     {
-        if ($tokens <= 0) return true;
-
         $userId = $this->currentUserId();
         $limit  = $this->getDailyLimit($userId);
 
@@ -64,7 +61,7 @@ final class TokenLimit
 
         // 首次写入时设置过期（精确到当天结束）
         if ($newCount === 1) {
-            Redis::expire($key, Helper::todayEndTimestamp());
+            Redis::expire($key, Helper::todayEndTimestamp() - time());
             $this->ensureDailyRecord($userId);
         }
 
@@ -74,7 +71,18 @@ final class TokenLimit
             return false;
         }
 
-        // 异步写 token 到数据库（不阻塞主流程）
+        return true;
+    }
+
+    /**
+     * 累积本次任务消耗的 token，不再负责次数扣减。
+     */
+    public function consume(int $tokens): bool
+    {
+        if ($tokens <= 0) return true;
+
+        $userId = $this->currentUserId();
+        $this->ensureDailyRecord($userId);
         $this->persistTokens($userId, $tokens);
         return true;
     }
@@ -166,7 +174,7 @@ final class TokenLimit
         UserUsageModel::where('user_id', $userId)
             ->whereDate('date', date('Y-m-d'))
             ->increment('token', $tokens);
-        Redis::setEx(UserInfoContext::userInfoTotalTokenCacheKey($userId), 3600, $tokens);
+        Redis::del(UserInfoContext::userInfoTotalTokenCacheKey($userId));
     }
 
     /**

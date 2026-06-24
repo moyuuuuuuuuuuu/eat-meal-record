@@ -60,6 +60,9 @@ class UserBusiness extends BaseBusiness
             $user->sex       = Sex::NONE->value;
             $user->save();
         } else {
+            if ((int)$user->status !== Status::NORMAL->value) {
+                throw new BusinessException('账号已被禁用', BusinessCode::NO_LOGIN);
+            }
             // 更新登录信息
             $user->last_time = date('Y-m-d H:i:s');
             $user->last_ip   = $ip;
@@ -97,6 +100,9 @@ class UserBusiness extends BaseBusiness
                 'status'    => NormalStatus::YES->value
             ]);
         } else {
+            if ((int)$user->status !== Status::NORMAL->value) {
+                throw new BusinessException('账号已被禁用', BusinessCode::NO_LOGIN);
+            }
             // 更新登录信息
             $user->last_time = date('Y-m-d H:i:s');
             $user->last_ip   = $request->getRealIp();

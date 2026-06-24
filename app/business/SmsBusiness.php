@@ -48,7 +48,7 @@ class SmsBusiness extends BaseBusiness
      */
     public function check(string $mobile, string $code): bool
     {
-        if (getenv('APP_DEBUG') && $code == 123123) {
+        if (config('app.debug') === true && $code === '123123') {
             return true;
         }
         $cacheKey  = "sms_code:{$mobile}";

@@ -3,7 +3,6 @@
 namespace app\business;
 
 use app\common\base\BaseBusiness;
-use app\common\context\TokenLimit;
 use app\common\enum\BusinessCode;
 use app\common\enum\NormalStatus;
 use app\common\enum\NutritionInputType;
@@ -134,10 +133,6 @@ class FoodBusiness extends BaseBusiness
     #[Validate(validator: FoodValidator::class, scene: 'recognize')]
     public function recognize(Request $request): array
     {
-        if (!TokenLimit::instance()->hasQuota()) {
-            throw new BusinessException('AI识别次数已经用完，请先手动选择食物吧', BusinessCode::PARAM_ERROR);
-        }
-
         $content = $request->post('content');
         $type    = $request->post('type');
         $options = $request->post('options', []);
@@ -168,6 +163,7 @@ class FoodBusiness extends BaseBusiness
             ];
             $taskQuery = TaskModel::query()
                 ->orderByDesc('created_at')
+                ->where('user_id', $request->userInfo->id)
                 ->where('created_at', '>=', now()->subDays(7))
                 ->where('run_status', TaskRunStatus::Finished->value)
                 ->where('complete_status', TaskCompleteStatus::Success->value);
@@ -192,6 +188,7 @@ class FoodBusiness extends BaseBusiness
                     'content' => $content,
                 ],
                 'additional' => ['userId' => $request->userInfo->id],
+                'user_id'    => $request->userInfo->id,
                 'task_id'    => $taskId,
                 'run_status' => TaskRunStatus::Running->value,
             ];
