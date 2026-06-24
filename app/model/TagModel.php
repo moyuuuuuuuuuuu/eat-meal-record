@@ -33,6 +33,7 @@ class TagModel extends BaseModel
     protected $fillable   = [
         'name',
         'type',
+        'meta_type',
         'meal_type'
     ];
 }

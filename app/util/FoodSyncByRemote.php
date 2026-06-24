@@ -94,11 +94,10 @@ class FoodSyncByRemote
     static function tags(int $foodId, array $tags, int $attempt = 0)
     {
         $result = [];
-        foreach ($tags as $tagName => $typeName) {
-            $typeId = FoodTag::fromLabel($typeName);
+        foreach (self::normalizeTags($tags) as $tag) {
             try {
                 // 1. 尝试获取或创建标签 ID
-                $tagId = self::getOrCreateTagId($tagName, $typeId);
+                $tagId = self::getOrCreateTagId($tag['name'], $tag['type'], $tag['meta_type']);
 
                 if (!$tagId) continue;
 
@@ -122,9 +121,76 @@ class FoodSyncByRemote
     }
 
     /**
+     * 兼容 AI 返回的两种标签格式：
+     * 1. {"麻辣":"口味"}       标签名 => 类型名
+     * 2. {"口味":"麻辣、咸香"} 类型名 => 标签名列表
+     */
+    static function normalizeTags(array $tags): array
+    {
+        $result = [];
+        foreach ($tags as $key => $value) {
+            if (is_array($value)) {
+                $valueItems = $value;
+                $valueText  = implode('、', array_map('strval', $value));
+            } else {
+                $valueText  = trim((string)$value);
+                $valueItems = self::splitTagNames($valueText);
+            }
+
+            $keyText   = trim((string)$key);
+            $keyType   = FoodTag::fromLabel($keyText);
+            $valueType = FoodTag::fromLabel($valueText);
+
+            if ($keyText === '' && $valueText === '') {
+                continue;
+            }
+
+            if ($keyType !== null) {
+                foreach ($valueItems as $tagName) {
+                    if ($tagName === '') continue;
+                    $result[] = [
+                        'name'      => $tagName,
+                        'type'      => $keyType,
+                        'meta_type' => $keyText,
+                    ];
+                }
+                continue;
+            }
+
+            if ($valueType !== null) {
+                foreach (self::splitTagNames($keyText) as $tagName) {
+                    if ($tagName === '') continue;
+                    $result[] = [
+                        'name'      => $tagName,
+                        'type'      => $valueType,
+                        'meta_type' => $valueText,
+                    ];
+                }
+                continue;
+            }
+
+            if ($keyText !== '') {
+                $result[] = [
+                    'name'      => $keyText,
+                    'type'      => FoodTag::NUTRITION->value,
+                    'meta_type' => $valueText ?: FoodTag::NUTRITION->label(),
+                ];
+            }
+        }
+
+        return $result;
+    }
+
+    private static function splitTagNames(string $value): array
+    {
+        $parts = preg_split('/[、,，\\/|]+/u', $value) ?: [];
+        return array_values(array_filter(array_map('trim', $parts), fn($item) => $item !== ''));
+    }
+
+    /**
      * 内部方法：安全获取标签 ID
      */
-    static function getOrCreateTagId($tagName, $typeId)
+    static function getOrCreateTagId($tagName, $typeId, ?string $metaType = null)
     {
         try {
             $maxRetries = 3;
@@ -134,7 +200,8 @@ class FoodSyncByRemote
                 try {
                     // 用 firstOrCreate 代替 insert，天然避免重复插入冲突
                     $tagModel = \app\model\TagModel::firstOrCreate(
-                        ['name' => $tagName, 'type' => $typeId]
+                        ['name' => $tagName, 'type' => $typeId],
+                        ['meta_type' => $metaType]
                     );
                     break; // 成功则跳出循环
                 } catch (\Exception $e) {
@@ -152,7 +219,7 @@ class FoodSyncByRemote
             if (in_array($e->errorInfo[1], [1062, 1213])) {
                 // 稍作停顿，直接从数据库读别人刚创建好的
                 usleep(10000);
-                $tag = TagModel::where('name', $tagName)->first();
+                $tag = TagModel::where('name', $tagName)->where('type', $typeId)->first();
                 return $tag->id ?? null;
             }
             throw $e;

@@ -47,9 +47,8 @@ class FoodTagSync extends BaseHealthCheck
             try {
                 $foodId = Db::transaction(function () use ($foodInfo, $currentFood) {
                     $tags = $foodInfo['tags'] ?? [];
-                    foreach ($tags as $tagName => $typeName) {
-                        $typeId = $this->typeMapping[$typeName] ?? 3;
-                        $tagId = FoodSyncByRemote::getOrCreateTagId($tagName,$typeId);
+                    foreach (FoodSyncByRemote::normalizeTags($tags) as $tag) {
+                        $tagId = FoodSyncByRemote::getOrCreateTagId($tag['name'], $tag['type'], $tag['meta_type']);
 
                         FoodTagModel::firstOrCreate([
                             'food_id' => $currentFood->id,

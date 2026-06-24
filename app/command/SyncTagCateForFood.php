@@ -110,17 +110,16 @@ class SyncTagCateForFood extends Command
                             ]);
 
                             $tags = $foodInfo['tags'] ?? [];
-                            foreach ($tags as $tagName => $typeName) {
-                                $typeId = $this->typeMapping[$typeName] ?? 3;
+                            foreach (\app\util\FoodSyncByRemote::normalizeTags($tags) as $tag) {
 
                                 // 3. 针对 Tags 表，先查后增，并捕获并发冲突
                                 try {
-                                    $tagModel = TagModel::where('name', $tagName)->where('type', $typeId)->first();
+                                    $tagModel = TagModel::where('name', $tag['name'])->where('type', $tag['type'])->first();
                                     if (!$tagModel) {
                                         $tagModel = TagModel::create([
-                                            'name'      => $tagName,
-                                            'type'      => $typeId,
-                                            'meta_type' => $typeName
+                                            'name'      => $tag['name'],
+                                            'type'      => $tag['type'],
+                                            'meta_type' => $tag['meta_type']
                                         ]);
                                     }
 
@@ -131,7 +130,7 @@ class SyncTagCateForFood extends Command
                                 } catch (\Illuminate\Database\QueryException $e) {
                                     // 如果依然报 Duplicate entry，说明别的进程刚好抢先存了，直接忽略即可
                                     if ($e->getCode() == 23000) {
-                                        $tagModel = TagModel::where('name', $tagName)->where('type', $typeId)->first();
+                                        $tagModel = TagModel::where('name', $tag['name'])->where('type', $tag['type'])->first();
                                         if ($tagModel) {
                                             FoodTagModel::firstOrCreate(['food_id' => $currentFood->id, 'tag_id' => $tagModel->id]);
                                         }
