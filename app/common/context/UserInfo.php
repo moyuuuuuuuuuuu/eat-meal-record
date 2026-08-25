@@ -70,15 +70,16 @@ final class UserInfo
 
     static function getUserSteps(string $date, $userId): ?int
     {
-        $stepCacheKey = UserInfoContext::userInfoStepCacheKey($userId);
-        $step         = Redis::get($stepCacheKey);
-        if ($step) {
-            return $step;
-        }
         $timestamp = strtotime($date);
-        $date      = date('Y-m-d', $timestamp);
+        $date = date('Y-m-d', $timestamp);
+        $stepCacheKey = UserInfoContext::userInfoStepCacheKey($userId, date('Ymd', $timestamp));
+        $step         = Redis::get($stepCacheKey);
+        if ($step !== false && $step !== null) {
+            return (int)$step;
+        }
         $step      = UserStepsModel::query()->where('user_id', $userId)->where('record_date', $date)->value('steps') ?? 0;
-        Redis::set($stepCacheKey, $step, Helper::todayEndTimestamp());
+        $ttl = $date === date('Y-m-d') ? max(1, Helper::todayEndTimestamp() - time()) : 3600;
+        Redis::setEx($stepCacheKey, $ttl, $step);
         return $step;
     }
 

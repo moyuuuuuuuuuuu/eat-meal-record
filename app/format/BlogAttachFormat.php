@@ -12,6 +12,13 @@ use app\model\MealRecordModel;
 
 class BlogAttachFormat extends BaseFormat
 {
+    private ?int $blogOwnerId = null;
+
+    public function forBlogOwner(int $userId): self
+    {
+        $this->blogOwnerId = $userId;
+        return $this;
+    }
 
     public function format(?BaseModel $model = null): array
     {
@@ -40,7 +47,11 @@ class BlogAttachFormat extends BaseFormat
 
     protected function record($model): array
     {
-        $mealRecordInfo = MealRecordModel::query()->select('type', 'nutrition', 'id')->where('id', $model->attach)->first();
+        $mealRecordInfo = MealRecordModel::query()
+            ->select('type', 'nutrition', 'id')
+            ->where('id', $model->attach)
+            ->where('user_id', $this->blogOwnerId)
+            ->first();
         if (!$mealRecordInfo) {
             return [];
         }
@@ -50,6 +61,7 @@ class BlogAttachFormat extends BaseFormat
         $mealFoodList = MealRecordFoodModel::query()
             ->leftJoin($foodTable, $foodTable . '.id', '=', $mainTable . '.food_id')
             ->where('meal_id', $model->attach)
+            ->where($mainTable . '.user_id', $this->blogOwnerId)
             ->pluck($foodTable . '.name')->toArray();
 
         return [

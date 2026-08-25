@@ -24,10 +24,10 @@ class FeedValidator extends BaseValidator
         'attach.*.attach.required'    => '附件不能为空',
         'attach.*.poster.required_if' => '视频封面图不能为空',
         'attach.*.poster.string'      => '视频封面图地址必须是字符串',
-        'topics.array'                => '话题数据格式不正确',
-        'topics.*.required'           => '话题ID不能为空',
-        'topics.*.min'                => '话题ID格式不正确',
-        'topics.*.numeric'            => '话题ID必须是数字',
+        'topic.array'                 => '话题数据格式不正确',
+        'topic.*.required'            => '话题ID不能为空',
+        'topic.*.min'                 => '话题ID格式不正确',
+        'topic.*.integer'             => '话题ID必须是整数',
         'location.array'              => '地理位置数据格式不正确',
         'location.latitude.numeric'   => '纬度格式不正确',
         'location.longitude.numeric'  => '经度格式不正确',
@@ -39,7 +39,7 @@ class FeedValidator extends BaseValidator
     ];
 
     protected array $scenes = [
-        'create' => ['content', 'attach', 'topics', 'location'],
+        'create' => ['content', 'visibility', 'attach', 'topic', 'location'],
         'like'   => ['id']
     ];
 
@@ -48,13 +48,13 @@ class FeedValidator extends BaseValidator
         $this->rule = [
             'id'                 => ['required', 'numeric', 'min:1'],
             'content'            => ['required', 'string', 'max:255'],
-            'visibility'         => ['required', Rule::in(Visibility::cases())],
+            'visibility'         => ['required', Rule::in(array_column(Visibility::cases(), 'value'))],
             'attach'             => ['required', 'array', 'max:255'],
             'attach.*.type'      => ['required', Rule::in(AttachType::values())],
             'attach.*.attach'    => ['required'],
             'attach.*.poster'    => ['required_if.attach.*.type,' . AttachType::VIDEO->value, 'string'],
-            'topics'             => ['nullable', 'array'],
-            'topics.*'           => ['required', 'min:1', 'numeric'],
+            'topic'              => ['nullable', 'array'],
+            'topic.*'            => ['required', 'min:1', 'integer'],
             'location'           => ['nullable', 'array'],
             'location.latitude'  => ['nullable', 'numeric'],
             'location.longitude' => ['nullable', 'numeric'],

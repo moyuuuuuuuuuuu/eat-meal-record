@@ -7,7 +7,7 @@ use app\common\{base\BaseBusiness, exception\DataNotFoundException, validate\Fee
 use app\common\enum\{blog\AttachType, blog\Visibility, BusinessCode, LikeFavType, NormalStatus};
 use app\common\enum\QueueEventName;
 use app\format\BlogFormat;
-use app\model\{BlogAttachModel, BlogLocationModel, BlogModel, BlogTopicModel, FollowModel, LikeModel, TopicModel};
+use app\model\{BlogAttachModel, BlogLocationModel, BlogModel, BlogTopicModel, FavoriteModel, FollowModel, LikeModel, TopicModel};
 use app\service\baidu\Ibs;
 use support\{Db, Request};
 use app\common\exception\BusinessException;
@@ -25,10 +25,10 @@ class FeedBusiness extends BaseBusiness
     {
         $currentUserId = $request->userInfo->id ?? null;
 
-        $page     = (int)$request->get('page', 1);
-        $pageSize = (int)$request->get('pageSize', 10);
+        $page     = max(1, (int)$request->get('page', 1));
+        $pageSize = max(1, min((int)$request->get('pageSize', 10), 50));
 
-        $query = $this->visibleBlogQuery($currentUserId);
+        $query = $this->visibleBlogQuery($currentUserId)->with(['user', 'topics', 'location', 'attaches']);
         // 排序优先级：最新 > 点赞 > 浏览 > 收藏
         $query->orderByDesc('id')
             ->orderByDesc('likes')
@@ -36,25 +36,33 @@ class FeedBusiness extends BaseBusiness
             ->orderByDesc('favs');
         $paginate = $query->paginate($pageSize, ['*'], 'page', $page);
 
-        $blogFormat     = (new BlogFormat($request));
+        $blogFormat     = $this->makeBlogFormat($request, $paginate->getCollection());
         $increaseIdList = [];
         $paginate->getCollection()->transform(function ($item) use ($blogFormat, &$increaseIdList) {
             $increaseIdList[] = $item->id;
             return $blogFormat->format($item);
         });
-        Client::send(QueueEventName::FeedViewIncrease->value, $increaseIdList);
+        if ($increaseIdList) {
+            Client::send(QueueEventName::FeedViewIncrease->value, [
+                'viewer' => hash('sha256', ($currentUserId ?: $request->getRealIp()) . '|' . $request->header('user-agent', '')),
+                'ids'    => $increaseIdList,
+            ]);
+        }
         return $paginate->toArray();
     }
 
     public function detail(Request $request): array
     {
         $blogId = $request->get('id');
-        $blog   = $this->visibleBlogQuery($request->userInfo->id ?? null)->where('id', $blogId)->first();
+        $blog   = $this->visibleBlogQuery($request->userInfo->id ?? null)
+            ->with(['user', 'topics', 'location', 'attaches'])
+            ->where('id', $blogId)
+            ->first();
         if (empty($blog)) {
             throw new DataNotFoundException();
         }
 
-        return (new BlogFormat($request))->format($blog);
+        return $this->makeBlogFormat($request, collect([$blog]))->format($blog);
     }
 
     /**
@@ -118,25 +126,49 @@ class FeedBusiness extends BaseBusiness
     #[Validate(validator: FeedValidator::class, scene: 'create')]
     public function create(Request $request): array
     {
-        return Db::transaction(function () use ($request) {
-            $content     = $request->post('content');
-            $topicIdList = $request->post('topic');
-            $location    = $request->post('location');
-            $attach      = $request->post('attach');
-            $visibility  = $request->post('visibility', Visibility::EVERYONE->value);
-            $solution    = Solution::instance();
-            $solution->text($content);
+        $userId      = $request->userInfo->id;
+        $content     = $request->post('content');
+        $topicIdList = $request->post('topic', []);
+        $location    = $request->post('location');
+        $attach      = $request->post('attach');
+        $visibility  = $request->post('visibility', Visibility::EVERYONE->value);
 
-            if ($attach) {
-                foreach ($attach as $key => $item) {
-                    $attachType = AttachType::tryFrom($item['type']);
-                    if ($attachType == AttachType::IMG) {
-                        $solution->image($item['attach']);
-                    } else if ($attachType == AttachType::VIDEO) {
-                        $solution->video($item['attach']);
-                    }
-                }
+        $recordIds = collect($attach)
+            ->filter(fn(array $item) => (int)$item['type'] === AttachType::RECORD->value)
+            ->pluck('attach')
+            ->map(fn($id) => (int)$id)
+            ->unique()
+            ->values()
+            ->all();
+        if ($recordIds) {
+            $ownedRecordCount = \app\model\MealRecordModel::query()
+                ->where('user_id', $userId)
+                ->whereIn('id', $recordIds)
+                ->count();
+            if ($ownedRecordCount !== count($recordIds)) {
+                throw new BusinessException('餐食记录不存在或无权使用', BusinessCode::PARAM_ERROR);
             }
+        }
+
+        $solution = Solution::instance();
+        $solution->text($content);
+        foreach ($attach as $item) {
+            $attachType = AttachType::tryFrom((int)$item['type']);
+            if ($attachType === AttachType::IMG) {
+                $solution->image($item['attach']);
+            } elseif ($attachType === AttachType::VIDEO) {
+                $solution->video($item['attach']);
+            }
+        }
+
+        if ($location && !empty($location['latitude']) && !empty($location['longitude']) && empty($location['address'])) {
+            $addressData = Ibs::instance()->getAddress($location['latitude'], $location['longitude']);
+            $location['address'] = ($addressData['addressComponent']['province'] ?? '') . ($addressData['addressComponent']['city'] ?? '');
+            $businessAreas = explode(',', $addressData['business'] ?? '');
+            $location['name'] = array_pop($businessAreas) ?: ($addressData['addressComponent']['city'] ?? '');
+        }
+
+        return Db::transaction(function () use ($request, $content, $topicIdList, $location, $attach, $visibility) {
             $blogInfo = BlogModel::create([
                 'user_id'    => $request->userInfo->id,
                 'content'    => $content,
@@ -164,27 +196,17 @@ class FeedBusiness extends BaseBusiness
                         'blog_id'  => $blogInfo->id,
                     ];
                 }
-                $blogTopicInsertResult = BlogTopicModel::insert($batchTopicInsertList);
-                if (!$blogTopicInsertResult) {
+                $blogTopicInsertResult = $batchTopicInsertList && BlogTopicModel::insert($batchTopicInsertList);
+                if ($batchTopicInsertList && !$blogTopicInsertResult) {
                     throw new BusinessException('动态话题保存失败', BusinessCode::BUSINESS_ERROR->value);
                 }
-                TopicModel::query()->whereIn('id', $topicIdList)->increment('join');
+                TopicModel::query()->whereIn('id', $topicList)->increment('join');
                 if ($originTopicIdList) {
                     TopicModel::query()->whereIn('id', $originTopicIdList)->decrement('join');
                 }
             }
 
             if ($location) {
-                if (!empty($location['latitude']) && !empty($location['longitude']) && empty($location['address'])) {
-                    $addressData         = Ibs::instance()->getAddress($location['latitude'], $location['longitude']);
-                    $location['address'] = ($addressData['addressComponent']['province'] ?? '') . ($addressData['addressComponent']['city'] ?? '');
-                    $location['name']    = explode(',', $addressData['business']);
-                    if (!empty($location['name'])) {
-                        $location['name'] = array_pop($location['name']);
-                    } else {
-                        $location['name'] = $addressData['addressComponent']['city'] ?? '';
-                    }
-                }
                 BlogLocationModel::query()->where('blog_id', $blogInfo->id)->delete();
                 $blogLocationInfo = BlogLocationModel::create([
                     'blog_id'   => $blogInfo->id,
@@ -203,7 +225,7 @@ class FeedBusiness extends BaseBusiness
                 $attachInsertList = [];
                 foreach ($attach as $key => $item) {
                     if (!empty($item['poster'])) {
-                        $item['attach'] = '/' . ltrim($item['poster'], '/');
+                        $item['poster'] = '/' . ltrim($item['poster'], '/');
                     }
 
                     if (in_array($item['type'], [AttachType::VIDEO->value, AttachType::IMG->value]) && !empty($item['attach'])) {
@@ -213,7 +235,7 @@ class FeedBusiness extends BaseBusiness
                     $attachInsertList[] = [
                         'blog_id' => $blogInfo->id,
                         'attach'  => $item['attach'],
-                        'poster'  => $item['poster'],
+                        'poster'  => $item['poster'] ?? '',
                         'sort'    => $key,
                         'type'    => $item['type'],
                     ];
@@ -253,8 +275,44 @@ class FeedBusiness extends BaseBusiness
                             ->whereColumn($followTable . '.follow_id', $blogTable . '.user_id')
                             ->where($followTable . '.user_id', $currentUserId)
                             ->where($followTable . '.is_attention', NormalStatus::YES->value);
+                    })
+                    ->whereExists(function ($sub) use ($currentUserId) {
+                        $followTable = (new FollowModel())->getTable();
+                        $blogTable   = (new BlogModel())->getTable();
+                        $sub->select(Db::raw(1))
+                            ->from($followTable)
+                            ->whereColumn($followTable . '.user_id', $blogTable . '.user_id')
+                            ->where($followTable . '.follow_id', $currentUserId)
+                            ->where($followTable . '.is_attention', NormalStatus::YES->value);
                     });
             });
         });
+    }
+
+    private function makeBlogFormat(Request $request, $blogs): BlogFormat
+    {
+        $currentUserId = $request->userInfo->id ?? null;
+        if (!$currentUserId || $blogs->isEmpty()) {
+            return (new BlogFormat($request))->withInteractions([], [], []);
+        }
+
+        $blogIds = $blogs->pluck('id')->all();
+        $authorIds = $blogs->pluck('user_id')->unique()->all();
+        $likedIds = LikeModel::query()
+            ->where('user_id', $currentUserId)
+            ->where('type', LikeFavType::BLOG->value)
+            ->whereIn('target', $blogIds)
+            ->pluck('target')->all();
+        $favoredIds = FavoriteModel::query()
+            ->where('user_id', $currentUserId)
+            ->where('type', LikeFavType::BLOG->value)
+            ->whereIn('target', $blogIds)
+            ->pluck('target')->all();
+        $followedUserIds = FollowModel::query()
+            ->where('user_id', $currentUserId)
+            ->whereIn('follow_id', $authorIds)
+            ->pluck('follow_id')->all();
+
+        return (new BlogFormat($request))->withInteractions($likedIds, $favoredIds, $followedUserIds);
     }
 }

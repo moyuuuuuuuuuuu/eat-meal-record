@@ -14,7 +14,7 @@ class TopicBusiness extends BaseBusiness
     {
         $title    = $request->get('title');
         $page     = (int)$request->get('page', 1);
-        $pageSize = $request->get('pageSize', 10);
+        $pageSize = max(1, min((int)$request->get('pageSize', 10), 50));
         $query    = TopicModel::query()->select('id', 'title', 'join', 'thumb', 'description', 'post');
         $query->when($title, function ($query) use ($title) {
             $query->where('title', 'like', "%{$title}%");

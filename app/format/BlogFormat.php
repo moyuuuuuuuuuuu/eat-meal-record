@@ -3,11 +3,22 @@
 namespace app\format;
 
 use app\common\base\{BaseFormat, BaseModel};
-use app\model\{BlogAttachModel, FavoriteModel, FollowModel, LikeModel};
 use Carbon\Carbon;
 
 class BlogFormat extends BaseFormat
 {
+    private array $likedIds = [];
+    private array $favoredIds = [];
+    private array $followedUserIds = [];
+
+    public function withInteractions(array $likedIds, array $favoredIds, array $followedUserIds): self
+    {
+        $this->likedIds = array_fill_keys($likedIds, true);
+        $this->favoredIds = array_fill_keys($favoredIds, true);
+        $this->followedUserIds = array_fill_keys($followedUserIds, true);
+        return $this;
+    }
+
     public function format(?BaseModel $model = null): array
     {
         return [
@@ -18,8 +29,8 @@ class BlogFormat extends BaseFormat
             'favs'        => $model->favs,
             'comments'    => $model->comments,
             'status'     => $model->status,
-            'is_like'    => LikeModel::isLiked($this->request?->userInfo?->id, $model->id),
-            'is_fav'     => FavoriteModel::isFav($this->request?->userInfo?->id, $model->id),
+            'is_like'    => isset($this->likedIds[$model->id]),
+            'is_fav'     => isset($this->favoredIds[$model->id]),
             'created_at' => Carbon::parse($model->created_at)->format('Y-m-d H:i:s'),
             'author'       => $this->author($model),
             'topics'     => $this->topic($model),
@@ -36,9 +47,9 @@ class BlogFormat extends BaseFormat
 
     public function author(BaseModel $model): array
     {
-        $userInfo = $model->user?->toArray();
+        $userInfo = $model->user?->toArray() ?? [];
         if ($this->request?->userInfo?->id != $model->user_id) {
-            $userInfo['follow'] = FollowModel::isAttention($this->request?->userInfo?->id, $model->user_id);
+            $userInfo['follow'] = isset($this->followedUserIds[$model->user_id]);
         }
         return $userInfo;
     }
@@ -50,12 +61,8 @@ class BlogFormat extends BaseFormat
 
     public function attach($model): ?array
     {
-        $blogAttachFormat = (new BlogAttachFormat($this->request));
-        return BlogAttachModel::query()
-            ->select(['attach', 'poster', 'type'])
-            ->where('blog_id', $model->id)
-            ->orderBy('sort')
-            ->get()->transform(function ($item) use ($blogAttachFormat) {
+        $blogAttachFormat = (new BlogAttachFormat($this->request))->forBlogOwner((int)$model->user_id);
+        return $model->attaches->transform(function ($item) use ($blogAttachFormat) {
                 return $blogAttachFormat->format($item);
             })->toArray();
     }

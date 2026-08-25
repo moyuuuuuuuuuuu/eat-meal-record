@@ -9,7 +9,7 @@ abstract class BaseBusiness
     protected static array $instances = [];
 
     protected ?BaseModel $model       = null;
-    protected ?BaseModel $staticModel = null;
+    protected ?string $staticModelClass = null;
 
     // 私有化构造函数，强制通过 instance() 访问
     protected function __construct(BaseModel $model = null)

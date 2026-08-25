@@ -20,12 +20,11 @@ use app\model\{FoodModel, FoodUnitModel, MealRecordModel, TaskModel};
 use app\service\baidu\Bos;
 use app\service\BooHee;
 use app\service\FoodService;
+use app\service\FoodSynchronizer;
 use app\service\recommendation\NutritionContextBuilder;
 use app\service\recommendation\Recommendation;
-use app\util\FoodSyncByRemote;
 use app\util\Helper;
 use support\Context;
-use support\Db;
 use support\Log;
 use support\Redis;
 use support\Request;
@@ -71,7 +70,7 @@ class FoodBusiness extends BaseBusiness
         if (!$query->exists() && BooHee::instance()->canUse()) {
             $query = $query->clone();
             Client::send(QueueEventName::FoodSync->value, ['foodName' => $name]);
-            echo '食品' . $name . '未找到已推送至队列查询' . PHP_EOL;
+            Log::info('本地食品未命中，已推送远端同步队列', ['name' => $name]);
         }
         $paginate   = $query->orderByDesc('id')
             ->paginate($pageSize, ['*'], 'page', $page);
@@ -102,32 +101,14 @@ class FoodBusiness extends BaseBusiness
         return (new FoodFormat($request))->format($food);
     }
 
-    public function syncRemote(array $foodList)
+    public function syncRemote(array $foodList): array
     {
-        if (empty($foodList)) return true;
-        $newFoodList = [];
-        $foodFormat  = new FoodFormat(null);
-        foreach ($foodList as $key => $item) {
-            $foodInfo = Db::transaction(function () use ($key, $item, $foodList) {
-                $catId           = FoodSyncByRemote::cats($item['cat'] ?? '其他');
-                $food            = FoodModel::updateOrCreate(
-                    ['name' => $item['name']],
-                    ['cat_id' => $catId, 'status' => 1, 'is_common' => $item['is_common'] ?? 2, 'is_ingredient' => $item['is_ingredient'] ?? 2]
-                );
-                $nutritionResult = FoodSyncByRemote::nutrition($food->id, $item['nutrition']);
-                $unitResult      = FoodSyncByRemote::units($food->id, $item['units'] ?? []);
-                $tagResult       = FoodSyncByRemote::tags($food->id, $item['tags'] ?? []);
-                if (!$unitResult || !$nutritionResult || !$tagResult) {
-                    unset($foodList[$key]);
-                    return null;
-                }
-                return $food;
-            });
-            if ($foodInfo) {
-                $newFoodList[] = $foodFormat->format($foodInfo);
-            }
-        }
-        return $newFoodList;
+        if (empty($foodList)) return [];
+        $foodFormat = new FoodFormat(null);
+        return collect((new FoodSynchronizer())->sync($foodList))
+            ->map(fn(FoodModel $food) => $foodFormat->format($food))
+            ->values()
+            ->all();
     }
 
     #[Validate(validator: FoodValidator::class, scene: 'recognize')]
@@ -175,7 +156,6 @@ class FoodBusiness extends BaseBusiness
                     $taskQuery->where("params->$key", $value);
                 }
             }
-            echo TaskModel::printSql($taskQuery);
             $taskId = $taskQuery->value('task_id');
             if ($taskId) {
                 return ['taskId' => (string)$taskId];
@@ -190,7 +170,7 @@ class FoodBusiness extends BaseBusiness
                 'additional' => ['userId' => $request->userInfo->id],
                 'user_id'    => $request->userInfo->id,
                 'task_id'    => $taskId,
-                'run_status' => TaskRunStatus::Running->value,
+                'run_status' => TaskRunStatus::Waiting->value,
             ];
 
             TaskModel::create($createData);
@@ -202,7 +182,17 @@ class FoodBusiness extends BaseBusiness
                 TaskRunStatus::Running->value
             );
 
-            Client::send(QueueEventName::TaskConsume->value, $taskId);
+            try {
+                Client::send(QueueEventName::TaskConsume->value, $taskId);
+            } catch (\Throwable $exception) {
+                TaskModel::query()->where('task_id', $taskId)->update([
+                    'run_status'      => TaskRunStatus::Finished->value,
+                    'complete_status' => TaskCompleteStatus::Failed->value,
+                    'completed_at'    => date('Y-m-d H:i:s'),
+                    'error_msg'       => '任务入队失败',
+                ]);
+                throw $exception;
+            }
 
             return ['taskId' => (string)$taskId];
         } catch (BusinessException $exception) {

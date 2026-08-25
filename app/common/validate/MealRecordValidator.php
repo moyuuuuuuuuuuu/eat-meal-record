@@ -27,7 +27,6 @@ class MealRecordValidator extends BaseValidator
         'foods.*.number.required'      => '数量不能为空',
         'foods.*.number.integer'       => '数量必须是整数',
         'foods.*.number.min'           => '数量不能小于1',
-        'foods.*.nutrition.required'   => '饮食项目营养信息不能为空',
         'foods.*.nutrition.array'      => '饮食项目营养信息格式不正确',
         'meal_record_food_id.required' => '缺少记录ID',
         'meal_record_food_id.integer'  => '记录ID必须是整数',
@@ -46,7 +45,7 @@ class MealRecordValidator extends BaseValidator
             'foods.*.food_id'     => ['required', 'integer', 'min:1'],
             'foods.*.unit_id'     => ['required', 'integer', 'min:1'],
             'foods.*.number'      => ['required', 'integer', 'min:1'],
-            'foods.*.nutrition'   => ['required', 'array'],
+            'foods.*.nutrition'   => ['nullable', 'array'],
             // 删除食物场景
             'meal_record_food_id' => ['required', 'integer', 'min:1'],
         ];

@@ -91,8 +91,8 @@ class MealRecordBusiness extends BaseBusiness
 
     public function history(Request $request): array
     {
-        $page     = $request->post('page', 1);
-        $pageSize = $request->post('pageSize', 10);
+        $page     = max(1, (int)$request->post('page', 1));
+        $pageSize = max(1, min((int)$request->post('pageSize', 10), 50));
         $userId   = $request->userInfo->id;
 
         // 1. 获取用户有记录的所有日期并进行分页

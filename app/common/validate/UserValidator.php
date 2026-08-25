@@ -15,6 +15,7 @@ class UserValidator extends BaseValidator
         'tall'      => 'integer|min:0|max:300',
         'weight'    => 'numeric|min:0|max:500',
         'birthday'  => 'date',
+        'target'    => 'integer|min:500|max:10000',
     ];
 
     protected array $messages = [
@@ -32,9 +33,12 @@ class UserValidator extends BaseValidator
         'weight.min'     => '体重不能小于0',
         'weight.max'     => '体重不能大于500',
         'birthday.date'  => '生日格式不正确',
+        'target.integer' => '目标热量必须是整数',
+        'target.min'     => '目标热量不能小于500千卡',
+        'target.max'     => '目标热量不能大于10000千卡',
     ];
 
     protected array $scenes = [
-        'update' => ['nickname', 'avatar', 'sex', 'signature', 'age', 'tall', 'weight', 'birthday'],
+        'update' => ['nickname', 'avatar', 'sex', 'signature', 'age', 'tall', 'weight', 'birthday', 'target'],
     ];
 }

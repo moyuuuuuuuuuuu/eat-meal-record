@@ -44,6 +44,13 @@ class BlogModel extends BaseModel
         return $this->hasOne(BlogLocationModel::class, 'blog_id', 'id');
     }
 
+    public function attaches()
+    {
+        return $this->hasMany(BlogAttachModel::class, 'blog_id', 'id')
+            ->select(['id', 'blog_id', 'attach', 'poster', 'type', 'sort'])
+            ->orderBy('sort');
+    }
+
 
     public function topics()
     {
