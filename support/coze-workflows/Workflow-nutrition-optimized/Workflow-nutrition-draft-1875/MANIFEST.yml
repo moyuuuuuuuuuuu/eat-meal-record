@@ -1,0 +1,11 @@
+type: Workflow
+version: 1.0.0
+main:
+    id: 7615919273831710763
+    name: nutrition-optimized
+    desc: 识别文字、图片或录音中的食物，输出适配 eat-meal-record 的标准食物、单位、标签及每100g营养数据
+    icon: plugin_icon/workflow.png
+    version: ""
+    flowMode: 0
+    commitId: ""
+sub: []

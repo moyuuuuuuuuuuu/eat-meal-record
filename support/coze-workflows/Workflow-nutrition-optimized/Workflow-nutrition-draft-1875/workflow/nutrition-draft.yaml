@@ -1,0 +1,757 @@
+schema_version: 1.0.0
+name: nutrition-optimized
+id: 7615919273831710763
+description: "识别文字、图片或录音中的食物，输出适配 eat-meal-record 的标准食物、单位、标签及每100g营养数据"
+mode: workflow
+icon: plugin_icon/workflow.png
+nodes:
+    - id: "100001"
+      type: start
+      title: 开始
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg
+      description: "工作流的起始节点，用于设定启动工作流需要的信息"
+      position:
+        x: 180
+        y: 171
+      parameters:
+        node_outputs:
+            audio:
+                type: string
+                value: null
+            image:
+                type: image
+                value: null
+            text:
+                type: string
+                value: null
+    - id: "900001"
+      type: end
+      title: 结束
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg
+      description: "工作流的最终节点，用于返回工作流运行后的结果信息"
+      position:
+        x: 2840
+        y: 158
+      parameters:
+        node_inputs:
+            - name: result
+              input:
+                type: string
+                value:
+                    path: result
+                    ref_node: "146879"
+        terminatePlan: returnVariables
+    - id: "195456"
+      type: condition
+      title: 选择器
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg
+      description: "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支"
+      position:
+        x: 640
+        y: 105
+      parameters:
+        branches:
+            - condition:
+                conditions:
+                    - left:
+                        input:
+                            value:
+                                path: text
+                                ref_node: "100001"
+                      operator: 10
+                logic: 2
+            - condition:
+                conditions:
+                    - left:
+                        input:
+                            value:
+                                path: image
+                                ref_node: "100001"
+                      operator: 10
+                logic: 2
+            - condition:
+                conditions:
+                    - left:
+                        input:
+                            value:
+                                path: audio
+                                ref_node: "100001"
+                      operator: 10
+                logic: 2
+    - id: "165951"
+      type: llm
+      title: 文字
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 1560
+        y: 0
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: apiMode
+              input:
+                type: integer
+                value: "0"
+            - name: temperature
+              input:
+                type: float
+                value: "0.2"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: thinkingType
+              input:
+                type: string
+                value: enabled
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                    reasoning_effort:
+                        type: string
+                        value: medium
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: '{{input}}'
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是食物标准化与营养数据专家。根据用户文字，识别其明确提到已经食用的食物，并输出可直接写入 eat-meal-record 食品库的数据。
+
+                    数据口径：
+                    1. 顶层必须是 JSON 数组，每个元素是一种食物；禁止 Markdown、说明文字和额外包装字段。
+                    2. name 使用简短、通用、可复用的中文标准食物名。不要包含“约、一些、半碗、早餐”等数量或场景词；只有用户明确说出品牌时才保留品牌。
+                    3. nutrition 的 value 一律表示每100g可食部营养值，不是用户本次食用份量的总营养。数值必须是非负 JSON 数字，不带单位。
+                    4. nutrition 必须且只能包含：kcal、pro、fat、carb、fiber、vit_c、mag、folic、cal、iron、vit_e。单位分别遵循项目 food_nutrients 表：kcal 为 kcal/100g，pro/fat/carb/fiber 为 g/100g，其余为 mg/100g。
+                    5. units 是该标准食物长期稳定的常用换算单位，不表达用户本次吃了多少。weight 表示1个该单位对应的可食部克重，必须为大于0的数字。至少返回1项，且恰好1项 is_default=1。
+                    6. unit.type 只能是 weight、count、volume、package、service、length。克/千克用 weight，毫升/升用 volume，个/枚/根用 count，袋/盒/罐用 package，碗/盘/份用 service。
+                    7. tags 必须是“标签类型 => 标签数组”的对象，至少包含一个有效标签。类型只能是：餐次、口味、营养、烹饪方式、适用人群、食材状态、过敏原、品牌产地、时令季节、特殊场景、存储方式。不要使用“推荐餐次”“特性”等别名，不要用斜杠拼接标签。
+                    8. is_common：大众常见食物为1，生僻或特定品牌食物为2。is_ingredient：基础食材为1，菜肴、饮品及加工食品为2。
+                    9. cat 使用稳定、简短的食品分类名称。信息不足时采用最合理的常见值，不虚构具体品牌、配方或食材。
+
+                    仅返回如下结构的合法 JSON：
+                    [{"name":"熟白米饭","cat":"五谷","is_common":1,"is_ingredient":2,"tags":{"餐次":["午餐","晚餐"],"口味":["清淡"],"食材状态":["熟食"]},"units":[{"name":"碗","weight":200,"is_default":1,"type":"service"},{"name":"克","weight":1,"is_default":0,"type":"weight"}],"nutrition":[{"name":"kcal","value":116},{"name":"pro","value":2.6},{"name":"fat","value":0.3},{"name":"carb","value":25.9},{"name":"fiber","value":0.3},{"name":"vit_c","value":0},{"name":"mag","value":15},{"name":"folic","value":3},{"name":"cal","value":7},{"name":"iron","value":1.3},{"name":"vit_e","value":0}]}]
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: text
+                    ref_node: "100001"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "141374"
+      type: llm
+      title: 图片
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 1560
+        y: 264
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: apiMode
+              input:
+                type: integer
+                value: "0"
+            - name: temperature
+              input:
+                type: float
+                value: "0.2"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: thinkingType
+              input:
+                type: string
+                value: enabled
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·2.0·pro
+            - name: modelType
+              input:
+                type: integer
+                value: "1772700462"
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                    reasoning_effort:
+                        type: string
+                        value: medium
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: '{{image}}'
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是食物图像识别、标准化与营养数据专家。识别图片中清晰可见、可食用的食物，并输出可直接写入 eat-meal-record 食品库的数据。
+
+                    项目关键约束：图片识别结果会写入全局 foods、food_units、food_nutrients 表。因此 units.weight 必须是该食物长期稳定的常用单位换算，绝不能把当前照片中这一盘、这一碗的视觉估重当成全局标准并写入。
+
+                    数据口径：
+                    1. 顶层必须是 JSON 数组，每个元素是一种食物；禁止 Markdown、说明文字和额外包装字段。
+                    2. 只识别有充分视觉依据的食物。不要识别餐具、装饰或推测不可见配料。无法区分具体做法时使用更稳妥的通用名称，例如“炒青菜”，不要臆测成某道特定菜。
+                    3. name 使用简短、通用、可复用的中文标准食物名；数量和“半盘、少量”等描述不得写入 name。品牌只在包装文字清晰可见时保留。
+                    4. nutrition 的 value 一律表示每100g可食部营养值，不是图片中这一份的总营养。数值必须是非负 JSON 数字，不带单位。
+                    5. nutrition 必须且只能包含：kcal、pro、fat、carb、fiber、vit_c、mag、folic、cal、iron、vit_e。kcal 为 kcal/100g，pro/fat/carb/fiber 为 g/100g，其余为 mg/100g。
+                    6. units 至少返回1个稳定常用单位，weight 表示1单位的典型可食部克重。恰好1项 is_default=1。若无法确定稳定的份量单位，只返回 {"name":"克","weight":1,"is_default":1,"type":"weight"}，不要根据照片估算“1份”的重量。
+                    7. unit.type 只能是 weight、count、volume、package、service、length。
+                    8. tags 必须是“标签类型 => 标签数组”的对象，至少包含一个有效标签。类型只能是：餐次、口味、营养、烹饪方式、适用人群、食材状态、过敏原、品牌产地、时令季节、特殊场景、存储方式。
+                    9. is_common：大众常见食物为1，生僻或特定品牌食物为2。is_ingredient：基础食材为1，菜肴、饮品及加工食品为2。
+
+                    仅返回如下结构的合法 JSON：
+                    [{"name":"清炒西兰花","cat":"蔬果","is_common":1,"is_ingredient":2,"tags":{"餐次":["午餐","晚餐"],"口味":["清淡"],"烹饪方式":["炒"],"食材状态":["熟食"]},"units":[{"name":"克","weight":1,"is_default":1,"type":"weight"}],"nutrition":[{"name":"kcal","value":71},{"name":"pro","value":3.7},{"name":"fat","value":4.1},{"name":"carb","value":6.1},{"name":"fiber","value":2.6},{"name":"vit_c","value":48},{"name":"mag","value":21},{"name":"folic","value":50},{"name":"cal","value":42},{"name":"iron","value":0.8},{"name":"vit_e","value":1.1}]}]
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: image
+              input:
+                value:
+                    path: image
+                    ref_node: "100001"
+                is_vision: true
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "159095"
+      type: plugin
+      title: asr_lite
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg
+      description: "准确地将语音内容转写成文字。适用于录音质检、会议总结、音频内容分析、课堂内容分析等场景。按照时长计费，对应计费项“录音文件识别（极速版）”。计费项&免费额度说明：https://www.coze.cn/open/docs/coze_pro/asr_tts_fee"
+      position:
+        x: 1100
+        y: 554
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7506818401994752000"
+            - name: apiName
+              input:
+                type: string
+                value: "asr_lite"
+            - name: pluginID
+              input:
+                type: string
+                value: "7506818401994735616"
+            - name: pluginName
+              input:
+                type: string
+                value: "语音识别"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: audio_url
+              input:
+                value:
+                    path: audio
+                    ref_node: "100001"
+            - name: language
+              input:
+                type: string
+                value: "普通话"
+        node_outputs:
+            code:
+                type: float
+                value: null
+            data:
+                type: object
+                properties:
+                    text:
+                        type: string
+                        value: null
+                        description: 识别出的文本
+                value: null
+            log_id:
+                type: string
+                value: null
+            msg:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "1554167"
+      type: llm
+      title: 音频
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 1920
+        y: 528
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: apiMode
+              input:
+                type: integer
+                value: "0"
+            - name: temperature
+              input:
+                type: float
+                value: "0.2"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: thinkingType
+              input:
+                type: string
+                value: enabled
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                    reasoning_effort:
+                        type: string
+                        value: medium
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: '{{input}}'
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是食物标准化与营养数据专家。输入是语音识别文本；请容忍同音字、停顿词和口语数量表达，识别用户明确提到已经食用的食物，并输出可直接写入 eat-meal-record 食品库的数据。
+
+                    数据口径：
+                    1. 顶层必须是 JSON 数组，每个元素是一种食物；禁止 Markdown、说明文字和额外包装字段。
+                    2. name 使用简短、通用、可复用的中文标准食物名。纠正有充分上下文依据的食品同音字，但不要猜测无法确认的食品；不要把数量和餐次写进 name。
+                    3. nutrition 的 value 一律表示每100g可食部营养值，不是用户本次食用份量的总营养。数值必须是非负 JSON 数字，不带单位。
+                    4. nutrition 必须且只能包含：kcal、pro、fat、carb、fiber、vit_c、mag、folic、cal、iron、vit_e。kcal 为 kcal/100g，pro/fat/carb/fiber 为 g/100g，其余为 mg/100g。
+                    5. units 是该标准食物长期稳定的常用换算单位，不表达用户本次吃了多少。weight 表示1单位对应的可食部克重且必须大于0；至少返回1项，恰好1项 is_default=1。
+                    6. unit.type 只能是 weight、count、volume、package、service、length。
+                    7. tags 必须是“标签类型 => 标签数组”的对象，至少包含一个有效标签。类型只能是：餐次、口味、营养、烹饪方式、适用人群、食材状态、过敏原、品牌产地、时令季节、特殊场景、存储方式。
+                    8. is_common：大众常见食物为1，生僻或特定品牌食物为2。is_ingredient：基础食材为1，菜肴、饮品及加工食品为2。
+
+                    仅返回如下结构的合法 JSON：
+                    [{"name":"水煮鸡蛋","cat":"肉蛋","is_common":1,"is_ingredient":2,"tags":{"餐次":["早餐"],"烹饪方式":["煮"],"食材状态":["熟食"]},"units":[{"name":"个","weight":50,"is_default":1,"type":"count"},{"name":"克","weight":1,"is_default":0,"type":"weight"}],"nutrition":[{"name":"kcal","value":151},{"name":"pro","value":12.1},{"name":"fat","value":10.5},{"name":"carb","value":1.5},{"name":"fiber","value":0},{"name":"vit_c","value":0},{"name":"mag","value":10},{"name":"folic","value":44},{"name":"cal","value":56},{"name":"iron","value":2},{"name":"vit_e","value":1.8}]}]
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: data.text
+                    ref_node: "159095"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "146879"
+      type: code
+      title: 代码
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg
+      description: "编写代码，处理输入变量来生成返回值"
+      version: v2
+      position:
+        x: 2380
+        y: 158
+      parameters:
+        code: |-
+            import json
+            import re
+
+            async def main(args: Args) -> Output:
+                params = args.params
+                raw = next((params.get(key) for key in ('text', 'image', 'audio') if params.get(key)), '')
+                if not raw:
+                    return {"result": ""}
+
+                text = str(raw).strip()
+                text = re.sub(r'^```(?:json)?\s*|\s*```$', '', text, flags=re.I | re.S).strip()
+                try:
+                    data = json.loads(text)
+                except Exception:
+                    return {"result": ""}
+
+                # 兼容模型偶发返回 {"foods": [...]}，对外仍保持项目需要的 JSON 数组。
+                if isinstance(data, dict):
+                    data = data.get('foods', [])
+                if not isinstance(data, list):
+                    return {"result": ""}
+
+                nutrient_keys = ('kcal', 'pro', 'fat', 'carb', 'fiber', 'vit_c', 'mag', 'folic', 'cal', 'iron', 'vit_e')
+                unit_types = {'weight', 'count', 'volume', 'package', 'service', 'length'}
+                tag_types = {'餐次', '口味', '营养', '烹饪方式', '适用人群', '食材状态', '过敏原', '品牌产地', '时令季节', '特殊场景', '存储方式'}
+                normalized = []
+
+                for item in data:
+                    if not isinstance(item, dict):
+                        continue
+                    name = str(item.get('name', '')).strip()
+                    if not name:
+                        continue
+
+                    nutrient_map = {}
+                    for nutrient in item.get('nutrition', []):
+                        if not isinstance(nutrient, dict) or nutrient.get('name') not in nutrient_keys:
+                            continue
+                        try:
+                            value = float(nutrient.get('value', 0))
+                        except Exception:
+                            continue
+                        if value >= 0:
+                            nutrient_map[nutrient['name']] = round(value, 2)
+                    if any(key not in nutrient_map for key in nutrient_keys):
+                        continue
+
+                    units = []
+                    for unit in item.get('units', []):
+                        if not isinstance(unit, dict):
+                            continue
+                        unit_name = str(unit.get('name', '')).strip()
+                        unit_type = unit.get('type')
+                        try:
+                            weight = float(unit.get('weight', 0))
+                        except Exception:
+                            continue
+                        if unit_name and unit_type in unit_types and weight > 0:
+                            units.append({
+                                'name': unit_name,
+                                'weight': round(weight, 2),
+                                'is_default': 1 if unit.get('is_default') in (1, True, '1') else 0,
+                                'type': unit_type,
+                            })
+                    if not units:
+                        continue
+                    default_index = next((index for index, unit in enumerate(units) if unit['is_default'] == 1), 0)
+                    for index, unit in enumerate(units):
+                        unit['is_default'] = 1 if index == default_index else 0
+
+                    tags = {}
+                    raw_tags = item.get('tags', {})
+                    if isinstance(raw_tags, dict):
+                        for tag_type, values in raw_tags.items():
+                            if tag_type not in tag_types:
+                                continue
+                            if not isinstance(values, list):
+                                values = re.split(r'[、,，/|]+', str(values))
+                            values = list(dict.fromkeys(str(value).strip() for value in values if str(value).strip()))
+                            if values:
+                                tags[tag_type] = values
+                    if not tags:
+                        continue
+
+                    normalized.append({
+                        'name': name[:255],
+                        'cat': str(item.get('cat') or '其他').strip()[:255],
+                        'is_common': 1 if item.get('is_common') in (1, True, '1') else 2,
+                        'is_ingredient': 1 if item.get('is_ingredient') in (1, True, '1') else 2,
+                        'tags': tags,
+                        'units': units,
+                        'nutrition': [{'name': key, 'value': nutrient_map[key]} for key in nutrient_keys],
+                    })
+
+                return {"result": json.dumps(normalized, ensure_ascii=False, separators=(',', ':'))}
+        language: 3
+        node_inputs:
+            - name: text
+              input:
+                value:
+                    path: output
+                    ref_node: "165951"
+            - name: image
+              input:
+                value:
+                    path: output
+                    ref_node: "141374"
+            - name: audio
+              input:
+                value:
+                    path: output
+                    ref_node: "1554167"
+        node_outputs:
+            result:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 60000
+    - id: "190723"
+      type: condition
+      title: 选择器_1
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg
+      description: "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支"
+      position:
+        x: 1510
+        y: 541
+      parameters:
+        branches:
+            - condition:
+                conditions:
+                    - left:
+                        input:
+                            value:
+                                path: data.text
+                                ref_node: "159095"
+                      operator: 10
+                logic: 2
+edges:
+    - source_node: "100001"
+      target_node: "195456"
+    - source_node: "146879"
+      target_node: "900001"
+    - source_node: "195456"
+      target_node: "165951"
+      source_port: "true"
+    - source_node: "195456"
+      target_node: "141374"
+      source_port: true_1
+    - source_node: "195456"
+      target_node: "159095"
+      source_port: true_2
+    - source_node: "195456"
+      target_node: "146879"
+      source_port: "false"
+    - source_node: "165951"
+      target_node: "146879"
+    - source_node: "141374"
+      target_node: "146879"
+    - source_node: "159095"
+      target_node: "190723"
+    - source_node: "190723"
+      target_node: "1554167"
+      source_port: "true"
+    - source_node: "1554167"
+      target_node: "146879"
+    - source_node: "190723"
+      target_node: "146879"
+      source_port: "false"
