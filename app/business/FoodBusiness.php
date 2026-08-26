@@ -25,6 +25,7 @@ use app\service\recommendation\NutritionContextBuilder;
 use app\service\recommendation\Recommendation;
 use app\util\Helper;
 use support\Context;
+use support\Db;
 use support\Log;
 use support\Redis;
 use support\Request;
