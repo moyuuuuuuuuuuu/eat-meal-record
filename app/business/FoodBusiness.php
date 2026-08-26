@@ -159,7 +159,11 @@ class FoodBusiness extends BaseBusiness
             }
             $taskId = $taskQuery->value('task_id');
             if ($taskId) {
-                return ['taskId' => (string)$taskId];
+                return [
+                    'taskId' => (string)$taskId,
+                    'status' => TaskCompleteStatus::Success->labelCode(),
+                    'reused' => true,
+                ];
             }
 
             $taskId     = Snowflake::instance()->id();
@@ -192,10 +196,15 @@ class FoodBusiness extends BaseBusiness
                     'completed_at'    => date('Y-m-d H:i:s'),
                     'error_msg'       => '任务入队失败',
                 ]);
+                Redis::del(UserInfoContext::userInfoTaskCacheKey($request->userInfo->id, $taskId));
                 throw $exception;
             }
 
-            return ['taskId' => (string)$taskId];
+            return [
+                'taskId' => (string)$taskId,
+                'status' => TaskCompleteStatus::Running->labelCode(),
+                'reused' => false,
+            ];
         } catch (BusinessException $exception) {
             throw $exception;
         } catch (\Exception $exception) {

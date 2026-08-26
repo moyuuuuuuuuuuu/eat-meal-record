@@ -36,7 +36,7 @@ class TaskConsumeJob extends BaseConsumer
         }
         $staleBefore = date('Y-m-d H:i:s', strtotime('-' . self::RUNNING_TIMEOUT_MINUTES . ' minutes'));
         if ((int)$taskInfo->retry_count >= self::MAX_ATTEMPTS) {
-            TaskModel::query()
+            $finalized = TaskModel::query()
                 ->where('id', $taskInfo->id)
                 ->where('run_status', TaskRunStatus::Running->value)
                 ->where('updated_at', '<', $staleBefore)
@@ -44,8 +44,20 @@ class TaskConsumeJob extends BaseConsumer
                     'run_status'      => TaskRunStatus::Finished->value,
                     'complete_status' => TaskCompleteStatus::Failed->value,
                     'error_msg'       => '任务执行超时且已达最大重试次数',
+                    'additional'      => json_encode(array_merge($taskInfo->additional ?? [], [
+                        'errorCode' => 'AI_TIMEOUT',
+                        'retryable' => true,
+                    ]), JSON_UNESCAPED_UNICODE),
                     'completed_at'    => date('Y-m-d H:i:s'),
                 ]);
+            if ($finalized) {
+                $userId = $taskInfo->additional['userId'] ?? $taskInfo->user_id;
+                Redis::setEx(
+                    UserInfoContext::userInfoTaskCacheKey($userId, $taskInfo->task_id),
+                    3600 + rand(10, 60),
+                    TaskCompleteStatus::Failed->value
+                );
+            }
             return true;
         }
         $attempt = (int)$taskInfo->retry_count + 1;
@@ -88,6 +100,7 @@ class TaskConsumeJob extends BaseConsumer
             $update['complete_status'] = TaskCompleteStatus::Success->value;
         } catch (\Throwable $exception) {
             $update['error_msg'] = mb_substr($exception->getMessage(), 0, 255);
+            $failure = $this->failureMetadata($exception);
             Log::error('任务执行失败：' . $exception->getMessage(), [
                 'code'       => $exception->getCode(),
                 'file'       => $exception->getFile(),
@@ -104,9 +117,25 @@ class TaskConsumeJob extends BaseConsumer
                 throw $exception;
             }
             $update['complete_status'] = TaskCompleteStatus::Failed->value;
+            $update['additional'] = array_merge($taskInfo->additional ?? [], $failure);
         }
         $taskInfo->update($update);
         Redis::setEx(UserInfoContext::userInfoTaskCacheKey($userId, $taskInfo->task_id), 3600 + rand(10, 60), $update['complete_status']);
         return true;
+    }
+
+    private function failureMetadata(\Throwable $exception): array
+    {
+        $message = $exception->getMessage();
+        if (str_contains($message, '次数已经用完')) {
+            return ['errorCode' => 'AI_QUOTA_EXHAUSTED', 'retryable' => false];
+        }
+        if ($exception instanceof DataNotFoundException) {
+            return ['errorCode' => 'AI_NO_RESULT', 'retryable' => true];
+        }
+        if ($exception instanceof BusinessException) {
+            return ['errorCode' => 'AI_REQUEST_REJECTED', 'retryable' => false];
+        }
+        return ['errorCode' => 'AI_SERVICE_ERROR', 'retryable' => true];
     }
 }

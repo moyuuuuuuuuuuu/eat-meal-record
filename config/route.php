@@ -72,6 +72,7 @@ Route::group('/api', function () {
     Route::group('/food', function () {
         Route::get('/search', [FoodController::class, 'search']);
         Route::get('/detail', [FoodController::class, 'detail']);
+        Route::get('/recognize/quota', [FoodController::class, 'recognizeQuota']);
         Route::post('/recognize', [FoodController::class, 'recognize']);
         Route::get('/categories', [CategoryController::class, 'index']);
     });

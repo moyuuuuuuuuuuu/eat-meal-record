@@ -38,7 +38,9 @@ class WorkFlow extends BaseGuzzleHttpClient
         $this->privateKey = file_get_contents(runtime_path() . getenv('COZE_PRIVATE_KEY_PATH')); // 私钥
         $this->client     = new Client([
             'base_uri' => 'https://api.coze.cn',
-            'timeout'  => 1200,
+            // 必须短于任务的 10 分钟运行租约，为结果标准化和落库预留时间。
+            'connect_timeout' => 10,
+            'timeout' => 480,
         ]);
     }
 

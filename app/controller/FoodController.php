@@ -4,6 +4,7 @@ namespace app\controller;
 
 use app\business\FoodBusiness;
 use app\common\base\BaseController;
+use app\common\context\TokenLimit;
 use support\Request;
 
 class FoodController extends BaseController
@@ -40,6 +41,14 @@ class FoodController extends BaseController
     public function recognize(Request $request)
     {
         return $this->success('ok', FoodBusiness::instance()->recognize($request));
+    }
+
+    /**
+     * 获取当前用户今日 AI 识别额度。
+     */
+    public function recognizeQuota(): \support\Response
+    {
+        return $this->success('ok', TokenLimit::instance()->getQuotaInfo());
     }
 
     public function recommendation(Request $request): \support\Response

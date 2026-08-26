@@ -35,6 +35,9 @@ expect_contains('SMS debug gate', $sms, "config('app.debug') === true");
 $taskController = read_file($root . '/app/controller/TaskController.php');
 expect_contains('Task ownership status query', $taskController, "where('user_id', \$request->userInfo->id)");
 expect_contains('Task ownership response query', $taskController, "where('user_id', \$request->userInfo->id)");
+expect_contains('Task query exposes interaction stage', $taskController, "'stage' => \$stage");
+expect_contains('Task failure exposes stable error code', $taskController, "'errorCode'");
+expect_contains('Task failure exposes retryability', $taskController, "'retryable'");
 
 $taskModel = read_file($root . '/app/model/TaskModel.php');
 expect_contains('Task model user ownership', $taskModel, "'user_id'");
@@ -56,6 +59,17 @@ expect_contains('Task is claimed conditionally', $taskConsumer, "where('run_stat
 expect_contains('Task retries are bounded', $taskConsumer, 'private const MAX_ATTEMPTS = 3');
 expect_contains('Stale running tasks are recoverable', $taskConsumer, 'private const RUNNING_TIMEOUT_MINUTES = 10');
 expect_contains('Exhausted stale tasks are finalized', $taskConsumer, '任务执行超时且已达最大重试次数');
+expect_contains('Exhausted stale task cache is finalized', $taskConsumer, 'TaskCompleteStatus::Failed->value');
+expect_contains('Quota exhaustion has a stable error code', $taskConsumer, 'AI_QUOTA_EXHAUSTED');
+
+$cozeWorkflow = read_file($root . '/app/service/coze/WorkFlow.php');
+expect_contains('Coze call leaves time before task lease expires', $cozeWorkflow, "'timeout' => 480");
+
+$foodController = read_file($root . '/app/controller/FoodController.php');
+expect_contains('AI quota can be shown before submit', $foodController, 'getQuotaInfo()');
+
+$routes = read_file($root . '/config/route.php');
+expect_contains('AI quota route is available', $routes, "Route::get('/recognize/quota'");
 
 $feedBusiness = read_file($root . '/app/business/FeedBusiness.php');
 expect_not_contains('Feed detail must not bypass visibility', $feedBusiness, 'BlogModel::find($blogId)');

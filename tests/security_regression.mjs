@@ -19,6 +19,9 @@ expectContains("SMS debug gate", sms, "config('app.debug') === true");
 const taskController = read("app/controller/TaskController.php");
 expectContains("Task ownership status query", taskController, "where('user_id', $request->userInfo->id)");
 expectContains("Task ownership response query", taskController, "where('user_id', $request->userInfo->id)");
+expectContains("Task query exposes interaction stage", taskController, "'stage' => $stage");
+expectContains("Task failure exposes stable error code", taskController, "'errorCode'");
+expectContains("Task failure exposes retryability", taskController, "'retryable'");
 
 const taskModel = read("app/model/TaskModel.php");
 expectContains("Task model user ownership", taskModel, "'user_id'");
@@ -40,6 +43,17 @@ expectContains("Task is claimed conditionally", taskConsumer, "where('run_status
 expectContains("Task retries are bounded", taskConsumer, "private const MAX_ATTEMPTS = 3");
 expectContains("Stale running tasks are recoverable", taskConsumer, "private const RUNNING_TIMEOUT_MINUTES = 10");
 expectContains("Exhausted stale tasks are finalized", taskConsumer, "任务执行超时且已达最大重试次数");
+expectContains("Exhausted stale task cache is finalized", taskConsumer, "TaskCompleteStatus::Failed->value");
+expectContains("Quota exhaustion has a stable error code", taskConsumer, "AI_QUOTA_EXHAUSTED");
+
+const cozeWorkflow = read("app/service/coze/WorkFlow.php");
+expectContains("Coze call leaves time before task lease expires", cozeWorkflow, "'timeout' => 480");
+
+const foodController = read("app/controller/FoodController.php");
+expectContains("AI quota can be shown before submit", foodController, "getQuotaInfo()");
+
+const routes = read("config/route.php");
+expectContains("AI quota route is available", routes, "Route::get('/recognize/quota'");
 
 const feedBusiness = read("app/business/FeedBusiness.php");
 expectNotContains("Feed detail must not bypass visibility", feedBusiness, "BlogModel::find($blogId)");

@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "msg": "ok",
+  "s": false,
+  "data": {
+    "used": 2,
+    "limit": 10,
+    "remaining": 8,
+    "reset_at": 1787673599
+  }
+}

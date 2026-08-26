@@ -5,6 +5,7 @@
   "data": {
     "taskId": "123456789012345678",
     "status": "running",
-    "reused": false
+    "stage": "analyzing",
+    "message": "AI 正在识别并整理餐食信息"
   }
 }
