@@ -3,9 +3,8 @@
 namespace app\command;
 
 use app\model\FoodModel;
-use app\model\FoodUnitModel;
-use app\model\UnitModel;
 use app\service\FoodService;
+use app\util\FoodSyncByRemote;
 use support\Db;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -135,31 +134,15 @@ class SyncUnitForFood extends Command
                     $currentFood = $foodsByName->get($foodName);
                     if (!$currentFood) continue;
 
-                    foreach ($unitItems as $unitItem) {   // ← 新增这层循环
-                        $unitName  = $unitItem['name'] ?? '克';
-                        $weight    = (float)($unitItem['weight'] ?? 100);
-                        $isDefault = (int)($unitItem['is_default'] ?? 0);
-
-                        try {
-                            Db::transaction(function () use ($unitName, $currentFood, $weight, $isDefault) {
-                                try {
-                                    $unit = UnitModel::firstOrCreate(['name' => $unitName]);
-                                } catch (\Illuminate\Database\QueryException $e) {
-                                    if ($e->getCode() == 23000) {
-                                        $unit = UnitModel::where('name', $unitName)->firstOrFail();
-                                    } else {
-                                        throw $e;
-                                    }
-                                }
-
-                                FoodUnitModel::firstOrCreate(
-                                    ['food_id' => $currentFood->id, 'unit_id' => $unit->id],
-                                    ['weight' => $weight, 'is_default' => $isDefault]
-                                );
-                            }, 3);
-                        } catch (\Exception $e) {
-                            $output->writeln("Worker #{$workerId} ❌ [{$foodName}-{$unitName}] 写入失败：" . $e->getMessage());
-                        }
+                    try {
+                        Db::transaction(function () use ($currentFood, $unitItems) {
+                            if (!FoodSyncByRemote::units($currentFood->id, $unitItems)) {
+                                throw new \RuntimeException('未保存任何有效单位');
+                            }
+                        }, 3);
+                        $successCount++;
+                    } catch (\Exception $e) {
+                        $output->writeln("Worker #{$workerId} ❌ [{$foodName}] 写入失败：" . $e->getMessage());
                     }
                 }
 

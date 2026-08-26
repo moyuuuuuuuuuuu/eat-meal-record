@@ -1,0 +1,11 @@
+type: Workflow
+version: 1.0.0
+main:
+    id: 7616578106900889646
+    name: food_unit
+    desc: 批量生成适配 eat-meal-record 的标准食物单位与克重换算
+    icon: plugin_icon/workflow.png
+    version: ""
+    flowMode: 0
+    commitId: ""
+sub: []

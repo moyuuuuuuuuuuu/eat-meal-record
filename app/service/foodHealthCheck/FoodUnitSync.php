@@ -3,9 +3,8 @@
 namespace app\service\foodHealthCheck;
 
 use app\model\FoodModel;
-use app\model\FoodUnitModel;
-use app\model\UnitModel;
 use app\service\FoodService;
+use app\util\FoodSyncByRemote;
 use support\Db;
 use support\Log;
 use support\Redis;
@@ -38,14 +37,10 @@ final class FoodUnitSync extends BaseHealthCheck
 
         if (empty($result)) return [];
 
-        $resultData = is_string($result) ? json_decode($result, true) : $result;
-        // 处理嵌套 data 结构
-        if (isset($resultData['data'])) $resultData = $resultData['data'];
-
         $foodsByName  = FoodModel::whereIn('name', $foodNameItem)->get(['id', 'name'])->keyBy('name');
         $successNames = [];
 
-        foreach ($resultData as $item) {
+        foreach ($result as $item) {
             $foodName    = $item['food'] ?? null;
             $unitItems   = $item['unit'] ?? [];
             $currentFood = $foodsByName->get($foodName);
@@ -54,17 +49,8 @@ final class FoodUnitSync extends BaseHealthCheck
 
             try {
                 $foodId = Db::transaction(function () use ($unitItems, $currentFood) {
-                    foreach ($unitItems as $unitItem) {
-                        $unitName  = $unitItem['name'] ?? '克';
-                        $weight    = (float)($unitItem['weight'] ?? 100);
-                        $isDefault = (int)($unitItem['is_default'] ?? 0);
-
-                        $unit = UnitModel::firstOrCreate(['name' => $unitName]);
-
-                        FoodUnitModel::updateOrCreate(
-                            ['food_id' => $currentFood->id, 'unit_id' => $unit->id],
-                            ['weight' => $weight, 'is_default' => $isDefault]
-                        );
+                    if (!FoodSyncByRemote::units($currentFood->id, $unitItems)) {
+                        throw new \RuntimeException('未保存任何有效单位');
                     }
                     return $currentFood->id;
                 }, 3);

@@ -61,6 +61,16 @@ class FoodSyncByRemote
     static function units(int $foodId, array $units, int $attempt = 0)
     {
         if (!$foodId || !$units) return null;
+        $hasDefault = false;
+        foreach ($units as $unit) {
+            if ((int)($unit['is_default'] ?? 0) === 1) {
+                $hasDefault = true;
+                break;
+            }
+        }
+        if ($hasDefault) {
+            FoodUnitModel::query()->where('food_id', $foodId)->update(['is_default' => 0]);
+        }
         $result = [];
         foreach ($units as $unit) {
             try {
@@ -76,7 +86,7 @@ class FoodSyncByRemote
             } catch (QueryException $e) {
                 if ($attempt < 3 && in_array($e->errorInfo[1], [1213, 1062])) {
                     usleep(mt_rand(100, 500) * 1000); // 随机等待 100-500ms
-                    self::units($foodId, $units, $attempt + 1);
+                    return self::units($foodId, $units, $attempt + 1);
                 } else {
                     throw $e;
                 }

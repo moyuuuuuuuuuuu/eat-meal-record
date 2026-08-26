@@ -2,16 +2,10 @@
 
 namespace app\command;
 
-use app\format\FoodFormat;
-use app\model\CatModel;
 use app\model\FoodModel;
 use app\model\FoodNutrientModel;
-use app\model\FoodUnitModel;
-use app\model\UnitModel;
 use app\service\FoodService;
-use app\util\Calculate;
-use support\Db;
-use support\Log;
+use app\service\FoodSynchronizer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,13 +14,6 @@ class SyncFood extends Command
 {
     protected static $defaultName        = 'food:sync';
     protected static $defaultDescription = '使用多进程并行同步食物营养数据';
-
-    private const NUTRIENT_FIELD_MAP = [
-        'potassium'   => 'kalium',
-        'folate'      => 'folic',
-        'cholesterin' => 'cholesterol',
-        'vitaminA'    => 'vitamin_a',
-    ];
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -131,63 +118,7 @@ class SyncFood extends Command
      */
     public function syncRemote(array $foodList)
     {
-        if (empty($foodList)) return [];
-
-        $result     = [];
-        $foodFormat = new FoodFormat(null);
-
-        foreach ($foodList as $item) {
-            $foodModel = Db::transaction(function () use ($item) {
-                // 单位与重量解析
-                $unitStr  = $item['unit'] ?? '1 份';
-                $unitArr  = explode(' ', trim($unitStr));
-                $unitNum  = (float)($unitArr[0] ?? 1);
-                $unitName = $unitArr[1] ?? '份';
-
-                $totalWeightStr = $item['weight'] ?? '100g';
-                $totalWeight    = (float)preg_replace('/[^0-9.]/', '', $totalWeightStr);
-                if ($totalWeight <= 0) $totalWeight = 100;
-
-                // 100g 比例换算
-                $ratio = Calculate::div('100', (string)$totalWeight, 10);
-
-                $localNutrition = [];
-                foreach ($item['nutrition'] as $nut) {
-                    $key                    = $nut['name'];
-                    $dbKey                  = $key;
-                    $val                    = (string)($nut['value'] ?? 0);
-                    $localNutrition[$dbKey] = (float)Calculate::mul($val, $ratio, 2);
-                }
-
-                if (!isset($localNutrition['kcal'])) {
-                    $localNutrition['kcal'] = $localNutrition['kal'] ?? 0;
-                }
-
-                // 维护数据关系
-                $catName = $item['cat'] ?? '其他';
-                $catId   = CatModel::where('name', $catName)->value('id') ?:
-                    CatModel::insertGetId(['name' => $catName, 'pid' => 0, 'sort' => 100]);
-
-                $food = FoodModel::updateOrCreate(
-                    ['name' => $item['name']],
-                    ['cat_id' => $catId, 'status' => 1, 'is_common' => $item['is_common'] ?? 2, 'is_ingredient' => $item['is_ingredient'] ?? 2]
-                );
-
-                FoodNutrientModel::updateOrCreate(['food_id' => $food->id], $localNutrition);
-
-                $unit             = UnitModel::firstOrCreate(['name' => $unitName], ['type' => 'count']);
-                $singleUnitWeight = Calculate::div((string)$totalWeight, (string)$unitNum, 2);
-
-                FoodUnitModel::updateOrCreate(
-                    ['food_id' => $food->id, 'unit_id' => $unit->id],
-                    ['weight' => $singleUnitWeight, 'is_default' => 0]
-                );
-
-                return $food;
-            });
-            $result[]  = $foodFormat->format($foodModel);
-        }
-        return $result;
+        return (new FoodSynchronizer())->sync($foodList);
     }
 
     /**
