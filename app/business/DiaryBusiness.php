@@ -62,9 +62,11 @@ class DiaryBusiness extends BaseBusiness
     {
 
         $target = 2000;
+        $goal = null;
         //每日卡路里目标
         if ($request->userInfo) {
-            $target             = UserGoalModel::query()->where('user_id', $request->userInfo->id)->value('daily_calories') ?? 2000;
+            $goal               = UserGoalModel::query()->where('user_id', $request->userInfo->id)->first();
+            $target             = $goal?->daily_calories ?? 2000;
             $totalNutritionList = MealRecordModel::query()
                 ->where('user_id', $request->userInfo->id)
                 ->where('meal_date', Carbon::today())
@@ -88,6 +90,11 @@ class DiaryBusiness extends BaseBusiness
             'fat'      => 0.00,
             'carbs'    => 0.00,
         ], $dailyGoal);
+        if ($goal) {
+            $dailyGoal['protein'] = (float)$goal->protein;
+            $dailyGoal['fat'] = (float)$goal->fat;
+            $dailyGoal['carbs'] = (float)$goal->carbohydrate;
+        }
         return [
             'dailyGoal'      => $dailyGoal,
             'totalIntake'    => [

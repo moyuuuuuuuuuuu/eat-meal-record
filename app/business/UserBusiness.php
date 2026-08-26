@@ -13,10 +13,14 @@ use app\common\enum\UserInfoContext;
 use app\common\validate\LoginValidator;
 use app\common\validate\UserValidator;
 use app\model\UserModel;
+use app\model\MealRecordModel;
 use app\model\UserStepsModel;
 use app\service\wechat\WxMini;
 use app\common\exception\BusinessException;
 use app\util\Helper;
+use app\util\Calculate;
+use Carbon\Carbon;
+use support\Db;
 use support\Redis;
 use support\Request;
 use Webman\Validation\Annotation\Validate;
@@ -192,14 +196,18 @@ class UserBusiness extends BaseBusiness
      */
     public function stats(Request $request): array
     {
-        // 获取当前用户，若无登录信息则使用 id=1 作为演示用户
         $userInfo = $request->userInfo->toArray();
+        $userId = (int)$request->userInfo->id;
+        $totalRecords = MealRecordModel::query()->where('user_id', $userId)->distinct()->count('meal_date');
+        $allCalories = MealRecordModel::query()->where('user_id', $userId)->sum(Db::raw("nutrition->>'$.kcal'"));
+        $avgCalories = $totalRecords > 0 ? round((float)Calculate::div((string)$allCalories, (string)$totalRecords)) : 0;
+        $createdAt = $userInfo['created_at'] ?? null;
 
         return [
             'name'          => $userInfo['nickname'] ?? '用户',
-            'joinDays'      => $userInfo['joinDays'] ?? 0,
-            'totalRecords'  => $userInfo['totalRecords'] ?? 0,
-            'avgCalories'   => $userInfo['avgCalories'] ?? 0,
+            'joinDays'      => $createdAt ? Carbon::parse($createdAt)->diffInDays() + 1 : 0,
+            'totalRecords'  => $totalRecords,
+            'avgCalories'   => $avgCalories,
             'currentWeight' => $userInfo['weight'] ?? 65,
             'targetWeight'  => $userInfo['targetWeight'] ?? 0,
             'height'        => $userInfo['tall'] ?? 175,
