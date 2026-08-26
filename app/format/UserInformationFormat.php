@@ -53,17 +53,24 @@ class UserInformationFormat extends BaseFormat
         $totalRecords = MealRecordModel::query()->distinct()->where('user_id', $model['id'])->count('meal_date');
         try {
             $allCalories = MealRecordModel::query()->where('user_id', $model['id'])->sum(Db::raw("nutrition->>'$.kcal'"));
-            $avgCalories = Calculate::div((string)$allCalories, (string)$totalRecords); // 合理占位，待接入真实数据
+            $avgCalories = $totalRecords > 0 ? round((float)Calculate::div((string)$allCalories, (string)$totalRecords)) : 0;
         } catch (\Throwable $e) {
             $avgCalories = 0;
         }
 
+        $sex = (string)($model['sex'] ?? '3');
+        $height = (int)($model['tall'] ?? 0);
+        $weight = (float)($model['weight'] ?? 0);
+
         return array_merge($model, [
-            'joinDays'      => isset($userInfo['created_at']) && $model['created_at'] ? (int)Carbon::parse($model['created_at'])->diffInDays() : 0,
+            // 标准展示字段；保留 sex/tall/weight 兼容旧客户端。
+            'gender'        => \app\common\enum\user\Sex::tryFrom($sex)?->label() ?? '未知',
+            'height'        => $height,
+            'joinDays'      => !empty($model['created_at']) ? (int)floor(Carbon::parse($model['created_at'])->diffInDays()) + 1 : 0,
             'totalRecords'  => $totalRecords,
             'avgCalories'   => $avgCalories,
-            'currentWeight' => $model['weight'] ?? 0,
-            'targetWeight'  => $goal['weight'] ?? 0,
+            'currentWeight' => $weight,
+            'targetWeight'  => (float)($goal['weight'] ?? 0),
             'energy'        => json_encode($energyResult),
             'goal'          => json_encode($goal),
         ]);

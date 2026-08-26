@@ -205,7 +205,7 @@ class UserBusiness extends BaseBusiness
 
         return [
             'name'          => $userInfo['nickname'] ?? '用户',
-            'joinDays'      => $createdAt ? Carbon::parse($createdAt)->diffInDays() + 1 : 0,
+            'joinDays'      => $createdAt ? (int)floor(Carbon::parse($createdAt)->diffInDays()) + 1 : 0,
             'totalRecords'  => $totalRecords,
             'avgCalories'   => $avgCalories,
             'currentWeight' => $userInfo['weight'] ?? 65,
@@ -247,6 +247,10 @@ class UserBusiness extends BaseBusiness
             if ($request->post($field) !== null) {
                 $user->$field = $params[$field];
             }
+        }
+
+        if (!empty($params['birthday'])) {
+            $user->age = Carbon::parse($params['birthday'])->age;
         }
 
         if (!$user->save()) {
