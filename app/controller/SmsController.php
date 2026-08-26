@@ -9,6 +9,8 @@ use support\Response;
 
 class SmsController extends BaseController
 {
+    protected $noNeedLogin = ['send'];
+
     /**
      * 发送验证码
      * @param Request $request
