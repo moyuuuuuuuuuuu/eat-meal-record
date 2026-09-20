@@ -13,7 +13,6 @@ use app\common\enum\UserInfoContext;
 use app\common\exception\BusinessException;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ValidationException;
-use app\common\validate\FoodValidator;
 use app\format\FoodFormat;
 use app\service\Alarm;
 use app\model\{FoodModel, FoodUnitModel, MealRecordModel, TaskModel};
@@ -31,7 +30,6 @@ use support\Redis;
 use support\Request;
 use support\Snowflake;
 use Webman\RedisQueue\Client;
-use Webman\Validation\Annotation\Validate;
 use function Illuminate\Support\now;
 
 class FoodBusiness extends BaseBusiness
@@ -112,7 +110,6 @@ class FoodBusiness extends BaseBusiness
             ->all();
     }
 
-    #[Validate(validator: FoodValidator::class, scene: 'recognize')]
     public function recognize(Request $request): array
     {
         $content = $request->post('content');

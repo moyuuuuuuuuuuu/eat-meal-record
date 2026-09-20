@@ -8,3 +8,5 @@
 /tests/.phpunit.result.cache
 /test.php
 public/upload/*
+.DS_Store
+/.codegraph/

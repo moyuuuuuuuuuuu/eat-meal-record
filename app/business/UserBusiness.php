@@ -10,8 +10,6 @@ use app\common\enum\NormalStatus;
 use app\common\enum\user\Sex;
 use app\common\enum\user\Status;
 use app\common\enum\UserInfoContext;
-use app\common\validate\LoginValidator;
-use app\common\validate\UserValidator;
 use app\model\UserModel;
 use app\model\MealRecordModel;
 use app\model\UserStepsModel;
@@ -23,7 +21,6 @@ use Carbon\Carbon;
 use support\Db;
 use support\Redis;
 use support\Request;
-use Webman\Validation\Annotation\Validate;
 
 class UserBusiness extends BaseBusiness
 {
@@ -84,7 +81,6 @@ class UserBusiness extends BaseBusiness
         return UserInfo::setUserInfo(userInfo: $user);
     }
 
-    #[Validate(validator: LoginValidator::class, scene: 'sms')]
     public function sms(Request $request): array
     {
         $mobile = $request->post('mobile');
@@ -231,7 +227,6 @@ class UserBusiness extends BaseBusiness
      * @param Request $request
      * @return array
      */
-    #[Validate(validator: UserValidator::class, scene: 'update')]
     public function update(Request $request): array
     {
         $userId = $request->userInfo->id;

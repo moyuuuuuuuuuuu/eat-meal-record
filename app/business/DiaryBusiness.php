@@ -8,7 +8,6 @@ use app\common\context\UserInfo;
 use app\common\enum\BusinessCode;
 use app\common\exception\DataNotFoundException;
 use app\common\exception\ValidationException;
-use app\common\validate\MealRecordValidator;
 use app\format\MealRecordFoodFormat;
 use app\model\MealRecordFoodModel;
 use app\model\MealRecordModel;
@@ -18,7 +17,6 @@ use Carbon\Carbon;
 use support\Db;
 use app\common\exception\BusinessException;
 use support\Request;
-use Webman\Validation\Annotation\Validate;
 
 class DiaryBusiness extends BaseBusiness
 {
@@ -36,7 +34,6 @@ class DiaryBusiness extends BaseBusiness
             ->select('id', 'type', 'nutrition')
             ->with(['foods'])
             ->where('meal_date', $time->format('Y-m-d'))
-            ->limit(3)
             ->orderBy('type');
         if ($request->userInfo) {
             $query->where('user_id', $request->userInfo->id);
@@ -69,7 +66,7 @@ class DiaryBusiness extends BaseBusiness
             $target             = $goal?->daily_calories ?? 2000;
             $totalNutritionList = MealRecordModel::query()
                 ->where('user_id', $request->userInfo->id)
-                ->where('meal_date', Carbon::today())
+                ->where('meal_date', Carbon::today()->toDateString())
                 ->pluck('nutrition')->toArray();
             $totalNutrition     = [];
             foreach ($totalNutritionList as $item) {
@@ -99,16 +96,15 @@ class DiaryBusiness extends BaseBusiness
             'dailyGoal'      => $dailyGoal,
             'totalIntake'    => [
                 'calories' => $totalNutrition['kcal'] ?? 0.00,
-                'protein'  => $totalNutrition['protein'] ?? 0.00,
+                'protein'  => $totalNutrition['pro'] ?? 0.00,
                 'fat'      => $totalNutrition['fat'] ?? 0.00,
-                'carbs'    => $totalNutrition['carbohydrate'] ?? 00,
+                'carbs'    => $totalNutrition['carb'] ?? 0.00,
             ],
             'burnedCalories' => UserInfo::getUserBurned(date('Y-m-d'), $request->userInfo),
         ];
     }
 
 
-    #[Validate(validator: MealRecordValidator::class, scene: 'delete')]
     public function delete(Request $request)
     {
         return Db::transaction(function () use ($request) {

@@ -25,17 +25,17 @@ class MealRecordValidator extends BaseValidator
         'foods.*.unit_id.integer'      => '单位ID必须是整数',
         'foods.*.unit_id.min'          => '单位ID不合法',
         'foods.*.number.required'      => '数量不能为空',
-        'foods.*.number.integer'       => '数量必须是整数',
-        'foods.*.number.min'           => '数量不能小于1',
+        'foods.*.number.numeric'       => '数量必须是数字',
+        'foods.*.number.min'           => '数量不能小于0.01',
         'foods.*.nutrition.array'      => '饮食项目营养信息格式不正确',
         'meal_record_food_id.required' => '缺少记录ID',
         'meal_record_food_id.integer'  => '记录ID必须是整数',
         'meal_record_food_id.min'      => '记录ID不合法',
     ];
 
-    public function rules(): array
+    public function __construct()
     {
-        $this->rule = [
+        $this->rules = [
             'type'                => ['required', Rule::in(MealRecordType::values())],
             'nutrition'           => ['nullable', 'array'],
             'latitude'            => ['nullable', 'numeric'],
@@ -44,16 +44,16 @@ class MealRecordValidator extends BaseValidator
             'foods'               => ['required', 'array'],
             'foods.*.food_id'     => ['required', 'integer', 'min:1'],
             'foods.*.unit_id'     => ['required', 'integer', 'min:1'],
-            'foods.*.number'      => ['required', 'integer', 'min:1'],
+            'foods.*.number'      => ['required', 'numeric', 'min:0.01'],
             'foods.*.nutrition'   => ['nullable', 'array'],
             // 删除食物场景
             'meal_record_food_id' => ['required', 'integer', 'min:1'],
         ];
-        return parent::rules();
     }
 
     protected array $scenes = [
-        'create' => ['type', 'nutrition', 'latitude', 'longitude', 'address', 'foods'],
+        'create' => ['type', 'nutrition', 'latitude', 'longitude', 'address', 'foods',
+            'foods.*.food_id', 'foods.*.unit_id', 'foods.*.number', 'foods.*.nutrition'],
         'delete' => ['meal_record_food_id'],
     ];
 }

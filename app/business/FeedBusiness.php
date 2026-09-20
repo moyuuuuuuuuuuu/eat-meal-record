@@ -3,7 +3,7 @@
 namespace app\business;
 
 use app\service\baidu\Solution;
-use app\common\{base\BaseBusiness, exception\DataNotFoundException, validate\FeedValidator};
+use app\common\{base\BaseBusiness, exception\DataNotFoundException};
 use app\common\enum\{blog\AttachType, blog\Visibility, BusinessCode, LikeFavType, NormalStatus};
 use app\common\enum\QueueEventName;
 use app\format\BlogFormat;
@@ -12,7 +12,6 @@ use app\service\baidu\Ibs;
 use support\{Db, Request};
 use app\common\exception\BusinessException;
 use Webman\RedisQueue\Client;
-use Webman\Validation\Annotation\Validate;
 
 class FeedBusiness extends BaseBusiness
 {
@@ -70,7 +69,6 @@ class FeedBusiness extends BaseBusiness
      * @param Request $request
      * @return mixed
      */
-    #[Validate(validator: FeedValidator::class, scene: 'like')]
     public function like(Request $request)
     {
         $userId = $request->userInfo->id;
@@ -123,7 +121,6 @@ class FeedBusiness extends BaseBusiness
      * @param Request $request
      * @return array
      */
-    #[Validate(validator: FeedValidator::class, scene: 'create')]
     public function create(Request $request): array
     {
         $userId      = $request->userInfo->id;

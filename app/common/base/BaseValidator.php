@@ -8,8 +8,11 @@ use support\validation\{Validator};
 
 class BaseValidator extends Validator
 {
-    public function fails(): bool
+    public function validate(): array
     {
-        throw new BusinessException($this->errors()->first(), BusinessCode::PARAM_ERROR->value);
+        if (parent::fails()) {
+            throw new BusinessException($this->errors()->first(), BusinessCode::PARAM_ERROR->value);
+        }
+        return parent::validate();
     }
 }

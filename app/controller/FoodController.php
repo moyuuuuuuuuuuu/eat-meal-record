@@ -5,6 +5,8 @@ namespace app\controller;
 use app\business\FoodBusiness;
 use app\common\base\BaseController;
 use app\common\context\TokenLimit;
+use app\common\validate\FoodValidator;
+use Webman\Validation\Annotation\Validate;
 use support\Request;
 
 class FoodController extends BaseController
@@ -38,6 +40,7 @@ class FoodController extends BaseController
      * @param Request $request
      * @return \support\Response
      */
+    #[Validate(validator: FoodValidator::class, scene: 'recognize')]
     public function recognize(Request $request)
     {
         return $this->success('ok', FoodBusiness::instance()->recognize($request));

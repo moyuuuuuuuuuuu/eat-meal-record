@@ -14,14 +14,14 @@ class TaskController extends BaseController
     {
         $taskId = $request->input('taskId');
         if (!$taskId) {
-            return $this->fail('任务ID不能为空');
+            return $this->fail('任务ID不能为空', ['errorCode' => 'AI_TASK_INVALID', 'retryable' => false]);
         }
         $task = TaskModel::query()
             ->where('task_id', $taskId)
             ->where('user_id', $request->userInfo->id)
             ->first();
         if (!$task) {
-            return $this->fail('任务状态异常');
+            return $this->fail('任务不存在或无权访问', ['errorCode' => 'AI_TASK_NOT_FOUND', 'retryable' => false]);
         }
 
         $isFinished = (int)$task->run_status === TaskRunStatus::Finished->value;
@@ -29,7 +29,7 @@ class TaskController extends BaseController
             ? TaskCompleteStatus::tryFrom((int)$task->complete_status)
             : TaskCompleteStatus::Running;
         if (!$taskResult) {
-            return $this->fail('任务状态异常');
+            return $this->fail('任务状态异常，请重新识别', ['errorCode' => 'AI_TASK_INVALID', 'retryable' => false]);
         }
 
         $stage = match (true) {

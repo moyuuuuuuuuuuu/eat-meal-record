@@ -4,6 +4,8 @@ namespace app\controller;
 
 use app\business\SmsBusiness;
 use app\common\base\BaseController;
+use app\common\validate\SmsValidator;
+use Webman\Validation\Annotation\Validate;
 use support\Request;
 use support\Response;
 
@@ -16,6 +18,7 @@ class SmsController extends BaseController
      * @param Request $request
      * @return Response
      */
+    #[Validate(validator: SmsValidator::class, scene: 'send')]
     public function send(Request $request): Response
     {
         $mobile = $request->post('mobile');

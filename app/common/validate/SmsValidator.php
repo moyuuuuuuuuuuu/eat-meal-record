@@ -10,7 +10,7 @@ class SmsValidator extends BaseValidator
         'mobile.required' => '请输入手机号',
         'mobile.regex'    => '手机号格式不正确',
     ];
-    protected array $rule     = [
+    protected array $rules    = [
         'mobile' => ['required', 'regex:/^1[3456789]\d{9}$/'],
     ];
     protected array $scenes   = [

@@ -5,6 +5,8 @@ namespace app\controller;
 use app\business\DiaryBusiness;
 use app\business\MealRecordBusiness;
 use app\common\base\BaseController;
+use app\common\validate\MealRecordValidator;
+use Webman\Validation\Annotation\Validate;
 use support\Request;
 
 class DiaryController extends BaseController
@@ -35,6 +37,7 @@ class DiaryController extends BaseController
     /**
      * 添加饮食记录
      */
+    #[Validate(validator: MealRecordValidator::class, scene: 'create')]
     public function add(Request $request)
     {
         $data = MealRecordBusiness::instance()->create($request);
@@ -44,6 +47,7 @@ class DiaryController extends BaseController
     /**
      * 删除饮食中的某项食物
      */
+    #[Validate(validator: MealRecordValidator::class, scene: 'delete')]
     public function delete(Request $request)
     {
         DiaryBusiness::instance()->delete($request);

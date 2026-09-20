@@ -4,11 +4,9 @@ namespace app\business;
 
 use app\common\base\BaseBusiness;
 use app\common\context\UserInfo;
-use app\common\validate\UserGoalValidator;
 use app\model\UserGoalModel;
 use app\model\UserModel;
 use support\Request;
-use Webman\Validation\Annotation\Validate;
 
 class UserGoalBusiness extends BaseBusiness
 {
@@ -39,7 +37,6 @@ class UserGoalBusiness extends BaseBusiness
      * @param Request $request
      * @return array
      */
-    #[Validate(validator: UserGoalValidator::class, scene: 'save')]
     public function saveGoal(Request $request): array
     {
         $userId = $request->userInfo->id;

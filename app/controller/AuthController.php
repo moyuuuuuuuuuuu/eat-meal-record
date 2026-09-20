@@ -47,6 +47,7 @@ class AuthController extends BaseController
         }
     }
 
+    #[Validate(validator: LoginValidator::class, scene: 'sms')]
     public function sms(Request $request): Response
     {
         try {

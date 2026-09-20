@@ -6,7 +6,6 @@ use app\common\base\{BaseBusiness};
 use app\common\context\NutritionTemplate;
 use app\common\enum\BusinessCode;
 use app\common\exception\DataNotFoundException;
-use app\common\validate\MealRecordValidator;
 use app\model\{FoodModel, FoodUnitModel, MealRecordFoodModel, MealRecordModel, UserStepsModel};
 use app\service\baidu\Ibs;
 use app\util\Calculate;
@@ -14,7 +13,6 @@ use Carbon\Carbon;
 use support\Db;
 use app\common\exception\BusinessException;
 use support\Request;
-use Webman\Validation\Annotation\Validate;
 
 class MealRecordBusiness extends BaseBusiness
 {
@@ -91,8 +89,8 @@ class MealRecordBusiness extends BaseBusiness
 
     public function history(Request $request): array
     {
-        $page     = max(1, (int)$request->post('page', 1));
-        $pageSize = max(1, min((int)$request->post('pageSize', 10), 50));
+        $page     = max(1, (int)$request->get('page', 1));
+        $pageSize = max(1, min((int)$request->get('pageSize', 10), 50));
         $userId   = $request->userInfo->id;
 
         // 1. 获取用户有记录的所有日期并进行分页
@@ -190,7 +188,6 @@ class MealRecordBusiness extends BaseBusiness
     }
 
 
-    #[Validate(validator: MealRecordValidator::class, scene: 'create')]
     public function create(Request $request)
     {
         return Db::transaction(function () use ($request) {

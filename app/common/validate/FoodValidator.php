@@ -17,27 +17,24 @@ class FoodValidator extends BaseValidator
         'options.format.required_if' => '音频格式参数不能为空',
     ];
     protected array $scenes   = [
-        'recognize' => ['type', 'content', 'options'],
+        'recognize' => ['type', 'content', 'options', 'options.format'],
     ];
 
     public function __construct()
     {
-        $request = request();
-        $type    = $request ? $request->post('type') : null;
-        $rules = [
+        $this->rules = [
             'type'           => 'required|in:' . implode(',', NutritionInputType::values()),
             'options'        => 'nullable|array',
             'options.format' => 'required_if:type,' . NutritionInputType::AUDIO->value,
             'content'        => ['required', 'string']
         ];
+    }
 
-        // 1. 动态字符长度校验
-        if ($type === NutritionInputType::TEXT->value) {
-            $rules['content'][] = 'max:150';
-        } else {
-            // 音频/图片 Base64 长度放宽
-            $rules['content'][] = 'max:10485760';
-        }
-        $this->rules = $rules;
+    public function rules(): array
+    {
+        $this->rules['content'] = ['required', 'string',
+            ($this->data()['type'] ?? null) === NutritionInputType::TEXT->value
+                ? 'max:150' : 'max:10485760'];
+        return parent::rules();
     }
 }

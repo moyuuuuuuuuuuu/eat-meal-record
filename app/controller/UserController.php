@@ -4,6 +4,8 @@ namespace app\controller;
 
 use app\business\UserBusiness;
 use app\common\base\BaseController;
+use app\common\validate\UserValidator;
+use Webman\Validation\Annotation\Validate;
 use support\Request;
 
 class UserController extends BaseController
@@ -29,6 +31,7 @@ class UserController extends BaseController
      * @param Request $request
      * @return \support\Response
      */
+    #[Validate(validator: UserValidator::class, scene: 'update')]
     public function update(Request $request)
     {
         return $this->success('保存成功', UserBusiness::instance()->update($request));

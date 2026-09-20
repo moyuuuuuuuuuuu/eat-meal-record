@@ -6,7 +6,7 @@
 
 - 食物：分类、搜索、详情、营养识别和推荐
 - 饮食日记：添加/删除餐食、每日汇总和历史记录
-- 用户：微信/短信登录、资料、目标、步数与营养统计
+- 用户：微信登录、资料、目标、步数与营养统计（短信服务尚未接入，验证码接口明确返回不可用）
 - 社区：动态发布、列表、详情、点赞和话题
 - 基础服务：文件上传、公告与协议、逆地理编码
 - 后台任务：AI 识别任务、食品营养/标签/单位同步、系统通知
@@ -185,14 +185,21 @@ php webman migrate:menu-nutrition-full
 
 ## 验证
 
-当前仓库没有 PHPUnit/Pest 配置，已有回归检查可直接执行：
+安装 Composer 依赖后，使用项目自带的回归检查入口（需要 `pdo_sqlite`、`bcmath` 和 `mbstring`）：
 
 ```bash
+composer test
+# 或 php tests/run.php
+
+# 其他已有回归检查
 php tests/recommendation_regression.php
 php tests/security_regression.php
 php tests/tag_normalization.php
+php tests/workflow_result_normalizer.php
 node tests/security_regression.mjs
 ```
+
+检查覆盖控制器参数校验、嵌套字段、小数份量、短信不可用提示、营养汇总、四餐展示和 GET 历史分页。测试仅使用内存 SQLite，并隔离用户消耗计算，不读取 `.env`、连接业务数据库或调用外部服务。
 
 涉及数据库、Redis、队列或第三方服务的改动，还需要启动本地服务并对受影响接口做手工验证。`mock/` 中的文件可作为部分响应结构参考，但文件名中的 `api_v3` 是历史命名，当前路由前缀是 `/api`。
 

@@ -15,14 +15,13 @@ class FeedValidator extends BaseValidator
         'visibility.in'               => '可见度参数错误',
         'content.required'            => '发布内容不能为空',
         'content.string'              => '发布内容必须是字符串',
-        'content.max'                 => '发布内容最多不能超过255个字符',
+        'content.max'                 => '发布内容最多不能超过500个字符',
         'attach.required'             => '请上传附件',
         'attach.array'                => '附件数据格式不正确',
         'attach.max'                  => '附件数量最多不能超过255个',
         'attach.*.type.required'      => '附件类型不能为空',
         'attach.*.type.in'            => '附件类型不合法',
         'attach.*.attach.required'    => '附件不能为空',
-        'attach.*.poster.required_if' => '视频封面图不能为空',
         'attach.*.poster.string'      => '视频封面图地址必须是字符串',
         'topic.array'                 => '话题数据格式不正确',
         'topic.*.required'            => '话题ID不能为空',
@@ -39,20 +38,22 @@ class FeedValidator extends BaseValidator
     ];
 
     protected array $scenes = [
-        'create' => ['content', 'visibility', 'attach', 'topic', 'location'],
+        'create' => ['content', 'visibility', 'attach', 'attach.*.type', 'attach.*.attach',
+            'attach.*.poster', 'topic', 'topic.*', 'location', 'location.latitude',
+            'location.longitude', 'location.address', 'location.name'],
         'like'   => ['id']
     ];
 
-    public function rules(): array
+    public function __construct()
     {
-        $this->rule = [
+        $this->rules = [
             'id'                 => ['required', 'numeric', 'min:1'],
-            'content'            => ['required', 'string', 'max:255'],
+            'content'            => ['required', 'string', 'max:500'],
             'visibility'         => ['required', Rule::in(array_column(Visibility::cases(), 'value'))],
-            'attach'             => ['required', 'array', 'max:255'],
+            'attach'             => ['present', 'array', 'max:255'],
             'attach.*.type'      => ['required', Rule::in(AttachType::values())],
             'attach.*.attach'    => ['required'],
-            'attach.*.poster'    => ['required_if.attach.*.type,' . AttachType::VIDEO->value, 'string'],
+            'attach.*.poster'    => ['nullable', 'string'],
             'topic'              => ['nullable', 'array'],
             'topic.*'            => ['required', 'min:1', 'integer'],
             'location'           => ['nullable', 'array'],
@@ -61,6 +62,5 @@ class FeedValidator extends BaseValidator
             'location.address'   => ['nullable', 'string'],
             'location.name'      => ['nullable', 'string'],
         ];
-        return parent::rules();
     }
 }
