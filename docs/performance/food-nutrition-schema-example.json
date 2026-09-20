@@ -1,0 +1,58 @@
+{
+  "output": [
+    {
+      "name": "八宝粥",
+      "cat": "五谷",
+      "is_common": 1,
+      "is_ingredient": 2,
+      "tags": [
+        {
+          "type": "餐次",
+          "values": [
+            "早餐",
+            "加餐"
+          ]
+        },
+        {
+          "type": "口味",
+          "values": [
+            "甜"
+          ]
+        },
+        {
+          "type": "食材状态",
+          "values": [
+            "熟食"
+          ]
+        }
+      ],
+      "units": [
+        {
+          "name": "碗",
+          "weight": 250.1,
+          "is_default": 1,
+          "type": "service"
+        },
+        {
+          "name": "克",
+          "weight": 1,
+          "is_default": 0,
+          "type": "weight"
+        }
+      ],
+      "nutrition": {
+        "kcal": 1.1,
+        "pro": 1.1,
+        "fat": 1.1,
+        "carb": 1.1,
+        "fiber": 1.1,
+        "vit_c": 1.1,
+        "mag": 1.1,
+        "folic": 1.1,
+        "cal": 1.1,
+        "iron": 1.1,
+        "vit_e": 1.1
+      }
+    }
+  ]
+}
