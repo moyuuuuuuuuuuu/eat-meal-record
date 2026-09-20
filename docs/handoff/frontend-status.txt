@@ -1,0 +1,19 @@
+Captured 2026-09-21 Asia/Shanghai
+Repository: /Users/moyuu/projects/dnmp/www/eat-meal-record-ui
+These are inventories, not backups.
+
+$ git branch --show-current
+uni
+
+$ git rev-parse HEAD
+1ccb218547c58556b6be95a72ff42732f312b081
+
+$ git status --short
+ M package.json
+ M src/composables/useAuth.ts
+ M src/pages/add-meal/index.vue
+?? .codegraph/
+?? docs/product/
+?? output/
+?? src/utils/aiRecognitionTask.ts
+?? tests/

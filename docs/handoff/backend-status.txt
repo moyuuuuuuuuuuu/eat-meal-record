@@ -1,0 +1,41 @@
+Captured 2026-09-21 Asia/Shanghai
+Repository: /Users/moyuu/projects/dnmp/www/eat-meal-record
+These are inventories, not backups.
+
+$ git branch --show-current
+main
+
+$ git rev-parse HEAD
+534fdf372e73dfcbb4f52f4ecbbf73fbe801ec1a
+
+$ git status --short
+ M README.md
+ M app/business/DiaryBusiness.php
+ M app/business/FeedBusiness.php
+ M app/business/FoodBusiness.php
+ M app/business/MealRecordBusiness.php
+ M app/business/SmsBusiness.php
+ M app/business/UserBusiness.php
+ M app/business/UserGoalBusiness.php
+ M app/common/base/BaseValidator.php
+ M app/common/validate/FeedValidator.php
+ M app/common/validate/FoodValidator.php
+ M app/common/validate/MealRecordValidator.php
+ M app/common/validate/SmsValidator.php
+ M app/controller/AuthController.php
+ M app/controller/DiaryController.php
+ M app/controller/FeedController.php
+ M app/controller/FoodController.php
+ M app/controller/SmsController.php
+ M app/controller/TaskController.php
+ M app/controller/UserController.php
+ M app/controller/UserGoalController.php
+ M composer.json
+?? .DS_Store
+?? .codegraph/
+?? app/.DS_Store
+?? docs/handoff/
+?? docs/performance/
+?? tests/config/
+?? tests/coze_validator_test.py
+?? tests/run.php
